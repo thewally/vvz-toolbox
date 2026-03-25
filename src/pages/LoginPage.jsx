@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function LoginPage() {
@@ -9,6 +9,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const { signIn } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from?.pathname ?? '/'
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -19,7 +21,7 @@ export default function LoginPage() {
     if (error) {
       setError(error.message)
     } else {
-      navigate('/trainingsschema')
+      navigate(from, { replace: true })
     }
   }
 

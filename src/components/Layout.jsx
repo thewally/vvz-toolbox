@@ -17,6 +17,7 @@ function useSectionLabel() {
 export default function Layout() {
   const { user, signOut } = useAuth()
   const sectionLabel = useSectionLabel()
+  const location = useLocation()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -45,6 +46,7 @@ export default function Layout() {
             ) : (
               <Link
                 to="/login"
+                state={{ from: { pathname: location.pathname } }}
                 className="bg-white/20 hover:bg-white/30 px-3 py-1 rounded transition-colors"
               >
                 Inloggen
