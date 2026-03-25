@@ -717,6 +717,20 @@ export default function SchedulePage() {
     )
   }
 
+  function formatValidityLabel(schedule) {
+    if (!schedule) return null
+    const fmt = d => new Date(d).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })
+    const from = schedule.valid_from ? fmt(schedule.valid_from) : null
+    const until = schedule.valid_until ? fmt(schedule.valid_until) : 'geen einddatum'
+    if (!from && !schedule.valid_until) return null
+    if (!from) return `t/m ${until}`
+    return `${from} – ${until}`
+  }
+
+  const currentSchedule = isAdmin
+    ? allSchedules.find(s => s.id === selectedScheduleId)
+    : activeSchedules.find(s => s.id === selectedScheduleId) || activeSchedules[0]
+
   return (
     <div className="max-w-[1400px] mx-auto px-2 sm:px-4 py-3">
       <div className="mb-2 flex items-center gap-2">
@@ -754,6 +768,11 @@ export default function SchedulePage() {
             {activeSchedules[0].name}
           </span>
         ) : null}
+        {formatValidityLabel(currentSchedule) && (
+          <span className="text-xs text-gray-400">
+            Geldig: {formatValidityLabel(currentSchedule)}
+          </span>
+        )}
       </div>
       <div ref={scheduleRef} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
