@@ -27,9 +27,9 @@ jobs:
               'Prefer': 'return=representation',
             };
 
-            // Datum 60 dagen geleden (activiteiten ouder dan dit worden verwijderd)
+            // Datum 7 dagen geleden (activiteiten ouder dan dit worden verwijderd)
             const cutoff = new Date();
-            cutoff.setDate(cutoff.getDate() - 60);
+            cutoff.setDate(cutoff.getDate() - 7);
             const cutoffStr = cutoff.toISOString().slice(0, 10);
 
             // Vandaag (voor verlopen schema's)
