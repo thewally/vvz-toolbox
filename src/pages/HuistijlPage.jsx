@@ -1,11 +1,13 @@
+const base = import.meta.env.BASE_URL
+
 const ASSETS = [
   {
     naam: 'VVZ\'49 Logo',
     beschrijving: 'Officieel clublogo',
-    thumbnail: '/huistijl/logo-vvz.png',
+    thumbnail: `${base}huistijl/logo-vvz.png`,
     downloads: [
-      { label: 'PNG', file: '/huistijl/logo-vvz.png' },
-      { label: 'AI', file: '/huistijl/logo-vvz.ai' },
+      { label: 'PNG', file: `${base}huistijl/logo-vvz.png` },
+      { label: 'AI', file: `${base}huistijl/logo-vvz.ai` },
     ],
   },
 ]

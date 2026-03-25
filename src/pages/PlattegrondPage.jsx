@@ -1,9 +1,11 @@
+const base = import.meta.env.BASE_URL
+
 export default function PlattegrondPage() {
   const downloads = [
-    { label: 'PDF (A4)', file: '/plattegrond/plattegrond-a4.pdf' },
-    { label: 'PDF (A3)', file: '/plattegrond/plattegrond-a3.pdf' },
-    { label: 'SVG', file: '/plattegrond/plattegrond.svg' },
-    { label: 'EPS', file: '/plattegrond/plattegrond.eps' },
+    { label: 'PDF (A4)', file: `${base}plattegrond/plattegrond-a4.pdf` },
+    { label: 'PDF (A3)', file: `${base}plattegrond/plattegrond-a3.pdf` },
+    { label: 'SVG', file: `${base}plattegrond/plattegrond.svg` },
+    { label: 'EPS', file: `${base}plattegrond/plattegrond.eps` },
   ]
 
   return (
@@ -12,7 +14,7 @@ export default function PlattegrondPage() {
 
       <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden mb-8">
         <img
-          src="/plattegrond/plattegrond.svg"
+          src={`${base}plattegrond/plattegrond.svg`}
           alt="Plattegrond Sportpark Zonnegloren"
           className="w-full h-auto block"
         />

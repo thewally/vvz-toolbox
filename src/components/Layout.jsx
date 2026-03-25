@@ -23,7 +23,7 @@ export default function Layout() {
       <header className="bg-vvz-green text-white shadow-lg no-print">
         <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-[auto_1fr_auto] items-center gap-4">
           <Link to="/" className="flex items-center gap-3">
-            <img src="/logo-vvz.png" alt="VVZ'49 logo" className="h-10 w-10 object-contain" />
+            <img src={`${import.meta.env.BASE_URL}logo-vvz.png`} alt="VVZ'49 logo" className="h-10 w-10 object-contain" />
             <span className="text-xl font-bold leading-none">VVZ'49 Toolbox</span>
           </Link>
           <div className="flex items-center gap-3">
