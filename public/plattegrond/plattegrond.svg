@@ -331,11 +331,11 @@
     <path d="M 186,385 L 219,385 L 219,464 L 186,464" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
     <path d="M 186,406 L 197,406 L 197,442 L 186,442" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
     <circle cx="208" cy="424" r="1.5" fill="white" opacity="0.5"/>
-    <path d="M 219,409.8 A 18,18 0 0,0 219,438.2" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
+    <path d="M 219,409.8 A 18,18 0 0,1 219,438.2" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
     <path d="M 377,385 L 344,385 L 344,464 L 377,464" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
     <path d="M 377,406 L 366,406 L 366,442 L 377,442" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
     <circle cx="355" cy="424" r="1.5" fill="white" opacity="0.5"/>
-    <path d="M 344,409.8 A 18,18 0 0,1 344,438.2" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
+    <path d="M 344,409.8 A 18,18 0 0,0 344,438.2" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
 
     <!-- VELD 3 -->
     <rect x="178" y="498" width="207" height="134" rx="4" fill="#2e7d32" stroke="#fff" stroke-width="2.5"/>
@@ -348,11 +348,11 @@
     <path d="M 186,526 L 219,526 L 219,605 L 186,605" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
     <path d="M 186,547 L 197,547 L 197,583 L 186,583" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
     <circle cx="208" cy="565" r="1.5" fill="white" opacity="0.5"/>
-    <path d="M 219,550.8 A 18,18 0 0,0 219,579.2" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
+    <path d="M 219,550.8 A 18,18 0 0,1 219,579.2" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
     <path d="M 377,526 L 344,526 L 344,605 L 377,605" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
     <path d="M 377,547 L 366,547 L 366,583 L 377,583" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
     <circle cx="355" cy="565" r="1.5" fill="white" opacity="0.5"/>
-    <path d="M 344,550.8 A 18,18 0 0,1 344,579.2" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
+    <path d="M 344,550.8 A 18,18 0 0,0 344,579.2" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
 
 
 
