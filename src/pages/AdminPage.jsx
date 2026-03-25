@@ -234,7 +234,7 @@ function FieldsManager({ fields, onReload }) {
                 className={`group transition-colors ${
                   dropIndex === i && dragIndex !== i ? 'border-t-2 border-vvz-green' :
                   dragIndex === i ? 'opacity-40' :
-                  field.active === false ? 'opacity-50' :
+                  field.active === false ? 'opacity-40' :
                   i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                 }`}
               >
@@ -286,7 +286,7 @@ function FieldsManager({ fields, onReload }) {
                         disabled={saving}
                         aria-label={field.active === false ? `${field.name} activeren` : `${field.name} deactiveren`}
                         title={field.active === false ? 'Activeren' : 'Deactiveren'}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50 ${field.active === false ? 'bg-gray-300' : 'bg-vvz-green'}`}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50 ${field.active === false ? 'bg-gray-400' : 'bg-vvz-green'}`}
                       >
                         <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${field.active === false ? 'translate-x-1' : 'translate-x-4'}`} />
                       </button>
