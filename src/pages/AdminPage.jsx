@@ -71,24 +71,26 @@ export default function AdminPage() {
 
 function FieldsManager({ fields, onReload }) {
   const [editId, setEditId] = useState(null)
-  const [editForm, setEditForm] = useState({ name: '', display_order: 0 })
+  const [editForm, setEditForm] = useState({ name: '' })
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const [adding, setAdding] = useState(false)
-  const [addForm, setAddForm] = useState({ name: '', display_order: 0 })
+  const [addForm, setAddForm] = useState({ name: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+  const [dragIndex, setDragIndex] = useState(null)
+  const [dropIndex, setDropIndex] = useState(null)
 
   function startEdit(field) {
     setAdding(false)
     setDeleteConfirmId(null)
     setEditId(field.id)
-    setEditForm({ name: field.name, display_order: field.display_order ?? 0 })
+    setEditForm({ name: field.name })
     setError(null)
   }
 
   function cancelEdit() {
     setEditId(null)
-    setEditForm({ name: '', display_order: 0 })
+    setEditForm({ name: '' })
     setError(null)
   }
 
@@ -96,14 +98,13 @@ function FieldsManager({ fields, onReload }) {
     setEditId(null)
     setDeleteConfirmId(null)
     setAdding(true)
-    const nextOrder = fields.length > 0 ? Math.max(...fields.map(f => f.display_order ?? 0)) + 1 : 0
-    setAddForm({ name: '', display_order: nextOrder })
+    setAddForm({ name: '' })
     setError(null)
   }
 
   function cancelAdd() {
     setAdding(false)
-    setAddForm({ name: '', display_order: 0 })
+    setAddForm({ name: '' })
     setError(null)
   }
 
@@ -112,17 +113,9 @@ function FieldsManager({ fields, onReload }) {
     if (!editForm.name.trim()) return
     setSaving(true)
     setError(null)
-    const { error } = await updateField(editId, {
-      name: editForm.name,
-      display_order: Number(editForm.display_order),
-    })
+    const { error } = await updateField(editId, { name: editForm.name })
     setSaving(false)
-    if (error) {
-      setError(error.message)
-    } else {
-      cancelEdit()
-      onReload()
-    }
+    if (error) { setError(error.message) } else { cancelEdit(); onReload() }
   }
 
   async function handleToggleActive(field) {
@@ -139,18 +132,10 @@ function FieldsManager({ fields, onReload }) {
     if (!addForm.name.trim()) return
     setSaving(true)
     setError(null)
-    const { error } = await createField({
-      name: addForm.name,
-      display_order: Number(addForm.display_order),
-      active: true,
-    })
+    const nextOrder = fields.length > 0 ? Math.max(...fields.map(f => f.display_order ?? 0)) + 1 : 0
+    const { error } = await createField({ name: addForm.name, display_order: nextOrder, active: true })
     setSaving(false)
-    if (error) {
-      setError(error.message)
-    } else {
-      cancelAdd()
-      onReload()
-    }
+    if (error) { setError(error.message) } else { cancelAdd(); onReload() }
   }
 
   async function handleDelete(id) {
@@ -158,12 +143,21 @@ function FieldsManager({ fields, onReload }) {
     setError(null)
     const { error } = await deleteField(id)
     setSaving(false)
-    if (error) {
-      setError(error.message)
-    } else {
-      setDeleteConfirmId(null)
-      onReload()
-    }
+    if (error) { setError(error.message) } else { setDeleteConfirmId(null); onReload() }
+  }
+
+  async function handleDrop(toIndex) {
+    if (dragIndex === null || dragIndex === toIndex) { setDragIndex(null); setDropIndex(null); return }
+    const reordered = [...fields]
+    const [moved] = reordered.splice(dragIndex, 1)
+    reordered.splice(toIndex, 0, moved)
+    setDragIndex(null)
+    setDropIndex(null)
+    setSaving(true)
+    setError(null)
+    await Promise.all(reordered.map((f, i) => updateField(f.id, { display_order: i })))
+    setSaving(false)
+    onReload()
   }
 
   return (
@@ -195,50 +189,30 @@ function FieldsManager({ fields, onReload }) {
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
+              <th className="w-8"></th>
               <th className="text-left px-4 py-2.5 font-medium text-gray-600">Naam</th>
-              <th className="text-left px-4 py-2.5 w-32 font-medium text-gray-600">Volgorde</th>
               <th className="text-center px-4 py-2.5 w-24 font-medium text-gray-600">Actief</th>
               <th className="text-right px-4 py-2.5 w-32"></th>
             </tr>
           </thead>
           <tbody>
-            {/* --- Add new field row --- */}
             {adding && (
               <tr>
+                <td></td>
                 <td colSpan={3} className="px-4 py-2 bg-vvz-green/5">
                   <form onSubmit={handleSaveAdd} className="flex items-center gap-3">
                     <input
                       type="text"
                       value={addForm.name}
-                      onChange={e => setAddForm({ ...addForm, name: e.target.value })}
+                      onChange={e => setAddForm({ name: e.target.value })}
                       className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
                       placeholder="Veldnaam, bijv. Veld 1A"
                       autoFocus
                       aria-label="Veldnaam"
                     />
-                    <input
-                      type="number"
-                      value={addForm.display_order}
-                      onChange={e => setAddForm({ ...addForm, display_order: e.target.value })}
-                      className="w-24 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
-                      placeholder="Volgorde"
-                      aria-label="Volgorde"
-                    />
                     <div className="flex gap-2 shrink-0">
-                      <button
-                        type="submit"
-                        disabled={saving || !addForm.name.trim()}
-                        className="bg-vvz-green text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors disabled:opacity-50"
-                      >
-                        Toevoegen
-                      </button>
-                      <button
-                        type="button"
-                        onClick={cancelAdd}
-                        className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors"
-                      >
-                        Annuleer
-                      </button>
+                      <button type="submit" disabled={saving || !addForm.name.trim()} className="bg-vvz-green text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors disabled:opacity-50">Toevoegen</button>
+                      <button type="button" onClick={cancelAdd} className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors">Annuleer</button>
                     </div>
                   </form>
                 </td>
@@ -246,115 +220,81 @@ function FieldsManager({ fields, onReload }) {
             )}
 
             {fields.map((field, i) => (
-              <tr key={field.id} className={`group ${field.active === false ? 'opacity-50' : i % 2 === 0 ? 'bg-white' : 'bg-gray-300'}`}>
+              <tr
+                key={field.id}
+                draggable={editId !== field.id && deleteConfirmId !== field.id}
+                onDragStart={() => setDragIndex(i)}
+                onDragOver={e => { e.preventDefault(); setDropIndex(i) }}
+                onDragLeave={() => setDropIndex(null)}
+                onDrop={() => handleDrop(i)}
+                onDragEnd={() => { setDragIndex(null); setDropIndex(null) }}
+                className={`group transition-colors ${
+                  dropIndex === i && dragIndex !== i ? 'border-t-2 border-vvz-green' :
+                  dragIndex === i ? 'opacity-40' :
+                  field.active === false ? 'opacity-50' :
+                  i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                }`}
+              >
                 {editId === field.id ? (
-                  /* --- Inline edit mode --- */
-                  <td colSpan={3} className="px-4 py-2 bg-vvz-green/5">
-                    <form onSubmit={handleSaveEdit} className="flex items-center gap-3">
-                      <input
-                        type="text"
-                        value={editForm.name}
-                        onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                        className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
-                        placeholder="Veldnaam"
-                        autoFocus
-                        aria-label="Veldnaam"
-                      />
-                      <input
-                        type="number"
-                        value={editForm.display_order}
-                        onChange={e => setEditForm({ ...editForm, display_order: e.target.value })}
-                        className="w-24 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
-                        placeholder="Volgorde"
-                        aria-label="Volgorde"
-                      />
-                      <div className="flex gap-2 shrink-0">
-                        <button
-                          type="submit"
-                          disabled={saving || !editForm.name.trim()}
-                          className="bg-vvz-green text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors disabled:opacity-50"
-                        >
-                          Opslaan
-                        </button>
-                        <button
-                          type="button"
-                          onClick={cancelEdit}
-                          className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors"
-                        >
-                          Annuleer
-                        </button>
-                      </div>
-                    </form>
-                  </td>
-                ) : deleteConfirmId === field.id ? (
-                  /* --- Inline delete confirmation --- */
-                  <td colSpan={3} className="px-4 py-2 bg-red-50">
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-gray-700 flex-1">
-                        <strong>{field.name}</strong> verwijderen? Dit kan niet ongedaan worden.
-                      </span>
-                      <div className="flex gap-2 shrink-0">
-                        <button
-                          onClick={() => handleDelete(field.id)}
-                          disabled={saving}
-                          className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
-                        >
-                          Ja, verwijder
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirmId(null)}
-                          className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors"
-                        >
-                          Annuleer
-                        </button>
-                      </div>
-                    </div>
-                  </td>
-                ) : (
-                  /* --- Display mode --- */
                   <>
-                    <td className="px-4 py-2.5 font-medium text-gray-800">
-                      {field.name}
+                    <td></td>
+                    <td colSpan={3} className="px-4 py-2 bg-vvz-green/5">
+                      <form onSubmit={handleSaveEdit} className="flex items-center gap-3">
+                        <input
+                          type="text"
+                          value={editForm.name}
+                          onChange={e => setEditForm({ name: e.target.value })}
+                          className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
+                          placeholder="Veldnaam"
+                          autoFocus
+                          aria-label="Veldnaam"
+                        />
+                        <div className="flex gap-2 shrink-0">
+                          <button type="submit" disabled={saving || !editForm.name.trim()} className="bg-vvz-green text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors disabled:opacity-50">Opslaan</button>
+                          <button type="button" onClick={cancelEdit} className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors">Annuleer</button>
+                        </div>
+                      </form>
                     </td>
-                    <td className="px-4 py-2.5 text-gray-500">
-                      {field.display_order}
+                  </>
+                ) : deleteConfirmId === field.id ? (
+                  <>
+                    <td></td>
+                    <td colSpan={3} className="px-4 py-2 bg-red-50">
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-gray-700 flex-1"><strong>{field.name}</strong> verwijderen? Dit kan niet ongedaan worden.</span>
+                        <div className="flex gap-2 shrink-0">
+                          <button onClick={() => handleDelete(field.id)} disabled={saving} className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50">Ja, verwijder</button>
+                          <button onClick={() => setDeleteConfirmId(null)} className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors">Annuleer</button>
+                        </div>
+                      </div>
                     </td>
+                  </>
+                ) : (
+                  <>
+                    <td className="pl-3 text-gray-300 cursor-grab active:cursor-grabbing">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm8-12a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/>
+                      </svg>
+                    </td>
+                    <td className="px-4 py-2.5 font-medium text-gray-800">{field.name}</td>
                     <td className="px-4 py-2.5 text-center">
                       <button
                         onClick={() => handleToggleActive(field)}
                         disabled={saving}
                         aria-label={field.active === false ? `${field.name} activeren` : `${field.name} deactiveren`}
                         title={field.active === false ? 'Activeren' : 'Deactiveren'}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50 ${
-                          field.active === false ? 'bg-gray-300' : 'bg-vvz-green'
-                        }`}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50 ${field.active === false ? 'bg-gray-300' : 'bg-vvz-green'}`}
                       >
-                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-                          field.active === false ? 'translate-x-1' : 'translate-x-4'
-                        }`} />
+                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${field.active === false ? 'translate-x-1' : 'translate-x-4'}`} />
                       </button>
                     </td>
                     <td className="px-4 py-2.5 text-right">
                       <div className="flex gap-1 justify-end">
-                        <button
-                          onClick={() => startEdit(field)}
-                          className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors"
-                          aria-label={`${field.name} bewerken`}
-                          title="Bewerken"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                          </svg>
+                        <button onClick={() => startEdit(field)} className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors" aria-label={`${field.name} bewerken`} title="Bewerken">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                         </button>
-                        <button
-                          onClick={() => { setDeleteConfirmId(field.id); setEditId(null) }}
-                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          aria-label={`${field.name} verwijderen`}
-                          title="Verwijderen"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
+                        <button onClick={() => { setDeleteConfirmId(field.id); setEditId(null) }} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" aria-label={`${field.name} verwijderen`} title="Verwijderen">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
                       </div>
                     </td>
