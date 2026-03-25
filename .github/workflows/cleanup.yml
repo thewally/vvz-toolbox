@@ -1,0 +1,59 @@
+name: Wekelijkse opschoning
+
+on:
+  schedule:
+    # Iedere maandag om 03:00 UTC
+    - cron: '0 3 * * 1'
+  workflow_dispatch: # Handmatig starten mogelijk via GitHub UI
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Opschonen oude activiteiten en verlopen schema's
+        uses: actions/github-script@v7
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        with:
+          script: |
+            const url = process.env.SUPABASE_URL;
+            const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+            const headers = {
+              'apikey': key,
+              'Authorization': `Bearer ${key}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=representation',
+            };
+
+            // Datum 60 dagen geleden (activiteiten ouder dan dit worden verwijderd)
+            const cutoff = new Date();
+            cutoff.setDate(cutoff.getDate() - 60);
+            const cutoffStr = cutoff.toISOString().slice(0, 10);
+
+            // Vandaag (voor verlopen schema's)
+            const today = new Date().toISOString().slice(0, 10);
+
+            // 1. Verwijder oude activiteiten (sort_date > 60 dagen geleden)
+            const activitiesRes = await fetch(
+              `${url}/rest/v1/activities?sort_date=lt.${cutoffStr}`,
+              { method: 'DELETE', headers }
+            );
+            if (!activitiesRes.ok) {
+              const text = await activitiesRes.text();
+              throw new Error(`Activiteiten opschonen mislukt: ${text}`);
+            }
+            console.log(`Activiteiten ouder dan ${cutoffStr} verwijderd.`);
+
+            // 2. Verwijder inactieve schema's waarvan valid_until in het verleden ligt
+            //    (training_slots worden via CASCADE mee verwijderd)
+            const schedulesRes = await fetch(
+              `${url}/rest/v1/schedules?active=eq.false&valid_until=lt.${today}&valid_until=not.is.null`,
+              { method: 'DELETE', headers }
+            );
+            if (!schedulesRes.ok) {
+              const text = await schedulesRes.text();
+              throw new Error(`Schema's opschonen mislukt: ${text}`);
+            }
+            console.log(`Verlopen inactieve schema's (valid_until < ${today}) verwijderd.`);
