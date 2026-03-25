@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchTeams, createTeam, updateTeam, deleteTeam } from '../services/teams'
 import { fetchFields, createField, updateField, deleteField } from '../services/fields'
-import { fetchSchedules, createSchedule, updateSchedule, deleteSchedule, setActiveSchedule } from '../services/schedules'
+import { fetchSchedules, createSchedule, updateSchedule, deleteSchedule, toggleScheduleActive, copySchedule } from '../services/schedules'
 import { supabase } from '../lib/supabaseClient'
 
 export default function AdminPage() {
@@ -10,7 +10,7 @@ export default function AdminPage() {
   const [schedules, setSchedules] = useState([])
   const [usedTeamIds, setUsedTeamIds] = useState(new Set())
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('teams')
+  const [activeTab, setActiveTab] = useState('schedules')
 
   useEffect(() => {
     loadAll()
@@ -44,6 +44,16 @@ export default function AdminPage() {
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
         <button
+          onClick={() => setActiveTab('schedules')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'schedules'
+              ? 'bg-vvz-green text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Schema's
+        </button>
+        <button
           onClick={() => setActiveTab('teams')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             activeTab === 'teams'
@@ -63,21 +73,11 @@ export default function AdminPage() {
         >
           Velden
         </button>
-        <button
-          onClick={() => setActiveTab('schedules')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeTab === 'schedules'
-              ? 'bg-vvz-green text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
-        >
-          Schema's
-        </button>
       </div>
 
       {activeTab === 'teams' && <TeamsManager teams={teams} usedTeamIds={usedTeamIds} onReload={loadAll} />}
       {activeTab === 'fields' && <FieldsManager fields={fields} onReload={loadAll} />}
-      {activeTab === 'schedules' && <SchedulesManager schedules={schedules} onReload={loadAll} />}
+      {activeTab === 'schedules' && <SchedulesManager schedules={schedules} onReload={async () => { const s = await fetchSchedules(); if (s.data) setSchedules(s.data) }} />}
     </div>
   )
 }
@@ -630,16 +630,15 @@ function SchedulesManager({ schedules, onReload }) {
   const [editId, setEditId] = useState(null)
   const [editForm, setEditForm] = useState({ name: '', valid_from: '', valid_until: '' })
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
-  const [activateConfirmId, setActivateConfirmId] = useState(null)
   const [adding, setAdding] = useState(false)
   const [addForm, setAddForm] = useState({ name: '', valid_from: '', valid_until: '' })
   const [saving, setSaving] = useState(false)
+  const [copyingId, setCopyingId] = useState(null)
   const [error, setError] = useState(null)
 
   function startEdit(schedule) {
     setAdding(false)
     setDeleteConfirmId(null)
-    setActivateConfirmId(null)
     setEditId(schedule.id)
     setEditForm({
       name: schedule.name,
@@ -658,7 +657,6 @@ function SchedulesManager({ schedules, onReload }) {
   function startAdd() {
     setEditId(null)
     setDeleteConfirmId(null)
-    setActivateConfirmId(null)
     setAdding(true)
     setAddForm({ name: '', valid_from: '', valid_until: '' })
     setError(null)
@@ -673,6 +671,10 @@ function SchedulesManager({ schedules, onReload }) {
   async function handleSaveEdit(e) {
     e.preventDefault()
     if (!editForm.name.trim()) return
+    if (editForm.valid_from && editForm.valid_until && editForm.valid_until <= editForm.valid_from) {
+      setError('Geldig tot moet na geldig van liggen.')
+      return
+    }
     setSaving(true)
     setError(null)
     const payload = {
@@ -688,6 +690,10 @@ function SchedulesManager({ schedules, onReload }) {
   async function handleSaveAdd(e) {
     e.preventDefault()
     if (!addForm.name.trim()) return
+    if (addForm.valid_from && addForm.valid_until && addForm.valid_until <= addForm.valid_from) {
+      setError('Geldig tot moet na geldig van liggen.')
+      return
+    }
     setSaving(true)
     setError(null)
     const payload = {
@@ -709,12 +715,20 @@ function SchedulesManager({ schedules, onReload }) {
     if (error) { setError(error.message) } else { setDeleteConfirmId(null); onReload() }
   }
 
-  async function handleActivate(id) {
+  async function handleCopy(id) {
+    setCopyingId(id)
+    setError(null)
+    const { error } = await copySchedule(id)
+    setCopyingId(null)
+    if (error) { setError(error.message) } else { onReload() }
+  }
+
+  async function handleToggleActive(id, active) {
     setSaving(true)
     setError(null)
-    const { error } = await setActiveSchedule(id)
+    const { error } = await toggleScheduleActive(id, active)
     setSaving(false)
-    if (error) { setError(error.message) } else { setActivateConfirmId(null); onReload() }
+    if (error) { setError(error.message) } else { onReload() }
   }
 
   function formatDate(d) {
@@ -841,48 +855,24 @@ function SchedulesManager({ schedules, onReload }) {
                       </div>
                     </div>
                   </td>
-                ) : activateConfirmId === schedule.id ? (
-                  <td colSpan={5} className="px-4 py-2 bg-blue-50">
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-gray-700 flex-1">
-                        <strong>{schedule.name}</strong> activeren? Het huidige actieve schema wordt op inactief gezet.
-                      </span>
-                      <div className="flex gap-2 shrink-0">
-                        <button onClick={() => handleActivate(schedule.id)} disabled={saving} className="bg-vvz-green text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors disabled:opacity-50">Ja, activeren</button>
-                        <button onClick={() => setActivateConfirmId(null)} className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors">Annuleer</button>
-                      </div>
-                    </div>
-                  </td>
                 ) : (
                   <>
                     <td className="px-4 py-2.5 font-medium text-gray-800">{schedule.name}</td>
                     <td className="px-4 py-2.5 text-gray-600">{formatDate(schedule.valid_from)}</td>
                     <td className="px-4 py-2.5 text-gray-600">{formatDate(schedule.valid_until)}</td>
                     <td className="px-4 py-2.5 text-center">
-                      {schedule.active ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
-                          Actief
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                          Concept
-                        </span>
-                      )}
+                      <button
+                        onClick={() => handleToggleActive(schedule.id, !schedule.active)}
+                        disabled={saving}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${schedule.active ? 'bg-vvz-green' : 'bg-gray-300'}`}
+                        aria-label={schedule.active ? `${schedule.name} deactiveren` : `${schedule.name} activeren`}
+                        title={schedule.active ? 'Deactiveren' : 'Activeren'}
+                      >
+                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${schedule.active ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+                      </button>
                     </td>
                     <td className="px-4 py-2.5 text-right">
                       <div className="flex gap-1 justify-end">
-                        {!schedule.active && (
-                          <button
-                            onClick={() => { setActivateConfirmId(schedule.id); setEditId(null); setDeleteConfirmId(null) }}
-                            className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            aria-label={`${schedule.name} activeren`}
-                            title="Activeren"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </button>
-                        )}
                         <button
                           onClick={() => startEdit(schedule)}
                           className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors"
@@ -894,7 +884,25 @@ function SchedulesManager({ schedules, onReload }) {
                           </svg>
                         </button>
                         <button
-                          onClick={() => { setDeleteConfirmId(schedule.id); setEditId(null); setActivateConfirmId(null) }}
+                          onClick={() => handleCopy(schedule.id)}
+                          disabled={copyingId !== null}
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                          aria-label={`${schedule.name} kopiëren`}
+                          title="Kopiëren"
+                        >
+                          {copyingId === schedule.id ? (
+                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                            </svg>
+                          ) : (
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => { setDeleteConfirmId(schedule.id); setEditId(null) }}
                           className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           aria-label={`${schedule.name} verwijderen`}
                           title="Verwijderen"

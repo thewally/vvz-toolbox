@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { fetchTrainingSlots, createTrainingSlot, updateTrainingSlot, deleteTrainingSlot } from '../services/trainingSlots'
 import { fetchActiveFields } from '../services/fields'
 import { fetchTeams } from '../services/teams'
-import { fetchActiveSchedule, fetchSchedules } from '../services/schedules'
+import { fetchActiveSchedules, fetchSchedules } from '../services/schedules'
 import { DAYS, TIME_SLOTS, timeToMinutes } from '../lib/constants'
 
 const SLOT_HEIGHT = 24 // px per 15-min row
@@ -28,7 +28,7 @@ export default function SchedulePage() {
   const { user } = useAuth()
   const isAdmin = !!user
 
-  const [activeSchedule, setActiveSchedule] = useState(null)
+  const [activeSchedules, setActiveSchedules] = useState([])
   const [allSchedules, setAllSchedules] = useState([])
   const [selectedScheduleId, setSelectedScheduleId] = useState(null)
   const [slots, setSlots] = useState([])
@@ -201,24 +201,41 @@ export default function SchedulePage() {
   const loadData = useCallback(async () => {
     setLoading(true)
 
-    // Haal schema-informatie op
-    const scheduleRes = await fetchActiveSchedule()
-    const active = scheduleRes.data || null
-    setActiveSchedule(active)
+    // Haal actieve schema's op
+    const scheduleRes = await fetchActiveSchedules()
+    const actives = scheduleRes.data || []
+    setActiveSchedules(actives)
 
     // Admin kan alle schema's zien en wisselen
     if (isAdmin) {
       const allRes = await fetchSchedules()
       const all = allRes.data || []
       setAllSchedules(all)
-      // Als er nog geen selectie is, kies het actieve schema (of het eerste)
+      // Als er nog geen selectie is, kies het schema dat geldig is vandaag, anders het eerste actieve, anders het eerste
       if (!selectedScheduleId) {
-        setSelectedScheduleId(active?.id || (all.length > 0 ? all[0].id : null))
+        const today = new Date().toISOString().slice(0, 10)
+        const current = all.find(s =>
+          (!s.valid_from || s.valid_from <= today) &&
+          (!s.valid_until || s.valid_until >= today)
+        )
+        setSelectedScheduleId(current?.id || actives[0]?.id || (all.length > 0 ? all[0].id : null))
       }
     }
 
+    // Voor publieke weergave: initialiseer selectie op het schema dat vandaag geldig is
+    let resolvedId = selectedScheduleId
+    if (!resolvedId && actives.length > 0) {
+      const today = new Date().toISOString().slice(0, 10)
+      const current = actives.find(s =>
+        (!s.valid_from || s.valid_from <= today) &&
+        (!s.valid_until || s.valid_until >= today)
+      )
+      resolvedId = current?.id || actives[0].id
+      if (!isAdmin) setSelectedScheduleId(resolvedId)
+    }
+
     // Bepaal welk schema geladen moet worden
-    const scheduleId = isAdmin ? (selectedScheduleId || active?.id) : active?.id
+    const scheduleId = resolvedId
 
     if (!scheduleId) {
       setSlots([])
@@ -679,7 +696,7 @@ export default function SchedulePage() {
     )
   }
 
-  if (!isAdmin && !activeSchedule) {
+  if (!isAdmin && activeSchedules.length === 0) {
     return (
       <div className="max-w-4xl mx-auto p-4">
         <div className="bg-gray-50 text-gray-600 p-6 rounded-lg text-center">
@@ -722,9 +739,19 @@ export default function SchedulePage() {
               </span>
             )}
           </>
-        ) : activeSchedule ? (
+        ) : activeSchedules.length > 1 ? (
+          <select
+            value={selectedScheduleId || ''}
+            onChange={e => setSelectedScheduleId(e.target.value)}
+            className="text-xs font-medium text-gray-700 bg-gray-100 border border-gray-200 px-2 py-1 rounded-lg outline-none focus:ring-2 focus:ring-vvz-green"
+          >
+            {activeSchedules.map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        ) : activeSchedules.length === 1 ? (
           <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-            {activeSchedule.name}
+            {activeSchedules[0].name}
           </span>
         ) : null}
       </div>
@@ -814,7 +841,7 @@ export default function SchedulePage() {
           popover={popover}
           teams={teams}
           fields={fields}
-          scheduleId={isAdmin ? selectedScheduleId : activeSchedule?.id}
+          scheduleId={selectedScheduleId || activeSchedules[0]?.id}
           onSaved={handlePopoverSaved}
           onDeleted={handlePopoverDeleted}
           onClose={() => setPopover(null)}
