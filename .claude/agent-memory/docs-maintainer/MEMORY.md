@@ -1,0 +1,1 @@
+- [project_supabase_migration.md](project_supabase_migration.md) -- Activiteiten opgeslagen in Supabase, admin interface op /admin/

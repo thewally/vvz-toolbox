@@ -151,8 +151,7 @@ Via junction tables:
 |---|---|---|
 | `id` | uuid | Primaire sleutel |
 | `name` | text | Teamnaam (bijv. `JO11-1`, `Selectie`) |
-| `display_order` | integer | Volgorde |
-| `color` | text | HEX-kleur voor weergave in het schema |
+| `category` | text | Categorie: `Pupillen`, `Junioren`, `Senioren`, `Veteranen` of `null` |
 
 ### Row Level Security
 

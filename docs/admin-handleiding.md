@@ -37,10 +37,10 @@ Na het inloggen verschijnt een **Uitloggen**-knop rechtsboven.
 | Veld | Verplicht | Omschrijving |
 |---|---|---|
 | **Titel** | ja | Naam van de activiteit |
-| **Type datum** | ja | Kies uit: *Enkele datum*, *Datumbereik* of *Datumlijst* |
+| **Type datum** | ja | Kies uit: *Enkele datum*, *Periode* of *Datumlijst* |
 | **Datum** | ja* | Datum (bij enkele datum) |
-| **Begindatum / Einddatum** | ja* | Begin- en einddatum (bij datumbereik) |
-| **Datums** | ja* | Lijst van losse datums (bij datumlijst) |
+| **Startdatum / Einddatum** | ja* | Startdatum verplicht, einddatum optioneel (bij periode) |
+| **Datums** | ja* | Lijst van losse datums in `jjjj-mm-dd`-formaat, één per regel (bij datumlijst) |
 | **Starttijd** | nee | Bijv. `14:00` |
 | **Eindtijd** | nee | Bijv. `16:00` |
 | **Omschrijving** | nee | Korte beschrijving |
@@ -52,47 +52,39 @@ Na het inloggen verschijnt een **Uitloggen**-knop rechtsboven.
 
 **Enkele datum** — activiteit op één dag, zoals een wedstrijd of vergadering.
 
-**Datumbereik** — aaneengesloten meerdaagse activiteit, zoals een zomerkamp.
+**Periode** — aaneengesloten meerdaagse activiteit, zoals een zomerkamp. Vul een startdatum in; de einddatum is optioneel.
 
-**Datumlijst** — terugkerende activiteit op losse datums. Elke datum verschijnt als aparte kaart in de agenda, maar wordt als groep beheerd.
+**Datumlijst** — terugkerende activiteit op losse datums. Voer de datums in het formaat `jjjj-mm-dd` in, één per regel. Elke datum verschijnt als aparte kaart in de agenda, maar wordt als groep beheerd.
 
 ### Activiteit bewerken
 
-1. Ga naar het tabblad **Activiteiten**
-2. Klik op **Bewerken** bij de gewenste activiteit
-3. Pas de gegevens aan en klik op **Opslaan**
+1. Ga naar **Agenda → Beheer**
+2. Klik op het potlood-icoontje bij de gewenste activiteit in de lijst
+3. Pas de gegevens aan en klik op **Wijziging opslaan**
 
 ### Activiteit verwijderen
 
-1. Ga naar het tabblad **Activiteiten**
-2. Klik op **Verwijderen** bij de gewenste activiteit
+1. Ga naar **Agenda → Beheer**
+2. Klik op het prullenbak-icoontje bij de gewenste activiteit in de lijst
 3. Bevestig de verwijdering
 
-Bij activiteiten van het type *Datumlijst* worden alle datums in de groep verwijderd.
+Bij activiteiten van het type *Datumlijst* worden alle datums in de reeks verwijderd.
 
 ---
 
 ## Trainingsschema beheren
 
-### Trainingsslot toevoegen
-
-1. Ga naar **Trainingsschema → Beheer**
-2. Klik op het tabblad **Tijdslots**
-3. Klik op **Nieuw tijdslot**
-4. Vul dag, tijdstip, veld(en) en team(s) in
-5. Klik op **Opslaan**
-
-Je kunt ook direct in het schema klikken en slepen om een nieuw tijdslot aan te maken (als je bent ingelogd).
-
-### Trainingsslot bewerken of verwijderen
-
-Klik op een bestaand blok in het schema om het te bewerken of te verwijderen.
+De beheerpagina voor het trainingsschema bevat twee tabbladen: **Teams** en **Velden**.
 
 ### Teams beheren
 
-1. Ga naar **Trainingsschema → Beheer**
+1. Ga naar **Trainingsschema → Beheer** (het tabblad "Beheer" verschijnt alleen als je ingelogd bent)
 2. Klik op het tabblad **Teams**
-3. Voeg teams toe, bewerk of verwijder ze via de tabelrijen
+3. Voeg teams toe, bewerk namen en categorie, of verwijder ze via de tabelrijen
+
+Teams zijn ingedeeld in categorieën: **Pupillen**, **Junioren**, **Senioren** en **Veteranen**. Bij het toevoegen of bewerken van een team kun je een categorie kiezen.
+
+Teams die nog aan geen enkel trainingsslot zijn gekoppeld, worden gemarkeerd met "Niet ingepland in een training".
 
 ### Velden beheren
 
