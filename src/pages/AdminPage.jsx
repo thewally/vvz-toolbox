@@ -1,0 +1,668 @@
+import { useEffect, useState } from 'react'
+import { fetchTeams, createTeam, updateTeam, deleteTeam } from '../services/teams'
+import { fetchFields, createField, updateField, deleteField } from '../services/fields'
+import { supabase } from '../lib/supabaseClient'
+
+export default function AdminPage() {
+  const [teams, setTeams] = useState([])
+  const [fields, setFields] = useState([])
+  const [usedTeamIds, setUsedTeamIds] = useState(new Set())
+  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('teams')
+
+  useEffect(() => {
+    loadAll()
+  }, [])
+
+  async function loadAll() {
+    setLoading(true)
+    const [t, f, u] = await Promise.all([
+      fetchTeams(),
+      fetchFields(),
+      supabase.from('training_slot_teams').select('team_id'),
+    ])
+    if (t.data) setTeams(t.data)
+    if (f.data) setFields(f.data)
+    if (u.data) setUsedTeamIds(new Set(u.data.map(r => r.team_id)))
+    setLoading(false)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-vvz-green"></div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-5xl mx-auto p-4">
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6">
+        <button
+          onClick={() => setActiveTab('teams')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'teams'
+              ? 'bg-vvz-green text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Teams
+        </button>
+        <button
+          onClick={() => setActiveTab('fields')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'fields'
+              ? 'bg-vvz-green text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Velden
+        </button>
+      </div>
+
+      {activeTab === 'teams' && <TeamsManager teams={teams} usedTeamIds={usedTeamIds} onReload={loadAll} />}
+      {activeTab === 'fields' && <FieldsManager fields={fields} onReload={loadAll} />}
+    </div>
+  )
+}
+
+/* ─── FieldsManager ────────────────────────────────────────────────── */
+
+function FieldsManager({ fields, onReload }) {
+  const [editId, setEditId] = useState(null)
+  const [editForm, setEditForm] = useState({ name: '', display_order: 0 })
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null)
+  const [adding, setAdding] = useState(false)
+  const [addForm, setAddForm] = useState({ name: '', display_order: 0 })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+
+  function startEdit(field) {
+    setAdding(false)
+    setDeleteConfirmId(null)
+    setEditId(field.id)
+    setEditForm({ name: field.name, display_order: field.display_order ?? 0 })
+    setError(null)
+  }
+
+  function cancelEdit() {
+    setEditId(null)
+    setEditForm({ name: '', display_order: 0 })
+    setError(null)
+  }
+
+  function startAdd() {
+    setEditId(null)
+    setDeleteConfirmId(null)
+    setAdding(true)
+    const nextOrder = fields.length > 0 ? Math.max(...fields.map(f => f.display_order ?? 0)) + 1 : 0
+    setAddForm({ name: '', display_order: nextOrder })
+    setError(null)
+  }
+
+  function cancelAdd() {
+    setAdding(false)
+    setAddForm({ name: '', display_order: 0 })
+    setError(null)
+  }
+
+  async function handleSaveEdit(e) {
+    e.preventDefault()
+    if (!editForm.name.trim()) return
+    setSaving(true)
+    setError(null)
+    const { error } = await updateField(editId, {
+      name: editForm.name,
+      display_order: Number(editForm.display_order),
+    })
+    setSaving(false)
+    if (error) {
+      setError(error.message)
+    } else {
+      cancelEdit()
+      onReload()
+    }
+  }
+
+  async function handleToggleActive(field) {
+    setSaving(true)
+    setError(null)
+    const { error } = await updateField(field.id, { active: !field.active })
+    setSaving(false)
+    if (error) setError(error.message)
+    else onReload()
+  }
+
+  async function handleSaveAdd(e) {
+    e.preventDefault()
+    if (!addForm.name.trim()) return
+    setSaving(true)
+    setError(null)
+    const { error } = await createField({
+      name: addForm.name,
+      display_order: Number(addForm.display_order),
+      active: true,
+    })
+    setSaving(false)
+    if (error) {
+      setError(error.message)
+    } else {
+      cancelAdd()
+      onReload()
+    }
+  }
+
+  async function handleDelete(id) {
+    setSaving(true)
+    setError(null)
+    const { error } = await deleteField(id)
+    setSaving(false)
+    if (error) {
+      setError(error.message)
+    } else {
+      setDeleteConfirmId(null)
+      onReload()
+    }
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-end mb-3">
+        {!adding && (
+          <button
+            onClick={startAdd}
+            className="flex items-center gap-1.5 text-sm bg-vvz-green text-white px-3 py-1.5 rounded-lg font-medium hover:bg-vvz-green-dark transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Veld toevoegen
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg mb-4 flex items-center gap-2">
+          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {error}
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl shadow overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="text-left px-4 py-2.5 font-medium text-gray-600">Naam</th>
+              <th className="text-left px-4 py-2.5 w-32 font-medium text-gray-600">Volgorde</th>
+              <th className="text-center px-4 py-2.5 w-24 font-medium text-gray-600">Actief</th>
+              <th className="text-right px-4 py-2.5 w-32"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* --- Add new field row --- */}
+            {adding && (
+              <tr>
+                <td colSpan={3} className="px-4 py-2 bg-vvz-green/5">
+                  <form onSubmit={handleSaveAdd} className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      value={addForm.name}
+                      onChange={e => setAddForm({ ...addForm, name: e.target.value })}
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
+                      placeholder="Veldnaam, bijv. Veld 1A"
+                      autoFocus
+                      aria-label="Veldnaam"
+                    />
+                    <input
+                      type="number"
+                      value={addForm.display_order}
+                      onChange={e => setAddForm({ ...addForm, display_order: e.target.value })}
+                      className="w-24 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
+                      placeholder="Volgorde"
+                      aria-label="Volgorde"
+                    />
+                    <div className="flex gap-2 shrink-0">
+                      <button
+                        type="submit"
+                        disabled={saving || !addForm.name.trim()}
+                        className="bg-vvz-green text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors disabled:opacity-50"
+                      >
+                        Toevoegen
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelAdd}
+                        className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors"
+                      >
+                        Annuleer
+                      </button>
+                    </div>
+                  </form>
+                </td>
+              </tr>
+            )}
+
+            {fields.map((field, i) => (
+              <tr key={field.id} className={`group ${field.active === false ? 'opacity-50' : i % 2 === 0 ? 'bg-white' : 'bg-gray-300'}`}>
+                {editId === field.id ? (
+                  /* --- Inline edit mode --- */
+                  <td colSpan={3} className="px-4 py-2 bg-vvz-green/5">
+                    <form onSubmit={handleSaveEdit} className="flex items-center gap-3">
+                      <input
+                        type="text"
+                        value={editForm.name}
+                        onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                        className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
+                        placeholder="Veldnaam"
+                        autoFocus
+                        aria-label="Veldnaam"
+                      />
+                      <input
+                        type="number"
+                        value={editForm.display_order}
+                        onChange={e => setEditForm({ ...editForm, display_order: e.target.value })}
+                        className="w-24 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
+                        placeholder="Volgorde"
+                        aria-label="Volgorde"
+                      />
+                      <div className="flex gap-2 shrink-0">
+                        <button
+                          type="submit"
+                          disabled={saving || !editForm.name.trim()}
+                          className="bg-vvz-green text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors disabled:opacity-50"
+                        >
+                          Opslaan
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors"
+                        >
+                          Annuleer
+                        </button>
+                      </div>
+                    </form>
+                  </td>
+                ) : deleteConfirmId === field.id ? (
+                  /* --- Inline delete confirmation --- */
+                  <td colSpan={3} className="px-4 py-2 bg-red-50">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-gray-700 flex-1">
+                        <strong>{field.name}</strong> verwijderen? Dit kan niet ongedaan worden.
+                      </span>
+                      <div className="flex gap-2 shrink-0">
+                        <button
+                          onClick={() => handleDelete(field.id)}
+                          disabled={saving}
+                          className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+                        >
+                          Ja, verwijder
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirmId(null)}
+                          className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors"
+                        >
+                          Annuleer
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                ) : (
+                  /* --- Display mode --- */
+                  <>
+                    <td className="px-4 py-2.5 font-medium text-gray-800">
+                      {field.name}
+                    </td>
+                    <td className="px-4 py-2.5 text-gray-500">
+                      {field.display_order}
+                    </td>
+                    <td className="px-4 py-2.5 text-center">
+                      <button
+                        onClick={() => handleToggleActive(field)}
+                        disabled={saving}
+                        aria-label={field.active === false ? `${field.name} activeren` : `${field.name} deactiveren`}
+                        title={field.active === false ? 'Activeren' : 'Deactiveren'}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50 ${
+                          field.active === false ? 'bg-gray-300' : 'bg-vvz-green'
+                        }`}
+                      >
+                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                          field.active === false ? 'translate-x-1' : 'translate-x-4'
+                        }`} />
+                      </button>
+                    </td>
+                    <td className="px-4 py-2.5 text-right">
+                      <div className="flex gap-1 justify-end">
+                        <button
+                          onClick={() => startEdit(field)}
+                          className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors"
+                          aria-label={`${field.name} bewerken`}
+                          title="Bewerken"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => { setDeleteConfirmId(field.id); setEditId(null) }}
+                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          aria-label={`${field.name} verwijderen`}
+                          title="Verwijderen"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/* ─── TeamsManager ─────────────────────────────────────────────────── */
+
+function TeamsManager({ teams, usedTeamIds, onReload }) {
+  const CATEGORIES = ['Pupillen', 'Junioren', 'Senioren', 'Veteranen']
+
+  const [editId, setEditId] = useState(null)
+  const [editForm, setEditForm] = useState({ name: '', category: '' })
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null)
+  const [adding, setAdding] = useState(false)
+  const [addForm, setAddForm] = useState({ name: '', category: '' })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+
+  function startEdit(team) {
+    setAdding(false)
+    setDeleteConfirmId(null)
+    setEditId(team.id)
+    setEditForm({ name: team.name, category: team.category || '' })
+    setError(null)
+  }
+
+  function cancelEdit() {
+    setEditId(null)
+    setEditForm({ name: '', category: '' })
+    setError(null)
+  }
+
+  function startAdd() {
+    setEditId(null)
+    setDeleteConfirmId(null)
+    setAdding(true)
+    setAddForm({ name: '', category: '' })
+    setError(null)
+  }
+
+  function cancelAdd() {
+    setAdding(false)
+    setAddForm({ name: '', category: '' })
+    setError(null)
+  }
+
+  async function handleSaveEdit(e) {
+    e.preventDefault()
+    if (!editForm.name.trim()) return
+    setSaving(true)
+    setError(null)
+    const payload = { name: editForm.name, category: editForm.category || null }
+    const { error } = await updateTeam(editId, payload)
+    setSaving(false)
+    if (error) {
+      setError(error.message)
+    } else {
+      cancelEdit()
+      onReload()
+    }
+  }
+
+  async function handleSaveAdd(e) {
+    e.preventDefault()
+    if (!addForm.name.trim()) return
+    setSaving(true)
+    setError(null)
+    const payload = { name: addForm.name, category: addForm.category || null }
+    const { error } = await createTeam(payload)
+    setSaving(false)
+    if (error) {
+      setError(error.message)
+    } else {
+      cancelAdd()
+      onReload()
+    }
+  }
+
+  async function handleDelete(id) {
+    setSaving(true)
+    setError(null)
+    const { error } = await deleteTeam(id)
+    setSaving(false)
+    if (error) {
+      setError(error.message)
+    } else {
+      setDeleteConfirmId(null)
+      onReload()
+    }
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-end mb-3">
+        {!adding && (
+          <button
+            onClick={startAdd}
+            className="flex items-center gap-1.5 text-sm bg-vvz-green text-white px-3 py-1.5 rounded-lg font-medium hover:bg-vvz-green-dark transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Team toevoegen
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg mb-4 flex items-center gap-2">
+          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {error}
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl shadow overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="text-left px-4 py-2.5 font-medium text-gray-600"></th>
+              <th className="text-right px-4 py-2.5 w-40"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* --- Add new team row --- */}
+            {adding && (
+              <tr>
+                <td colSpan={2} className="px-4 py-2 bg-vvz-green/5">
+                  <form onSubmit={handleSaveAdd} className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      value={addForm.name}
+                      onChange={e => setAddForm({ ...addForm, name: e.target.value })}
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
+                      placeholder="Nieuwe teamnaam, bijv. JO13-1"
+                      autoFocus
+                      aria-label="Teamnaam"
+                    />
+                    <select
+                      value={addForm.category}
+                      onChange={e => setAddForm({ ...addForm, category: e.target.value })}
+                      className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
+                      aria-label="Categorie"
+                    >
+                      <option value="">Geen categorie</option>
+                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <div className="flex gap-2 shrink-0">
+                      <button
+                        type="submit"
+                        disabled={saving || !addForm.name.trim()}
+                        className="bg-vvz-green text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors disabled:opacity-50"
+                      >
+                        Toevoegen
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelAdd}
+                        className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors"
+                      >
+                        Annuleer
+                      </button>
+                    </div>
+                  </form>
+                </td>
+              </tr>
+            )}
+            {(() => {
+              const ORDER = ['Pupillen', 'Junioren', 'Senioren', 'Veteranen']
+              const grouped = {}
+              teams.forEach(t => {
+                const cat = t.category || 'Overig'
+                if (!grouped[cat]) grouped[cat] = []
+                grouped[cat].push(t)
+              })
+              const cats = [...ORDER.filter(c => grouped[c]), ...Object.keys(grouped).filter(c => !ORDER.includes(c))]
+              let rowIndex = 0
+              return cats.flatMap(cat => [
+                <tr key={`header-${cat}`}>
+                  <td colSpan={2} className="px-4 py-2 bg-vvz-green text-xs font-bold text-white uppercase tracking-wider border-t-8 border-t-white border-b border-vvz-green-dark">
+                    {cat}
+                  </td>
+                </tr>,
+                ...grouped[cat].sort((a, b) => a.name.localeCompare(b.name)).map(team => {
+                  const i = rowIndex++
+                  return (
+              <tr key={team.id} className={`group ${i % 2 === 0 ? 'bg-white' : 'bg-gray-300'}`}>
+                {editId === team.id ? (
+                  /* --- Inline edit mode --- */
+                  <td colSpan={2} className="px-4 py-2 bg-vvz-green/5">
+                    <form onSubmit={handleSaveEdit} className="flex items-center gap-3">
+                      <input
+                        type="text"
+                        value={editForm.name}
+                        onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                        className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
+                        placeholder="Teamnaam"
+                        autoFocus
+                        aria-label="Teamnaam"
+                      />
+                      <select
+                        value={editForm.category}
+                        onChange={e => setEditForm({ ...editForm, category: e.target.value })}
+                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
+                        aria-label="Categorie"
+                      >
+                        <option value="">Geen categorie</option>
+                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                      <div className="flex gap-2 shrink-0">
+                        <button
+                          type="submit"
+                          disabled={saving || !editForm.name.trim()}
+                          className="bg-vvz-green text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors disabled:opacity-50"
+                        >
+                          Opslaan
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors"
+                        >
+                          Annuleer
+                        </button>
+                      </div>
+                    </form>
+                  </td>
+                ) : deleteConfirmId === team.id ? (
+                  /* --- Inline delete confirmation --- */
+                  <td colSpan={2} className="px-4 py-2 bg-red-50">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-gray-700 flex-1">
+                        <strong>{team.name}</strong> verwijderen? Dit kan niet ongedaan worden.
+                      </span>
+                      <div className="flex gap-2 shrink-0">
+                        <button
+                          onClick={() => handleDelete(team.id)}
+                          disabled={saving}
+                          className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+                        >
+                          Ja, verwijder
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirmId(null)}
+                          className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors"
+                        >
+                          Annuleer
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                ) : (
+                  /* --- Display mode --- */
+                  <>
+                    <td className="px-4 py-2.5 font-medium text-gray-800">
+                      <span className="flex items-center gap-2">
+                        {team.name}
+                        {!usedTeamIds.has(team.id) && (
+                          <span className="text-xs font-normal text-orange-400">Niet ingepland in een training</span>
+                        )}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5 text-right">
+                      <div className="flex gap-1 justify-end">
+                        <button
+                          onClick={() => startEdit(team)}
+                          className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors"
+                          aria-label={`${team.name} bewerken`}
+                          title="Bewerken"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => { setDeleteConfirmId(team.id); setEditId(null) }}
+                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          aria-label={`${team.name} verwijderen`}
+                          title="Verwijderen"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </>
+                )}
+                  </tr>
+                  )
+                })
+              ])
+            })()}
+
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+  )
+}

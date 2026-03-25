@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reserveer altijd ruimte voor de scrollbar zodat de layout niet verschuift */
+html {
+  overflow-y: scroll;
+}
+
+/* Hide today highlight during PDF export */
+.pdf-export .day-section {
+  border-color: #e5e7eb !important;
+  box-shadow: none !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-offset-shadow: none !important;
+  --tw-ring-shadow: none !important;
+}
+.pdf-export .day-section > div:first-child {
+  background-color: #f9fafb !important;
+  color: #374151 !important;
+}
+.pdf-export .day-section > div:first-child .rounded-full {
+  display: none !important;
+}
+
+/* Vergroot tekst in PDF export zodat het leesbaar is op A4 */
+.pdf-export [data-day-export] .text-\[10px\],
+.pdf-export [data-day-export] .text-xs {
+  font-size: 11px !important;
+}
+.pdf-export [data-day-export] .text-\[11px\] {
+  font-size: 12px !important;
+}
+.pdf-export [data-day-export] .text-sm {
+  font-size: 13px !important;
+}
+
+/* Verwijder overflow clipping op trainingsblokken tijdens export */
+.pdf-export [data-training-block] {
+  overflow: visible !important;
+  padding: 4px !important;
+}
+.pdf-export [data-training-block] .truncate {
+  overflow: visible !important;
+  text-overflow: unset !important;
+  white-space: normal !important;
+}
+.pdf-export [data-training-block] span {
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
