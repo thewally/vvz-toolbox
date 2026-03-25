@@ -538,7 +538,7 @@ export default function AgendaBeheerPage() {
                   <td className="px-4 py-2.5 text-gray-500">
                     {isGroup
                       ? item.rows.map(r => formatSortDate(r.sort_date)).map((d, i, arr) => (
-                          <span key={i} className="block">{d}{i < arr.length - 1 ? ',' : ''}</span>
+                          <span key={i} className="inline-block whitespace-nowrap after:content-[',_'] last:after:content-none">{d}</span>
                         ))
                       : formatDateInfo(row)
                     }
