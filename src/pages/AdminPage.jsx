@@ -234,7 +234,6 @@ function FieldsManager({ fields, onReload }) {
                 className={`group transition-colors ${
                   dropIndex === i && dragIndex !== i ? 'border-t-2 border-vvz-green' :
                   dragIndex === i ? 'opacity-40' :
-                  field.active === false ? 'opacity-40' :
                   i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                 }`}
               >
@@ -279,7 +278,7 @@ function FieldsManager({ fields, onReload }) {
                         <path d="M8 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm8-12a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/>
                       </svg>
                     </td>
-                    <td className="px-4 py-2.5 font-medium text-gray-800">{field.name}</td>
+                    <td className={`px-4 py-2.5 font-medium text-gray-800 ${field.active === false ? 'opacity-40' : ''}`}>{field.name}</td>
                     <td className="px-4 py-2.5 text-center">
                       <button
                         onClick={() => handleToggleActive(field)}
