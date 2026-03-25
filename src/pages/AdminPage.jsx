@@ -162,11 +162,14 @@ function FieldsManager({ fields, onReload }) {
 
   return (
     <div>
-      <div className="flex items-center justify-end mb-3">
+      <div className="flex items-start justify-between mb-3 gap-4">
+        <p className="text-sm text-gray-500">
+          Sleep een veld aan het ⠿-icoontje om de volgorde aan te passen. De volgorde bepaalt de kolommen in het trainingsschema van links naar rechts.
+        </p>
         {!adding && (
           <button
             onClick={startAdd}
-            className="flex items-center gap-1.5 text-sm bg-vvz-green text-white px-3 py-1.5 rounded-lg font-medium hover:bg-vvz-green-dark transition-colors"
+            className="flex items-center gap-1.5 text-sm bg-vvz-green text-white px-3 py-1.5 rounded-lg font-medium hover:bg-vvz-green-dark transition-colors shrink-0"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
