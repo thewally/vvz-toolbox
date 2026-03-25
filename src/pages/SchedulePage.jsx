@@ -733,7 +733,7 @@ export default function SchedulePage() {
 
   return (
     <div className="max-w-[1400px] mx-auto px-2 sm:px-4 py-3">
-      <div className="mb-2 flex items-center gap-2">
+      <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
         {isAdmin && allSchedules.length > 1 ? (
           <>
             <select
@@ -769,7 +769,7 @@ export default function SchedulePage() {
           </span>
         ) : null}
         {formatValidityLabel(currentSchedule) && (
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-400 w-full sm:w-auto">
             Geldig: {formatValidityLabel(currentSchedule)}
           </span>
         )}
