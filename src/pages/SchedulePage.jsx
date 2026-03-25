@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { fetchTrainingSlots, createTrainingSlot, updateTrainingSlot, deleteTrainingSlot } from '../services/trainingSlots'
 import { fetchActiveFields } from '../services/fields'
 import { fetchTeams } from '../services/teams'
+import { fetchActiveSchedule, fetchSchedules } from '../services/schedules'
 import { DAYS, TIME_SLOTS, timeToMinutes } from '../lib/constants'
 
 const SLOT_HEIGHT = 24 // px per 15-min row
@@ -27,6 +28,9 @@ export default function SchedulePage() {
   const { user } = useAuth()
   const isAdmin = !!user
 
+  const [activeSchedule, setActiveSchedule] = useState(null)
+  const [allSchedules, setAllSchedules] = useState([])
+  const [selectedScheduleId, setSelectedScheduleId] = useState(null)
   const [slots, setSlots] = useState([])
   const [fields, setFields] = useState([])
   const [teams, setTeams] = useState([])
@@ -196,7 +200,34 @@ export default function SchedulePage() {
 
   const loadData = useCallback(async () => {
     setLoading(true)
-    const fetches = [fetchTrainingSlots(), fetchActiveFields()]
+
+    // Haal schema-informatie op
+    const scheduleRes = await fetchActiveSchedule()
+    const active = scheduleRes.data || null
+    setActiveSchedule(active)
+
+    // Admin kan alle schema's zien en wisselen
+    if (isAdmin) {
+      const allRes = await fetchSchedules()
+      const all = allRes.data || []
+      setAllSchedules(all)
+      // Als er nog geen selectie is, kies het actieve schema (of het eerste)
+      if (!selectedScheduleId) {
+        setSelectedScheduleId(active?.id || (all.length > 0 ? all[0].id : null))
+      }
+    }
+
+    // Bepaal welk schema geladen moet worden
+    const scheduleId = isAdmin ? (selectedScheduleId || active?.id) : active?.id
+
+    if (!scheduleId) {
+      setSlots([])
+      setFields([])
+      setLoading(false)
+      return
+    }
+
+    const fetches = [fetchTrainingSlots(scheduleId), fetchActiveFields()]
     if (isAdmin) fetches.push(fetchTeams())
 
     const results = await Promise.all(fetches)
@@ -211,7 +242,7 @@ export default function SchedulePage() {
       if (!results[2].error) setTeams(results[2].data || [])
     }
     setLoading(false)
-  }, [isAdmin])
+  }, [isAdmin, selectedScheduleId])
 
   useEffect(() => {
     loadData()
@@ -648,8 +679,55 @@ export default function SchedulePage() {
     )
   }
 
+  if (!isAdmin && !activeSchedule) {
+    return (
+      <div className="max-w-4xl mx-auto p-4">
+        <div className="bg-gray-50 text-gray-600 p-6 rounded-lg text-center">
+          <p className="text-lg font-medium">Er is momenteel geen actief trainingsschema</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (isAdmin && allSchedules.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto p-4">
+        <div className="bg-gray-50 text-gray-600 p-6 rounded-lg text-center">
+          <p className="text-lg font-medium">Er zijn nog geen schema's aangemaakt</p>
+          <p className="mt-2 text-sm">Ga naar Beheer &rarr; Schema's om een schema aan te maken.</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-[1400px] mx-auto px-2 sm:px-4 py-3">
+      <div className="mb-2 flex items-center gap-2">
+        {isAdmin && allSchedules.length > 1 ? (
+          <>
+            <select
+              value={selectedScheduleId || ''}
+              onChange={e => setSelectedScheduleId(e.target.value)}
+              className="text-xs font-medium text-gray-700 bg-gray-100 border border-gray-200 px-2 py-1 rounded-lg outline-none focus:ring-2 focus:ring-vvz-green"
+            >
+              {allSchedules.map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.name}{s.active ? ' (actief)' : ' (concept)'}
+                </option>
+              ))}
+            </select>
+            {selectedScheduleId && !allSchedules.find(s => s.id === selectedScheduleId)?.active && (
+              <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                Concept
+              </span>
+            )}
+          </>
+        ) : activeSchedule ? (
+          <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+            {activeSchedule.name}
+          </span>
+        ) : null}
+      </div>
       <div ref={scheduleRef} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         {DAYS.map(day => (
@@ -736,6 +814,7 @@ export default function SchedulePage() {
           popover={popover}
           teams={teams}
           fields={fields}
+          scheduleId={isAdmin ? selectedScheduleId : activeSchedule?.id}
           onSaved={handlePopoverSaved}
           onDeleted={handlePopoverDeleted}
           onClose={() => setPopover(null)}
@@ -1290,7 +1369,7 @@ function TrainingBlock({ slot, rangeStartMinutes, isAdmin, interactive, onSlotCl
 
 import { forwardRef } from 'react'
 
-const TrainingPopover = forwardRef(function TrainingPopover({ popover, teams, fields, onSaved, onDeleted, onClose }, ref) {
+const TrainingPopover = forwardRef(function TrainingPopover({ popover, teams, fields, scheduleId, onSaved, onDeleted, onClose }, ref) {
   const isEdit = !!popover.slot
   const editSlot = popover.slot
 
@@ -1388,6 +1467,9 @@ const TrainingPopover = forwardRef(function TrainingPopover({ popover, teams, fi
     setSaving(true)
     setSuccessMsg(null)
     const payload = { ...form, day_of_week: Number(form.day_of_week) }
+    if (!isEdit && scheduleId) {
+      payload.schedule_id = scheduleId
+    }
     const { error } = isEdit
       ? await updateTrainingSlot(editSlot.id, payload)
       : await createTrainingSlot(payload)

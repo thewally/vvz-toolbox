@@ -20,10 +20,16 @@ function flattenSlot(slot) {
   slot.end_time = normalizeTime(slot.end_time)
 }
 
-export async function fetchTrainingSlots() {
-  const { data, error } = await supabase
+export async function fetchTrainingSlots(scheduleId) {
+  let query = supabase
     .from('training_slots')
     .select(SLOT_SELECT)
+
+  if (scheduleId) {
+    query = query.eq('schedule_id', scheduleId)
+  }
+
+  const { data, error } = await query
 
   if (data) {
     for (const slot of data) {
