@@ -1,0 +1,2 @@
+- [Rolbeheer spec](project_rolbeheer_spec.md) — feature spec voor rolgebaseerde toegangscontrole in .claude/specs/rolbeheer.md
+- [Wedstrijden spec](project_wedstrijden_spec.md) — feature spec voor Wedstrijden-module (Sportlink API) in .claude/specs/wedstrijden.md
