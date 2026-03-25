@@ -1660,7 +1660,7 @@ const TrainingPopover = forwardRef(function TrainingPopover({ popover, teams, fi
             <label className="block text-xs font-medium text-gray-700 mb-1.5">Kleur</label>
             <div className="flex gap-2">
               {[
-                { color: '#166534', label: 'Lichtgroen' },
+                { color: '#3EE87D', label: 'Lichtgroen' },
                 { color: '#14532D', label: 'Groen' },
                 { color: '#052E16', label: 'Donkergroen' },
                 { color: '#FACC15', label: 'Geel' },
