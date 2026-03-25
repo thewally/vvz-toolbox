@@ -274,7 +274,7 @@ function FieldsManager({ fields, onReload }) {
                   </>
                 ) : (
                   <>
-                    <td className="pl-3 text-gray-300 cursor-grab active:cursor-grabbing">
+                    <td className="pl-3 text-gray-400 cursor-grab active:cursor-grabbing">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M8 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm8-12a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/>
                       </svg>
