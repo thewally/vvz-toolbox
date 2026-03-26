@@ -70,25 +70,24 @@ export default function WedstrijdenUitslagenPage() {
               const thuisScore = scores?.[0] ?? '-'
               const uitScore = scores?.[1] ?? '-'
 
-              let resultIndicator = 'bg-gray-100 border-gray-200' // default / geen eigenteam
-              if (isEigenTeam && scores && scores.length === 2) {
-                const t = parseInt(scores[0], 10)
-                const u = parseInt(scores[1], 10)
-                const isThuis = w.thuisteamclubrelatiecode === 'FZSZ66G'
-                const eigenScore = isThuis ? t : u
-                const tegenScore = isThuis ? u : t
-                if (!isNaN(eigenScore) && !isNaN(tegenScore)) {
-                  if (eigenScore > tegenScore) resultIndicator = 'bg-green-50 border-green-200'
-                  else if (eigenScore < tegenScore) resultIndicator = 'bg-red-50 border-red-200'
-                  else resultIndicator = 'bg-gray-50 border-gray-200'
-                }
-              }
-
               const isThuis = w.thuisteamclubrelatiecode === 'FZSZ66G'
               const thuisUitLabel = isThuis ? 'THUIS' : 'UIT'
 
+              let resultLabel = null
+              if (isEigenTeam && scores && scores.length === 2) {
+                const t = parseInt(scores[0], 10)
+                const u = parseInt(scores[1], 10)
+                const eigenScore = isThuis ? t : u
+                const tegenScore = isThuis ? u : t
+                if (!isNaN(eigenScore) && !isNaN(tegenScore)) {
+                  if (eigenScore > tegenScore) resultLabel = <span className="text-xs font-bold text-green-600 shrink-0">Gewonnen</span>
+                  else if (eigenScore < tegenScore) resultLabel = <span className="text-xs font-bold text-red-500 shrink-0">Verloren</span>
+                  else resultLabel = <span className="text-xs font-bold text-orange-400 shrink-0">Gelijk</span>
+                }
+              }
+
               return (
-                <div key={i} className={`rounded-xl shadow-sm border px-4 py-3 hover:shadow-md transition-shadow cursor-default ${resultIndicator}`}>
+                <div key={i} className="rounded-xl shadow-sm border border-gray-100 bg-white px-4 py-3 hover:shadow-md transition-shadow cursor-default">
                   <div className="flex items-center gap-3">
                     {/* Tijd + thuis/uit */}
                     <div className="shrink-0 w-14 text-center">
@@ -109,6 +108,8 @@ export default function WedstrijdenUitslagenPage() {
                     <div className="flex-1 min-w-0">
                       <span className="font-semibold text-gray-800 text-sm truncate block">{w.uitteam}</span>
                     </div>
+                    {/* Resultaat label */}
+                    {resultLabel}
                   </div>
                 </div>
               )
