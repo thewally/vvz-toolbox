@@ -62,6 +62,12 @@ const pages = [
              <path d="M -17,10 C -24,28 -24,54 0,76 C 24,54 24,28 17,10 Z"/>
            </g>`,
   },
+  {
+    name: 'wedstrijden',
+    title: 'Wedstrijden',
+    sub: 'Programma, uitslagen en teampagina\'s',
+    icon: null, // gebruikt voetbal.png
+  },
 ]
 
 await mkdir(BASE, { recursive: true })
@@ -71,7 +77,17 @@ const logo = await sharp('public/huistijl/logo-vvz.png')
   .resize(LOGO_SIZE, LOGO_SIZE)
   .toBuffer()
 
+// Voetbal-PNG: zwart op wit, multiply blend → witte achtergrond verdwijnt in groen
+const BALL_SIZE = 180
+const ball = await sharp('public/voetbal.png')
+  .resize(BALL_SIZE, BALL_SIZE)
+  .toBuffer()
+
 for (const page of pages) {
+  const iconLayer = page.icon !== null
+    ? `<g transform="translate(-410, 0)">${page.icon}</g>`
+    : `<rect x="80" y="120" width="220" height="220" rx="24" fill="rgba(255,255,255,0.15)"/>`
+
   const svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
     <rect width="${W}" height="${H}" fill="#1B5E20"/>
     <rect width="${W}" height="${H}" fill="url(#grad)"/>
@@ -81,13 +97,19 @@ for (const page of pages) {
         <stop offset="100%" style="stop-color:#1B5E20;stop-opacity:1"/>
       </linearGradient>
     </defs>
-    <g transform="translate(-410, 0)">${page.icon}</g>
+    ${iconLayer}
     <text x="80" y="430" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="white">${page.title}</text>
     <text x="80" y="510" font-family="Arial, sans-serif" font-size="40" fill="rgba(255,255,255,0.8)">${page.sub}</text>
   </svg>`
 
+  const composites = [{ input: logo, top: 100, left: W - LOGO_SIZE - 40 }]
+  if (page.icon === null) {
+    // Voetbal gecentreerd in het icoon-vlak (x:80, y:120, 220x220)
+    composites.unshift({ input: ball, top: 120 + 20, left: 80 + 20, blend: 'multiply' })
+  }
+
   await sharp(Buffer.from(svg))
-    .composite([{ input: logo, top: 100, left: W - LOGO_SIZE - 40 }])
+    .composite(composites)
     .png()
     .toFile(`${BASE}/${page.name}.png`)
   console.log(`Generated ${BASE}/${page.name}.png`)
