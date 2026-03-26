@@ -69,9 +69,7 @@ export default function WedstrijdenUitslagenPage() {
               const scores = w.uitslag ? w.uitslag.split('-').map(s => s.trim()) : null
               const thuisScore = scores?.[0] ?? '-'
               const uitScore = scores?.[1] ?? '-'
-
               const isThuis = w.thuisteamclubrelatiecode === 'FZSZ66G'
-              const thuisUitLabel = isThuis ? 'THUIS' : 'UIT'
 
               let resultLabel = null
               if (isEigenTeam && scores && scores.length === 2) {
@@ -80,37 +78,37 @@ export default function WedstrijdenUitslagenPage() {
                 const eigenScore = isThuis ? t : u
                 const tegenScore = isThuis ? u : t
                 if (!isNaN(eigenScore) && !isNaN(tegenScore)) {
-                  if (eigenScore > tegenScore) resultLabel = <span className="text-xs font-bold text-green-600 shrink-0">Gewonnen</span>
-                  else if (eigenScore < tegenScore) resultLabel = <span className="text-xs font-bold text-red-500 shrink-0">Verloren</span>
-                  else resultLabel = <span className="text-xs font-bold text-orange-400 shrink-0">Gelijk</span>
+                  if (eigenScore > tegenScore) resultLabel = <span className="text-xs font-bold text-green-600 shrink-0 w-16 text-right">Gewonnen</span>
+                  else if (eigenScore < tegenScore) resultLabel = <span className="text-xs font-bold text-red-500 shrink-0 w-16 text-right">Verloren</span>
+                  else resultLabel = <span className="text-xs font-bold text-orange-400 shrink-0 w-16 text-right">Gelijk</span>
                 }
               }
 
               return (
-                <div key={i} className="rounded-xl shadow-sm border border-gray-100 bg-white px-4 py-3 hover:shadow-md transition-shadow cursor-default">
-                  <div className="flex items-center gap-3">
-                    {/* Tijd + thuis/uit */}
-                    <div className="shrink-0 w-14 text-center">
-                      <span className="block text-sm font-bold text-vvz-green">{w.aanvangstijd || '--:--'}</span>
-                      <span className="block text-xs font-semibold text-gray-400 mt-0.5">{thuisUitLabel}</span>
-                    </div>
-                    {/* Thuisteam */}
-                    <div className="flex-1 min-w-0 text-right">
-                      <span className="font-semibold text-gray-800 text-sm truncate block">{w.thuisteam}</span>
-                    </div>
-                    {/* Score */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      <span className="text-xl font-bold text-gray-800 w-7 text-right">{thuisScore}</span>
-                      <span className="text-gray-400 text-sm">–</span>
-                      <span className="text-xl font-bold text-gray-800 w-7 text-left">{uitScore}</span>
-                    </div>
-                    {/* Uitteam */}
-                    <div className="flex-1 min-w-0">
-                      <span className="font-semibold text-gray-800 text-sm truncate block">{w.uitteam}</span>
-                    </div>
-                    {/* Resultaat label */}
-                    {resultLabel}
+                <div key={i} className="flex items-center bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 gap-3 hover:shadow-md transition-shadow cursor-default">
+                  {/* Tijd + thuis/uit badge */}
+                  <div className="shrink-0 w-14 text-center">
+                    <span className="block text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
+                    <span className={`inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                      {isThuis ? 'THUIS' : 'UIT'}
+                    </span>
                   </div>
+                  {/* Thuisteam */}
+                  <div className="flex-1 min-w-0 text-right">
+                    <span className={`font-semibold text-sm truncate block ${isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                  </div>
+                  {/* Score — vaste breedte zodat streepje altijd uitlijnt */}
+                  <div className="shrink-0 flex items-center w-16 justify-center gap-0.5">
+                    <span className="text-xl font-bold text-gray-800 w-6 text-right tabular-nums">{thuisScore}</span>
+                    <span className="text-gray-400 text-lg mx-1">–</span>
+                    <span className="text-xl font-bold text-gray-800 w-6 text-left tabular-nums">{uitScore}</span>
+                  </div>
+                  {/* Uitteam */}
+                  <div className="flex-1 min-w-0">
+                    <span className={`font-semibold text-sm truncate block ${!isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                  </div>
+                  {/* Resultaat */}
+                  {resultLabel ?? <span className="shrink-0 w-16" />}
                 </div>
               )
             })}

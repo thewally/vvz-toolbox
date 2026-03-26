@@ -53,35 +53,35 @@ export default function WedstrijdenTeamsPage() {
   // Veteranen en Pupillen via de teamnaam als Sportlink ze als "Senioren" markeert
   function getCategorie(team) {
     const naam = (team.teamnaam || '').toLowerCase()
-    const geslacht = (team.geslacht || '').toLowerCase()
     const cat = (team.leeftijdscategorie || '').toLowerCase()
 
-    // Veteranen: altijd op naam (Sportlink markeert ze vaak als Senioren)
     if (naam.includes('veteran') || naam.includes('vet.') || naam.includes('35+') || naam.includes('45+') || naam.includes('30+') || cat.includes('veteran')) return 'Veteranen'
 
-    // JO/MO-teams: splits op leeftijd — pupillen ≤ JO12/MO12, junioren ≥ JO13
+    // JO/MO: splits op leeftijdsgetal — ≤12 = pupillen, ≥13 = junioren
     const joMatch = naam.match(/[jm]o\s*(\d+)/)
     if (joMatch) {
       const leeftijd = parseInt(joMatch[1], 10)
-      if (geslacht === 'vrouw' || naam.includes('mo')) {
-        return leeftijd <= 12 ? 'Pupillen (meisjes)' : 'Vrouwen (jeugd)'
-      }
       return leeftijd <= 12 ? 'Pupillen' : 'Junioren'
     }
 
-    // Leeftijdscategorie veld direct gebruiken
     if (cat.includes('pupil')) return 'Pupillen'
     if (cat.includes('junior')) return 'Junioren'
-
-    // Vrouwen senioren
-    if (geslacht === 'vrouw') return 'Vrouwen'
 
     return 'Senioren'
   }
 
-  const categorieVolgorde = ['Senioren', 'Vrouwen', 'Veteranen', 'Junioren', 'Vrouwen (jeugd)', 'Pupillen', 'Pupillen (meisjes)']
+  // Sorteersleutel: extraheer getal uit teamnaam voor JO/MO, anders alfabetisch
+  function getSorteerSleutel(team) {
+    const naam = team.teamnaam || ''
+    const match = naam.match(/[jm]o\s*(\d+)/i)
+    if (match) return parseInt(match[1], 10)
+    // Senioren: sorteer op trailingcijfer (VVZ 1, VVZ 2...)
+    const numMatch = naam.match(/(\d+)\s*$/)
+    if (numMatch) return parseInt(numMatch[1], 10)
+    return 0
+  }
 
-  // Groepeer: categorie → speeldag → teams
+  const categorieVolgorde = ['Senioren', 'Veteranen', 'Junioren', 'Pupillen']
   const speeldagVolgorde = ['Zondag', 'Zaterdag']
 
   const perCategorie = new Map()
@@ -110,11 +110,13 @@ export default function WedstrijdenTeamsPage() {
           <div key={categorie}>
             <h2 className="text-base font-bold text-gray-800 mb-4 pb-1 border-b border-gray-200">{categorie}</h2>
             <div className="space-y-5">
-              {speeldagen.map(([speeldag, teamLijst]) => (
+              {speeldagen.map(([speeldag, teamLijst]) => {
+                const gesorteerd = [...teamLijst].sort((a, b) => getSorteerSleutel(a) - getSorteerSleutel(b))
+                return (
                 <div key={speeldag}>
                   <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{speeldag}</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {teamLijst.map(team => (
+                    {gesorteerd.map(team => (
                       <Link
                         key={team.teamcode}
                         to={`/wedstrijden/teams/${team.teamcode}`}
@@ -125,7 +127,8 @@ export default function WedstrijdenTeamsPage() {
                     ))}
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )

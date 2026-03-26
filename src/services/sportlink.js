@@ -30,5 +30,13 @@ export function fetchTeamUitslagen(teamcode) {
 }
 
 export function fetchTeams() {
-  return apiFetch(`/teams?client_id=${CLIENT_ID}`)
+  return apiFetch(`/teams?gebruiklokaleteamgegevens=NEE&client_id=${CLIENT_ID}`)
+}
+
+export function fetchPoulestand(poulecode) {
+  return apiFetch(`/poulestand?poulecode=${poulecode}&client_id=${CLIENT_ID}`)
+}
+
+export function fetchAfgelastingen() {
+  return apiFetch(`/afgelastingen?client_id=${CLIENT_ID}`)
 }

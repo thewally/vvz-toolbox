@@ -82,3 +82,22 @@ export function filterVorigeSpeelweek(wedstrijden) {
     .filter(([k]) => k >= ondergrensSleutel)
     .flatMap(([, items]) => items)
 }
+
+/**
+ * Bepaal het afgelastingen-niveau op basis van afgelastingen en programma.
+ * groen = geen, geel = sommige, oranje = alle thuis, rood = alles
+ */
+export function getAfgelastingenNiveau(afgelastingen, programma) {
+  if (!afgelastingen || afgelastingen.length === 0) return 'groen'
+
+  const afgelastCodes = new Set(afgelastingen.map(a => a.wedstrijdcode))
+  const thuiswedstrijden = programma.filter(w => w.thuisteamclubrelatiecode === 'FZSZ66G')
+  const uitwedstrijden = programma.filter(w => w.uitteamclubrelatiecode === 'FZSZ66G')
+
+  const allesThuisAfgelast = thuiswedstrijden.length > 0 && thuiswedstrijden.every(w => afgelastCodes.has(w.wedstrijdcode))
+  const allesUitAfgelast = uitwedstrijden.length > 0 && uitwedstrijden.every(w => afgelastCodes.has(w.wedstrijdcode))
+
+  if (allesThuisAfgelast && allesUitAfgelast) return 'rood'
+  if (allesThuisAfgelast) return 'oranje'
+  return 'geel'
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getProgramma } from '../services/wedstrijden'
 import { filterHuidigeSpeelweek, groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
+import AfgelastingenIndicator from '../components/AfgelastingenIndicator'
 
 export default function WedstrijdenProgrammaPage() {
   const [wedstrijden, setWedstrijden] = useState([])
@@ -55,6 +56,7 @@ export default function WedstrijdenProgrammaPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6">
+      <AfgelastingenIndicator />
       {[...perDag.entries()].map(([datum, items]) => (
         <div key={datum} className="mb-8">
           <div className="flex items-center gap-3 mb-4">
@@ -67,27 +69,31 @@ export default function WedstrijdenProgrammaPage() {
             {items.map((w, i) => {
               const isThuis = w.thuisteamclubrelatiecode === 'FZSZ66G'
               return (
-                <div key={i} className="flex items-center bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 gap-4 hover:shadow-md transition-shadow cursor-default">
-                  {/* Tijd */}
-                  <span className="text-lg font-bold text-vvz-green w-14 shrink-0 text-center">
-                    {w.aanvangstijd || '--:--'}
-                  </span>
-                  {/* Teamnamen + competitie + locatie */}
+                <div key={i} className="flex items-center bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 gap-3 hover:shadow-md transition-shadow cursor-default">
+                  {/* Tijd + thuis/uit badge */}
+                  <div className="shrink-0 w-14 text-center">
+                    <span className="block text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
+                    <span className={`inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                      {isThuis ? 'THUIS' : 'UIT'}
+                    </span>
+                  </div>
+                  {/* Thuisteam */}
+                  <div className="flex-1 min-w-0 text-right">
+                    <span className={`font-semibold text-sm truncate block ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                  </div>
+                  {/* vs */}
+                  <div className="shrink-0 flex items-center w-16 justify-center">
+                    <span className="text-gray-400 font-normal text-sm">vs</span>
+                  </div>
+                  {/* Uitteam */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-800 leading-snug truncate">
-                      {w.thuisteam} <span className="text-gray-400 font-normal mx-1">vs</span> {w.uitteam}
-                    </h3>
-                    {w.competitienaam && (
-                      <p className="text-xs text-gray-500 mt-0.5">{w.competitienaam}</p>
-                    )}
+                    <span className={`font-semibold text-sm truncate block ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
                     {w.accommodatie && (
-                      <p className="text-xs text-gray-400 mt-0.5">{w.accommodatie}</p>
+                      <span className="text-xs text-gray-400 truncate block mt-0.5">{w.accommodatie}</span>
                     )}
                   </div>
-                  {/* Thuis/Uit badge */}
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                    {isThuis ? 'THUIS' : 'UIT'}
-                  </span>
+                  {/* Placeholder zodat breedte overeenkomt met uitslagen (resultaat-kolom) */}
+                  <span className="shrink-0 w-16" />
                 </div>
               )
             })}
