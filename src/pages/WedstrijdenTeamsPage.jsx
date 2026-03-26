@@ -42,19 +42,46 @@ export default function WedstrijdenTeamsPage() {
     )
   }
 
+  // Dedupliceer op teamcode (één entry per team), filter op regulier
+  const uniek = new Map()
+  for (const t of teams) {
+    if (!uniek.has(t.teamcode)) uniek.set(t.teamcode, t)
+  }
+  const uniekeTeams = [...uniek.values()]
+
+  // Groepeer op speeldag
+  const perSpeeldag = new Map()
+  for (const t of uniekeTeams) {
+    const dag = t.speeldag || 'Overig'
+    if (!perSpeeldag.has(dag)) perSpeeldag.set(dag, [])
+    perSpeeldag.get(dag).push(t)
+  }
+
+  // Vaste volgorde: Zondag, Zaterdag, rest
+  const volgorde = ['Zondag', 'Zaterdag']
+  const gesorteerd = [
+    ...volgorde.filter(d => perSpeeldag.has(d)).map(d => [d, perSpeeldag.get(d)]),
+    ...[...perSpeeldag.entries()].filter(([d]) => !volgorde.includes(d)),
+  ]
+
   return (
-    <div className="max-w-3xl mx-auto p-4 pt-6">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {teams.map(team => (
-          <Link
-            key={team.teamcode}
-            to={`/wedstrijden/teams/${team.teamcode}`}
-            className="flex items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md hover:border-vvz-green/30 transition-all text-center"
-          >
-            <span className="font-semibold text-gray-800">{team.teamnaam}</span>
-          </Link>
-        ))}
-      </div>
+    <div className="max-w-3xl mx-auto p-4 pt-6 space-y-8">
+      {gesorteerd.map(([speeldag, teamLijst]) => (
+        <div key={speeldag}>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-3">{speeldag}</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {teamLijst.map(team => (
+              <Link
+                key={team.teamcode}
+                to={`/wedstrijden/teams/${team.teamcode}`}
+                className="flex items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md hover:border-vvz-green/30 transition-all text-center"
+              >
+                <span className="font-semibold text-gray-800">{team.teamnaam}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
