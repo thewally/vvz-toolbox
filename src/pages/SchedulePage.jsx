@@ -786,7 +786,7 @@ export default function SchedulePage() {
             isAdmin={isAdmin}
             isExpanded={false}
             interactive={false}
-            onOpenOverlay={isAdmin ? () => { if (window.innerWidth >= 768) setModalDay(day.value) } : undefined}
+            onOpenOverlay={isAdmin ? () => setModalDay(day.value) : undefined}
             onEmptyCellClick={openPopoverForEmpty}
             onSlotClick={openPopoverForSlot}
             onDragStart={handleDragStart}
@@ -1044,7 +1044,7 @@ function DaySection({ day, daySlots, fields, isToday, isAdmin, isExpanded, inter
       data-day-export={day.value}
       className={`day-section rounded-lg border overflow-hidden ${
         isToday ? 'border-vvz-green/40 ring-1 ring-vvz-green/20' : 'border-gray-200'
-      } ${cardClickable ? 'md:cursor-pointer md:hover:border-vvz-green/60 transition-colors group' : ''}`}
+      } ${cardClickable ? 'cursor-pointer hover:border-vvz-green/60 transition-colors group' : ''}`}
       style={{ order: day.value }}
       aria-label={`Trainingen ${day.label}`}
       onClick={cardClickable ? (e) => {
@@ -1162,7 +1162,7 @@ function DaySection({ day, daySlots, fields, isToday, isAdmin, isExpanded, inter
                         key={`${slot.id}-span-${startColIndex}`}
                         className={`absolute rounded-md overflow-hidden shadow-sm hover:shadow-md transition-shadow group ${
                           isDragging?.current?.isDragging ? 'pointer-events-none' : 'pointer-events-auto'
-                        } ${isAdmin && interactive ? 'cursor-grab' : ''}`}
+                        } ${isAdmin && interactive ? 'cursor-grab' : isAdmin ? 'cursor-pointer' : ''}`}
                         style={{
                           top: topPx,
                           height: heightPx,
@@ -1176,7 +1176,7 @@ function DaySection({ day, daySlots, fields, isToday, isAdmin, isExpanded, inter
                         title={`${teamNames}\n${(slot.fields || []).map(f => f.name).join(', ')}\n${slot.start_time.slice(0,5)} - ${slot.end_time.slice(0,5)}`}
                         role="article"
                         aria-label={`${teamNames}, ${(slot.fields || []).map(f => f.name).join(', ')}, ${slot.start_time.slice(0,5)} tot ${slot.end_time.slice(0,5)}`}
-                        onClick={isAdmin && interactive ? (e) => { e.stopPropagation(); if (!blockDragRef?.current?.type) onSlotClick(e, slot) } : undefined}
+                        onClick={isAdmin ? (e) => { e.stopPropagation(); if (!blockDragRef?.current?.type) onSlotClick(e, slot) } : undefined}
                         onMouseDown={isAdmin && interactive ? (e) => {
                           if (e.button !== 0) return
                           if (e.target.dataset.resizeHandle) return
@@ -1358,7 +1358,7 @@ function TrainingBlock({ slot, rangeStartMinutes, isAdmin, interactive, onSlotCl
     <div
       data-training-block
       className={`absolute left-0.5 right-0.5 sm:left-1 sm:right-1 rounded-md overflow-hidden shadow-sm hover:shadow-md transition-shadow group ${
-        isAdmin && interactive ? 'cursor-grab' : 'cursor-default'
+        isAdmin && interactive ? 'cursor-grab' : isAdmin ? 'cursor-pointer' : 'cursor-default'
       } ${dragging ? 'pointer-events-none' : ''}`}
       style={{
         top: topPx,
@@ -1371,7 +1371,7 @@ function TrainingBlock({ slot, rangeStartMinutes, isAdmin, interactive, onSlotCl
       title={`${teamNames}\n${(slot.fields || []).map(f => f.name).join(', ')}\n${slot.start_time.slice(0,5)} - ${slot.end_time.slice(0,5)}`}
       role="article"
       aria-label={`${teamNames}, ${(slot.fields || []).map(f => f.name).join(', ')}, ${slot.start_time.slice(0,5)} tot ${slot.end_time.slice(0,5)}`}
-      onClick={isAdmin && interactive ? (e) => { e.stopPropagation(); if (!blockDragRef?.current?.type) onSlotClick(e, slot) } : undefined}
+      onClick={isAdmin ? (e) => { e.stopPropagation(); if (!blockDragRef?.current?.type) onSlotClick(e, slot) } : undefined}
       onMouseDown={isAdmin && interactive ? (e) => {
         // Only left button, and not on resize handles
         if (e.button !== 0) return
@@ -1611,16 +1611,27 @@ const TrainingPopover = forwardRef(function TrainingPopover({ popover, teams, fi
         {/* Header */}
         <form onSubmit={handleSubmit}>
         <div className="sticky top-0 bg-gray-50 px-4 py-3 border-b border-gray-200 flex items-center justify-between z-10">
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-vvz-green text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-vvz-green-dark transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
-          >
-            {saving && (
-              <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          <div className="flex items-center gap-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="bg-vvz-green text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-vvz-green-dark transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+            >
+              {saving && (
+                <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              )}
+              {saving ? 'Opslaan...' : 'Opslaan'}
+            </button>
+            {isEdit && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="bg-gray-100 text-gray-600 px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-200 hover:text-gray-800 transition-colors"
+              >
+                Verwijderen
+              </button>
             )}
-            {saving ? 'Opslaan...' : 'Opslaan'}
-          </button>
+          </div>
           <h3 className="text-sm font-semibold text-gray-800">
             {isEdit ? 'Training bewerken' : 'Nieuwe training'}
           </h3>
@@ -1789,17 +1800,6 @@ const TrainingPopover = forwardRef(function TrainingPopover({ popover, teams, fi
             </div>
           </div>
 
-          {isEdit && (
-            <div className="pt-2 border-t border-gray-100">
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="text-red-600 hover:text-red-800 text-xs font-medium transition-colors"
-              >
-                Verwijderen
-              </button>
-            </div>
-          )}
         </div>
         </form>
       </div>
