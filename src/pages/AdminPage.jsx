@@ -203,8 +203,8 @@ function FieldsManager({ fields, onReload }) {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-white rounded-xl shadow overflow-x-auto">
+        <table className="w-full text-sm min-w-[480px]">
           <thead className="bg-gray-50">
             <tr>
               <th className="w-8"></th>
@@ -437,8 +437,8 @@ function TeamsManager({ teams, usedTeamIds, onReload }) {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-white rounded-xl shadow overflow-x-auto">
+        <table className="w-full text-sm min-w-[480px]">
           <thead className="bg-gray-50">
             <tr>
               <th className="text-left px-4 py-2.5 font-medium text-gray-600"></th>
@@ -761,15 +761,15 @@ function SchedulesManager({ schedules, onReload }) {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-white rounded-xl shadow overflow-x-auto">
+        <table className="w-full text-sm min-w-[600px]">
           <thead className="bg-gray-50">
             <tr>
               <th className="text-left px-4 py-2.5 font-medium text-gray-600">Naam</th>
-              <th className="text-left px-4 py-2.5 font-medium text-gray-600">Geldig van</th>
-              <th className="text-left px-4 py-2.5 font-medium text-gray-600">Geldig tot</th>
+              <th className="text-left px-4 py-2.5 font-medium text-gray-600 whitespace-nowrap">Geldig van</th>
+              <th className="text-left px-4 py-2.5 font-medium text-gray-600 whitespace-nowrap">Geldig tot</th>
               <th className="text-center px-4 py-2.5 w-24 font-medium text-gray-600">Status</th>
-              <th className="text-right px-4 py-2.5 w-40"></th>
+              <th className="text-right px-4 py-2.5 w-32"></th>
             </tr>
           </thead>
           <tbody>
