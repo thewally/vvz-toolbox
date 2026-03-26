@@ -56,14 +56,11 @@ const pages = [
     title: 'Huistijl',
     sub: "Logo's en officiële huistijlmiddelen",
     icon: `<rect x="490" y="120" width="220" height="220" rx="24" fill="rgba(255,255,255,0.15)"/>
-           <rect x="588" y="145" width="24" height="80" rx="6" fill="white"/>
-           <rect x="578" y="223" width="44" height="14" rx="3" fill="white"/>
-           <rect x="566" y="237" width="68" height="56" rx="8" fill="white"/>
-           <line x1="580" y1="248" x2="580" y2="290" stroke="rgba(46,125,50,0.5)" stroke-width="4" stroke-linecap="round"/>
-           <line x1="592" y1="248" x2="592" y2="292" stroke="rgba(46,125,50,0.5)" stroke-width="4" stroke-linecap="round"/>
-           <line x1="604" y1="248" x2="604" y2="292" stroke="rgba(46,125,50,0.5)" stroke-width="4" stroke-linecap="round"/>
-           <line x1="616" y1="248" x2="616" y2="292" stroke="rgba(46,125,50,0.5)" stroke-width="4" stroke-linecap="round"/>
-           <line x1="628" y1="248" x2="628" y2="290" stroke="rgba(46,125,50,0.5)" stroke-width="4" stroke-linecap="round"/>`,
+           <g transform="translate(600,228) rotate(-45)" fill="none" stroke="white" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M 0,-86 C 12,-72 13,-22 14,-6 L -14,-6 C -13,-22 -12,-72 0,-86 Z"/>
+             <rect x="-17" y="-6" width="34" height="16" rx="2"/>
+             <path d="M -17,10 C -24,28 -24,54 0,76 C 24,54 24,28 17,10 Z"/>
+           </g>`,
   },
 ]
 
