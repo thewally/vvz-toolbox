@@ -1044,7 +1044,7 @@ function DaySection({ day, daySlots, fields, isToday, isAdmin, isExpanded, inter
       data-day-export={day.value}
       className={`day-section rounded-lg border overflow-hidden ${
         isToday ? 'border-vvz-green/40 ring-1 ring-vvz-green/20' : 'border-gray-200'
-      } ${cardClickable ? 'cursor-pointer hover:border-vvz-green/60 transition-colors group' : ''}`}
+      } ${cardClickable ? 'md:cursor-pointer md:hover:border-vvz-green/60 transition-colors group' : ''}`}
       style={{ order: day.value }}
       aria-label={`Trainingen ${day.label}`}
       onClick={cardClickable ? (e) => {
@@ -1068,7 +1068,7 @@ function DaySection({ day, daySlots, fields, isToday, isAdmin, isExpanded, inter
           </span>
         )}
         {cardClickable && (
-          <span className="ml-auto text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1" aria-hidden="true" title="Bewerken">
+          <span className="ml-auto text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex items-center gap-1" aria-hidden="true" title="Bewerken">
             <span>Bewerken</span>
             <span>&#x2922;</span>
           </span>
@@ -1304,7 +1304,7 @@ function FieldColumn({ field, fieldIndex, slots, visibleSlots, rangeStartMinutes
                   : time.endsWith(':30')
                     ? 'border-gray-200'
                     : 'border-gray-100'
-              } ${isClickable && !dragging ? 'cursor-pointer hover:bg-green-50/60 transition-colors' : ''} ${
+              } ${isClickable && !dragging ? 'md:cursor-pointer md:hover:bg-green-50/60 transition-colors' : ''} ${
                 isDraggable && dragging ? 'cursor-crosshair' : ''
               } ${isHighlighted ? 'bg-green-200/50' : ''}`}
               style={{ top: i * SLOT_HEIGHT, height: SLOT_HEIGHT }}
