@@ -1,4 +1,4 @@
-import { fetchProgramma, fetchUitslagen, fetchTeamProgramma, fetchTeamUitslagen } from './sportlink'
+import { fetchProgramma, fetchUitslagen, fetchTeamProgramma, fetchTeamUitslagen, fetchTeams } from './sportlink'
 
 export async function getProgramma() {
   return fetchProgramma()
@@ -14,4 +14,8 @@ export async function getTeamProgramma(teamcode) {
 
 export async function getTeamUitslagen(teamcode) {
   return fetchTeamUitslagen(teamcode)
+}
+
+export async function getTeams() {
+  return fetchTeams()
 }

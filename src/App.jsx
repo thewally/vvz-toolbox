@@ -44,7 +44,7 @@ export default function App() {
           <Route index element={<WedstrijdenProgrammaPage />} />
           <Route path="uitslagen" element={<WedstrijdenUitslagenPage />} />
           <Route path="teams" element={<WedstrijdenTeamsPage />} />
-          <Route path="teams/:slug" element={<TeamPage />} />
+          <Route path="teams/:teamcode" element={<TeamPage />} />
         </Route>
         <Route path="plattegrond" element={<PlattegrondPage />} />
         <Route path="huistijl" element={<HuistijlPage />} />

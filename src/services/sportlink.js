@@ -28,3 +28,7 @@ export function fetchTeamProgramma(teamcode) {
 export function fetchTeamUitslagen(teamcode) {
   return apiFetch(`/uitslagen?client_id=${CLIENT_ID}&teamcode=${teamcode}&${COMMON_PARAMS}&aantaldagen=28`)
 }
+
+export function fetchTeams() {
+  return apiFetch(`/teams?client_id=${CLIENT_ID}`)
+}

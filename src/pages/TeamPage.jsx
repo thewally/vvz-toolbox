@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { getTeamBySlug } from '../lib/teamConfig'
 import { getTeamProgramma, getTeamUitslagen } from '../services/wedstrijden'
 import { groepeerPerDag, parseDutchDate } from '../services/wedstrijdenHelpers'
 
@@ -18,23 +17,22 @@ function formatDagLabel(datumStr) {
 }
 
 export default function TeamPage() {
-  const { slug } = useParams()
-  const team = getTeamBySlug(slug)
+  const { teamcode } = useParams()
   const [programma, setProgramma] = useState([])
   const [uitslagen, setUitslagen] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (team) load()
-  }, [slug])
+    load()
+  }, [teamcode])
 
   async function load() {
     setLoading(true)
     setError(null)
     const [progRes, uitRes] = await Promise.all([
-      getTeamProgramma(team.teamcode),
-      getTeamUitslagen(team.teamcode),
+      getTeamProgramma(teamcode),
+      getTeamUitslagen(teamcode),
     ])
     if (progRes.error || uitRes.error) {
       setError((progRes.error || uitRes.error).message)
@@ -45,14 +43,8 @@ export default function TeamPage() {
     setLoading(false)
   }
 
-  if (!team) {
-    return (
-      <div className="max-w-3xl mx-auto p-4 pt-8 text-center">
-        <p className="text-gray-500">Team niet gevonden.</p>
-        <Link to="/wedstrijden/teams" className="text-vvz-green underline mt-2 inline-block">Terug naar teams</Link>
-      </div>
-    )
-  }
+  // Derive team name from first available match
+  const teamnaam = programma[0]?.thuisteam || uitslagen[0]?.thuisteam || `Team ${teamcode}`
 
   if (loading) {
     return (
@@ -82,7 +74,7 @@ export default function TeamPage() {
         <Link to="/wedstrijden/teams" className="text-sm text-vvz-green hover:underline">&larr; Alle teams</Link>
       </div>
 
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">{team.naam}</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">{teamnaam}</h1>
 
       {/* Programma */}
       <section className="mb-10">
