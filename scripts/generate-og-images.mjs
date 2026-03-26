@@ -66,7 +66,7 @@ const pages = [
 
 await mkdir(BASE, { recursive: true })
 
-const LOGO_SIZE = 320
+const LOGO_SIZE = 420
 const logo = await sharp('public/huistijl/logo-vvz.png')
   .resize(LOGO_SIZE, LOGO_SIZE)
   .toBuffer()
@@ -88,7 +88,7 @@ for (const page of pages) {
   </svg>`
 
   await sharp(Buffer.from(svg))
-    .composite([{ input: logo, top: H - LOGO_SIZE - 30, left: W - LOGO_SIZE - 40 }])
+    .composite([{ input: logo, top: 40, left: W - LOGO_SIZE - 40 }])
     .png()
     .toFile(`${BASE}/${page.name}.png`)
   console.log(`Generated ${BASE}/${page.name}.png`)
