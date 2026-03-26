@@ -1,70 +1,84 @@
-/**
- * Parse "dd-mm-yyyy" naar Date object.
- */
-export function parseDutchDate(dateStr) {
-  const [d, m, y] = dateStr.split('-').map(Number)
-  return new Date(y, m - 1, d)
+// wedstrijddatum is ISO 8601: "2026-03-29T14:00:00+0200"
+export function parseWedstrijdDatum(wedstrijddatum) {
+  return new Date(wedstrijddatum)
 }
 
-/**
- * Groepeer wedstrijden per dag (datum string).
- * Retourneert een Map gesorteerd op datum.
- */
+// Geeft een sorteerbaare datum-sleutel terug (yyyy-mm-dd) voor groepering
+export function datumSleutel(wedstrijddatum) {
+  const d = parseWedstrijdDatum(wedstrijddatum)
+  return d.toISOString().slice(0, 10) // "2026-03-29"
+}
+
+// Format voor weergave: "zaterdag 29 maart"
+const DUTCH_DAYS = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag']
+const DUTCH_MONTHS = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december']
+
+export function formatDagLabel(wedstrijddatum) {
+  const d = parseWedstrijdDatum(wedstrijddatum)
+  return `${DUTCH_DAYS[d.getDay()]} ${d.getDate()} ${DUTCH_MONTHS[d.getMonth()]}`
+}
+
+// Groepeer op yyyy-mm-dd sleutel, gesorteerd
 export function groepeerPerDag(wedstrijden) {
   const map = new Map()
   for (const w of wedstrijden) {
-    const datum = w.wedstrijddatum
-    if (!datum) continue
-    if (!map.has(datum)) map.set(datum, [])
-    map.get(datum).push(w)
+    if (!w.wedstrijddatum) continue
+    const sleutel = datumSleutel(w.wedstrijddatum)
+    if (!map.has(sleutel)) map.set(sleutel, [])
+    map.get(sleutel).push(w)
   }
-
-  const sorted = new Map(
-    [...map.entries()].sort((a, b) => parseDutchDate(a[0]) - parseDutchDate(b[0]))
-  )
-  return sorted
+  return new Map([...map.entries()].sort())
 }
 
-/**
- * Filter wedstrijden van de dichtstbijzijnde speelronde.
- * Groepeer op datum, pak alles van de eerste datum >= vandaag.
- * Als niets in de toekomst: pak de meest recente groep.
- */
+// Huidige speelweek: alle wedstrijden met datum >= vandaag, gegroepeerd per dag
+// "speelweek" = eerste dag >= vandaag + alle andere dagen binnen 2 dagen daarna
 export function filterHuidigeSpeelweek(wedstrijden) {
   const perDag = groepeerPerDag(wedstrijden)
   if (perDag.size === 0) return []
 
   const vandaag = new Date()
   vandaag.setHours(0, 0, 0, 0)
+  const vandaagSleutel = vandaag.toISOString().slice(0, 10)
 
-  const entries = [...perDag.entries()]
-
-  // Zoek eerste datum >= vandaag
-  for (const [datum, items] of entries) {
-    if (parseDutchDate(datum) >= vandaag) {
-      return verzamelSpeelweekend(entries, datum)
-    }
+  // Alle toekomstige datums
+  const toekomst = [...perDag.entries()].filter(([k]) => k >= vandaagSleutel)
+  if (toekomst.length === 0) {
+    // Geen toekomstige wedstrijden: pak laatste groep (meest recente uitslag)
+    const laatste = [...perDag.entries()].at(-1)
+    return laatste ? laatste[1] : []
   }
 
-  // Niets in de toekomst: pak de meest recente groep
-  const laatste = entries[entries.length - 1]
-  return verzamelSpeelweekend(entries, laatste[0])
+  // Pak de eerste toekomstige datum als anker, pak ook dagen binnen 2 dagen erna
+  const ankerDatum = new Date(toekomst[0][0])
+  const limiet = new Date(ankerDatum)
+  limiet.setDate(limiet.getDate() + 2)
+  const limietSleutel = limiet.toISOString().slice(0, 10)
+
+  return toekomst
+    .filter(([k]) => k <= limietSleutel)
+    .flatMap(([, items]) => items)
 }
 
-/**
- * Verzamel alle wedstrijden binnen 1 dag van de ankerdatum (zat+zon).
- */
-function verzamelSpeelweekend(entries, ankerDatum) {
-  const anker = parseDutchDate(ankerDatum)
-  const result = []
+// Vorige speelweek: alles van de afgelopen 7 dagen
+export function filterVorigeSpeelweek(wedstrijden) {
+  const perDag = groepeerPerDag(wedstrijden)
+  if (perDag.size === 0) return []
 
-  for (const [datum, items] of entries) {
-    const d = parseDutchDate(datum)
-    const verschilDagen = Math.abs(d - anker) / (1000 * 60 * 60 * 24)
-    if (verschilDagen <= 1) {
-      result.push(...items)
-    }
-  }
+  const vandaag = new Date()
+  vandaag.setHours(0, 0, 0, 0)
+  const vandaagSleutel = vandaag.toISOString().slice(0, 10)
 
-  return result
+  // Alle datums in het verleden, pak de meest recente groep
+  const verleden = [...perDag.entries()].filter(([k]) => k < vandaagSleutel)
+  if (verleden.length === 0) return []
+
+  // Pak de laatste datum als anker, pak ook dagen binnen 2 dagen ervoor
+  const ankerDatum = new Date(verleden.at(-1)[0])
+  const ondergrens = new Date(ankerDatum)
+  ondergrens.setDate(ondergrens.getDate() - 2)
+  const ondergrensSleutel = ondergrens.toISOString().slice(0, 10)
+
+  return verleden
+    .filter(([k]) => k >= ondergrensSleutel)
+    .flatMap(([, items]) => items)
 }

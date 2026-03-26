@@ -1,19 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getProgramma } from '../services/wedstrijden'
-import { filterHuidigeSpeelweek, groepeerPerDag, parseDutchDate } from '../services/wedstrijdenHelpers'
-
-const DUTCH_DAYS_LONG = [
-  'zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag',
-]
-const DUTCH_MONTHS_LONG = [
-  'januari', 'februari', 'maart', 'april', 'mei', 'juni',
-  'juli', 'augustus', 'september', 'oktober', 'november', 'december',
-]
-
-function formatDagLabel(datumStr) {
-  const d = parseDutchDate(datumStr)
-  return `${DUTCH_DAYS_LONG[d.getDay()]} ${d.getDate()} ${DUTCH_MONTHS_LONG[d.getMonth()]}`
-}
+import { filterHuidigeSpeelweek, groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
 
 export default function WedstrijdenProgrammaPage() {
   const [wedstrijden, setWedstrijden] = useState([])
@@ -71,7 +58,7 @@ export default function WedstrijdenProgrammaPage() {
       {[...perDag.entries()].map(([datum, items]) => (
         <div key={datum} className="mb-8">
           <h2 className="text-lg font-bold text-gray-700 capitalize mb-4 border-b border-gray-200 pb-2">
-            {formatDagLabel(datum)}
+            {formatDagLabel(items[0].wedstrijddatum)}
           </h2>
           <div className="flex flex-col gap-3">
             {items.map((w, i) => (
