@@ -732,7 +732,7 @@ export default function SchedulePage() {
     : activeSchedules.find(s => s.id === selectedScheduleId) || activeSchedules[0]
 
   return (
-    <div className="max-w-[1400px] mx-auto px-2 sm:px-4 py-3">
+    <div className="max-w-[1400px] mx-auto px-2 sm:px-4 py-3 pb-24">
       <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
         {isAdmin && allSchedules.length > 1 ? (
           <>
@@ -865,6 +865,27 @@ export default function SchedulePage() {
           onDeleted={handlePopoverDeleted}
           onClose={() => setPopover(null)}
         />
+      )}
+
+      {/* FAB — admin shortcut to create training slot */}
+      {isAdmin && (
+        <button
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect()
+            setPopover({
+              x: rect.left - 8,
+              y: rect.top - 8,
+              dayValue: today ?? 1,
+              startTime: '18:00',
+            })
+          }}
+          className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-vvz-green hover:bg-vvz-green-dark text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-vvz-green/50 no-print"
+          aria-label="Nieuw trainingsslot toevoegen"
+        >
+          <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </button>
       )}
 
       {/* Block drag ghost */}
@@ -1535,22 +1556,24 @@ const TrainingPopover = forwardRef(function TrainingPopover({ popover, teams, fi
 
   // Compute popover position: clamp to viewport
   const style = useMemo(() => {
-    const popW = 380
-    const popH = 520
     const vw = typeof window !== 'undefined' ? window.innerWidth : 1200
     const vh = typeof window !== 'undefined' ? window.innerHeight : 800
+    const popW = vw >= 768 ? 520 : 380
 
-    // On mobile (< 640px), use bottom sheet style
+    // On mobile (< 640px), use near-fullscreen overlay
     if (vw < 640) {
       return {
         position: 'fixed',
+        top: '5vh',
         bottom: 0,
         left: 0,
         right: 0,
-        maxHeight: '85vh',
+        maxHeight: '95vh',
         zIndex: 1000,
       }
     }
+
+    const popH = 700
 
     let x = popover.x
     let y = popover.y
@@ -1586,11 +1609,23 @@ const TrainingPopover = forwardRef(function TrainingPopover({ popover, teams, fi
         }`}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between z-10">
+        <form onSubmit={handleSubmit}>
+        <div className="sticky top-0 bg-gray-50 px-4 py-3 border-b border-gray-200 flex items-center justify-between z-10">
+          <button
+            type="submit"
+            disabled={saving}
+            className="bg-vvz-green text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-vvz-green-dark transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+          >
+            {saving && (
+              <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            )}
+            {saving ? 'Opslaan...' : 'Opslaan'}
+          </button>
           <h3 className="text-sm font-semibold text-gray-800">
             {isEdit ? 'Training bewerken' : 'Nieuwe training'}
           </h3>
           <button
+            type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-xl leading-none p-1"
             aria-label="Sluiten"
@@ -1599,7 +1634,12 @@ const TrainingPopover = forwardRef(function TrainingPopover({ popover, teams, fi
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <div className="p-4 space-y-4">
+          {/* Submit error */}
+          {errors.submit && (
+            <div className="bg-red-50 text-red-700 text-xs p-2 rounded-lg">{errors.submit}</div>
+          )}
+
           {/* Dag */}
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1.5">Dag</label>
@@ -1624,36 +1664,103 @@ const TrainingPopover = forwardRef(function TrainingPopover({ popover, teams, fi
           {/* Tijd */}
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1.5">Tijd</label>
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <label className="block text-[10px] text-gray-500 mb-0.5">Van</label>
-                <select
-                  value={form.start_time}
-                  onChange={e => handleStartTimeChange(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green"
-                >
-                  {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <label className="block text-[10px] text-gray-500 mb-0.5">Van</label>
+                  <select
+                    value={form.start_time}
+                    onChange={e => handleStartTimeChange(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green"
+                  >
+                    {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <span className="text-gray-400 mt-4">&mdash;</span>
+                <div className="flex-1">
+                  <label className="block text-[10px] text-gray-500 mb-0.5">Tot</label>
+                  <select
+                    value={form.end_time}
+                    onChange={e => {
+                      setForm({ ...form, end_time: e.target.value })
+                      if (errors.time) setErrors(prev => ({ ...prev, time: null }))
+                    }}
+                    className={`w-full border rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green ${
+                      errors.time ? 'border-red-400' : 'border-gray-300'
+                    }`}
+                  >
+                    {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
               </div>
-              <span className="text-gray-400 mt-4">&mdash;</span>
-              <div className="flex-1">
-                <label className="block text-[10px] text-gray-500 mb-0.5">Tot</label>
-                <select
-                  value={form.end_time}
-                  onChange={e => {
-                    setForm({ ...form, end_time: e.target.value })
-                    if (errors.time) setErrors(prev => ({ ...prev, time: null }))
-                  }}
-                  className={`w-full border rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green ${
-                    errors.time ? 'border-red-400' : 'border-gray-300'
-                  }`}
-                >
-                  {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-            </div>
             {errors.time && <p className="text-red-600 text-[10px] mt-1">{errors.time}</p>}
           </div>
+
+          {/* Velden */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">Velden</label>
+            <div className={`border rounded-lg p-2.5 space-y-1.5 ${errors.fields ? 'border-red-400' : 'border-gray-200'}`}>
+                <div className="flex flex-wrap gap-1">
+                  {fields.map(f => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => toggleField(f.id)}
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                        form.field_ids.includes(f.id)
+                          ? 'bg-vvz-green text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {f.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            {errors.fields && <p className="text-red-600 text-[10px] mt-1">{errors.fields}</p>}
+          </div>
+
+          {/* Teams */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">Teams</label>
+            <div className={`border rounded-lg p-2.5 space-y-2 ${errors.teams ? 'border-red-400' : 'border-gray-200'}`}>
+                {teamGroups.map(group => (
+                  <div key={group.label}>
+                    <span className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">{group.label}</span>
+                    <div className="flex flex-wrap gap-1">
+                      {group.teams.map(t => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => toggleTeam(t.id)}
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                            form.team_ids.includes(t.id)
+                              ? 'text-white shadow-sm'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                          style={form.team_ids.includes(t.id) ? { backgroundColor: form.color } : {}}
+                        >
+                          {t.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            {errors.teams && <p className="text-red-600 text-[10px] mt-1">{errors.teams}</p>}
+          </div>
+
+          {/* Omschrijving */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">Omschrijving (optioneel)</label>
+              <input
+                type="text"
+                value={form.description}
+                onChange={e => setForm({ ...form, description: e.target.value })}
+                placeholder="bijv. Keeperstraining, Circuittraining"
+                maxLength={60}
+                className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green"
+              />
+            </div>
 
           {/* Kleur */}
           <div>
@@ -1682,107 +1789,18 @@ const TrainingPopover = forwardRef(function TrainingPopover({ popover, teams, fi
             </div>
           </div>
 
-          {/* Omschrijving */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Omschrijving (optioneel)</label>
-            <input
-              type="text"
-              value={form.description}
-              onChange={e => setForm({ ...form, description: e.target.value })}
-              placeholder="bijv. Keeperstraining, Circuittraining"
-              maxLength={60}
-              className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green"
-            />
-          </div>
-
-          {/* Velden */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Velden</label>
-            <div className={`border rounded-lg p-2.5 space-y-1.5 ${errors.fields ? 'border-red-400' : 'border-gray-200'}`}>
-              <div className="flex flex-wrap gap-1">
-                {fields.map(f => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => toggleField(f.id)}
-                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
-                      form.field_ids.includes(f.id)
-                        ? 'bg-vvz-green text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    {f.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {errors.fields && <p className="text-red-600 text-[10px] mt-1">{errors.fields}</p>}
-          </div>
-
-          {/* Teams */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Teams</label>
-            <div className={`border rounded-lg p-2.5 space-y-2 ${errors.teams ? 'border-red-400' : 'border-gray-200'}`}>
-              {teamGroups.map(group => (
-                <div key={group.label}>
-                  <span className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">{group.label}</span>
-                  <div className="flex flex-wrap gap-1">
-                    {group.teams.map(t => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => toggleTeam(t.id)}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
-                          form.team_ids.includes(t.id)
-                            ? 'text-white shadow-sm'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                        style={form.team_ids.includes(t.id) ? { backgroundColor: form.color } : {}}
-                      >
-                        {t.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-            {errors.teams && <p className="text-red-600 text-[10px] mt-1">{errors.teams}</p>}
-          </div>
-
-          {/* Submit error */}
-          {errors.submit && (
-            <div className="bg-red-50 text-red-700 text-xs p-2 rounded-lg">{errors.submit}</div>
-          )}
-
-          {/* Actions */}
-          <div className="flex items-center gap-2 pt-1">
-            <button
-              type="submit"
-              disabled={saving}
-              className="bg-vvz-green text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-vvz-green-dark transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
-            >
-              {saving && (
-                <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-              )}
-              {saving ? 'Opslaan...' : isEdit ? 'Opslaan' : 'Toevoegen'}
-            </button>
-            {isEdit && (
+          {isEdit && (
+            <div className="pt-2 border-t border-gray-100">
               <button
                 type="button"
                 onClick={handleDelete}
-                className="text-red-600 hover:text-red-800 text-xs font-medium transition-colors px-3 py-2"
+                className="text-red-600 hover:text-red-800 text-xs font-medium transition-colors"
               >
                 Verwijderen
               </button>
-            )}
-            <button
-              type="button"
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 text-xs font-medium transition-colors ml-auto"
-            >
-              Annuleren
-            </button>
-          </div>
+            </div>
+          )}
+        </div>
         </form>
       </div>
     </>
