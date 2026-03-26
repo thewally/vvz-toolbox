@@ -46,22 +46,19 @@ const pages = [
     title: 'Plattegrond',
     sub: 'Overzicht van Sportpark Zonnegloren',
     icon: `<rect x="490" y="120" width="220" height="220" rx="24" fill="rgba(255,255,255,0.15)"/>
-           <path d="M545 155 L655 155 L655 310 L545 310 Z" fill="none" stroke="white" stroke-width="8"/>
-           <line x1="545" y1="210" x2="655" y2="210" stroke="white" stroke-width="4"/>
-           <line x1="600" y1="155" x2="600" y2="310" stroke="white" stroke-width="4"/>
-           <circle cx="575" cy="183" r="10" fill="white"/>`,
+           <polygon points="520,160 600,140 680,165 680,315 600,290 520,315" fill="none" stroke="white" stroke-width="8" stroke-linejoin="round"/>
+           <line x1="600" y1="140" x2="600" y2="290" stroke="white" stroke-width="5"/>
+           <path d="M580,195 Q580,168 600,168 Q620,168 620,195 Q620,218 600,238 Q580,218 580,195 Z" fill="white"/>
+           <circle cx="600" cy="193" r="8" fill="rgba(46,125,50,0.8)"/>`,
   },
   {
     name: 'huistijl',
     title: 'Huistijl',
     sub: "Logo's en officiële huistijlmiddelen",
     icon: `<rect x="490" y="120" width="220" height="220" rx="24" fill="rgba(255,255,255,0.15)"/>
-           <circle cx="600" cy="230" r="70" fill="none" stroke="white" stroke-width="8"/>
-           <circle cx="600" cy="230" r="30" fill="white"/>
-           <line x1="600" y1="145" x2="600" y2="165" stroke="white" stroke-width="8" stroke-linecap="round"/>
-           <line x1="600" y1="295" x2="600" y2="315" stroke="white" stroke-width="8" stroke-linecap="round"/>
-           <line x1="515" y1="230" x2="535" y2="230" stroke="white" stroke-width="8" stroke-linecap="round"/>
-           <line x1="665" y1="230" x2="685" y2="230" stroke="white" stroke-width="8" stroke-linecap="round"/>`,
+           <line x1="656" y1="155" x2="578" y2="233" stroke="white" stroke-width="11" stroke-linecap="round"/>
+           <rect x="560" y="224" width="38" height="18" rx="3" fill="white" transform="rotate(-45 579 233)"/>
+           <path d="M562,252 L542,258 L524,296 L536,308 L574,290 L580,270 Z" fill="white"/>`,
   },
 ]
 
