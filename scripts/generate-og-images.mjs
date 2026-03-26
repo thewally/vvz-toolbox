@@ -56,9 +56,14 @@ const pages = [
     title: 'Huistijl',
     sub: "Logo's en officiële huistijlmiddelen",
     icon: `<rect x="490" y="120" width="220" height="220" rx="24" fill="rgba(255,255,255,0.15)"/>
-           <line x1="656" y1="155" x2="578" y2="233" stroke="white" stroke-width="11" stroke-linecap="round"/>
-           <rect x="560" y="224" width="38" height="18" rx="3" fill="white" transform="rotate(-45 579 233)"/>
-           <path d="M562,252 L542,258 L524,296 L536,308 L574,290 L580,270 Z" fill="white"/>`,
+           <rect x="588" y="145" width="24" height="80" rx="6" fill="white"/>
+           <rect x="578" y="223" width="44" height="14" rx="3" fill="white"/>
+           <rect x="566" y="237" width="68" height="56" rx="8" fill="white"/>
+           <line x1="580" y1="248" x2="580" y2="290" stroke="rgba(46,125,50,0.5)" stroke-width="4" stroke-linecap="round"/>
+           <line x1="592" y1="248" x2="592" y2="292" stroke="rgba(46,125,50,0.5)" stroke-width="4" stroke-linecap="round"/>
+           <line x1="604" y1="248" x2="604" y2="292" stroke="rgba(46,125,50,0.5)" stroke-width="4" stroke-linecap="round"/>
+           <line x1="616" y1="248" x2="616" y2="292" stroke="rgba(46,125,50,0.5)" stroke-width="4" stroke-linecap="round"/>
+           <line x1="628" y1="248" x2="628" y2="290" stroke="rgba(46,125,50,0.5)" stroke-width="4" stroke-linecap="round"/>`,
   },
 ]
 
