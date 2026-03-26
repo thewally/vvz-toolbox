@@ -99,7 +99,7 @@ export default function HomePage() {
               src={`${import.meta.env.BASE_URL}voetbal.png`}
               alt="Wedstrijden"
               className="w-16 h-16 group-hover:scale-110 transition-transform duration-200"
-              style={{ filter: 'invert(27%) sepia(93%) saturate(549%) hue-rotate(86deg) brightness(97%) contrast(87%)' }}
+              style={{ filter: 'brightness(0) saturate(100%) invert(26%) sepia(56%) saturate(659%) hue-rotate(86deg) brightness(98%) contrast(88%)' }}
             />
           </div>
           <div className="p-5">

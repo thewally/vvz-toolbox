@@ -81,6 +81,7 @@ const logo = await sharp('public/huistijl/logo-vvz.png')
 const VOETBAL_SIZE = 180
 const voetbal = await sharp('public/voetbal.png')
   .resize(VOETBAL_SIZE, VOETBAL_SIZE)
+  .negate({ alpha: false })
   .toBuffer()
 
 for (const page of pages) {
@@ -100,7 +101,7 @@ for (const page of pages) {
 
   const composites = [{ input: logo, top: 100, left: W - LOGO_SIZE - 40 }]
   if (page.name === 'wedstrijden') {
-    composites.unshift({ input: voetbal, top: 120, left: 80, blend: 'multiply' })
+    composites.unshift({ input: voetbal, top: 120, left: 80, blend: 'screen' })
   }
 
   await sharp(Buffer.from(svg))
