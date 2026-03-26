@@ -56,19 +56,32 @@ export default function WedstrijdenTeamsPage() {
     const geslacht = (team.geslacht || '').toLowerCase()
     const cat = (team.leeftijdscategorie || '').toLowerCase()
 
-    if (naam.includes('veteran') || naam.includes('vet.') || naam.includes('35+') || naam.includes('45+') || naam.includes('30+')) return 'Veteranen'
+    // Veteranen: altijd op naam (Sportlink markeert ze vaak als Senioren)
+    if (naam.includes('veteran') || naam.includes('vet.') || naam.includes('35+') || naam.includes('45+') || naam.includes('30+') || cat.includes('veteran')) return 'Veteranen'
 
-    // Vrouwen: geslacht === "vrouw" of MO/MV in teamnaam
-    if (geslacht === 'vrouw' || naam.includes(' mv') || naam.startsWith('mv') || naam.includes(' mo') || naam.startsWith('mo')) return 'Vrouwen'
+    // JO/MO-teams: splits op leeftijd — pupillen ≤ JO12/MO12, junioren ≥ JO13
+    const joMatch = naam.match(/[jm]o\s*(\d+)/)
+    if (joMatch) {
+      const leeftijd = parseInt(joMatch[1], 10)
+      if (geslacht === 'vrouw' || naam.includes('mo')) {
+        return leeftijd <= 12 ? 'Pupillen (meisjes)' : 'Vrouwen (jeugd)'
+      }
+      return leeftijd <= 12 ? 'Pupillen' : 'Junioren'
+    }
 
-    if (naam.includes('jo') || naam.includes('junior') || cat.includes('junior')) return 'Junioren'
-    if (naam.includes('ko') || naam.includes('pupil') || cat.includes('pupil')) return 'Pupillen'
-    if (cat.includes('veteran')) return 'Veteranen'
+    // Leeftijdscategorie veld direct gebruiken
+    if (cat.includes('pupil')) return 'Pupillen'
+    if (cat.includes('junior')) return 'Junioren'
+
+    // Vrouwen senioren
+    if (geslacht === 'vrouw') return 'Vrouwen'
+
     return 'Senioren'
   }
 
+  const categorieVolgorde = ['Senioren', 'Vrouwen', 'Veteranen', 'Junioren', 'Vrouwen (jeugd)', 'Pupillen', 'Pupillen (meisjes)']
+
   // Groepeer: categorie → speeldag → teams
-  const categorieVolgorde = ['Senioren', 'Vrouwen', 'Veteranen', 'Junioren', 'Pupillen']
   const speeldagVolgorde = ['Zondag', 'Zaterdag']
 
   const perCategorie = new Map()
