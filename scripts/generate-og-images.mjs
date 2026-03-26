@@ -81,7 +81,7 @@ for (const page of pages) {
         <stop offset="100%" style="stop-color:#1B5E20;stop-opacity:1"/>
       </linearGradient>
     </defs>
-    ${page.icon}
+    <g transform="translate(-410, 0)">${page.icon}</g>
     <text x="80" y="430" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="white">${page.title}</text>
     <text x="80" y="510" font-family="Arial, sans-serif" font-size="40" fill="rgba(255,255,255,0.8)">${page.sub}</text>
   </svg>`
