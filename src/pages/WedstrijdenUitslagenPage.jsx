@@ -84,26 +84,32 @@ export default function WedstrijdenUitslagenPage() {
                 }
               }
 
+              const isThuis = w.thuisteamclubrelatiecode === 'FZSZ66G'
+              const thuisUitLabel = isThuis ? 'THUIS' : 'UIT'
+
               return (
-                <div key={i} className={`flex items-center rounded-xl shadow-sm border px-4 py-3 gap-3 hover:shadow-md transition-shadow cursor-default ${resultIndicator}`}>
-                  {/* Thuisteam */}
-                  <div className="flex-1 min-w-0 text-right">
-                    <span className="font-semibold text-gray-800 text-sm truncate block">{w.thuisteam}</span>
+                <div key={i} className={`rounded-xl shadow-sm border px-4 py-3 hover:shadow-md transition-shadow cursor-default ${resultIndicator}`}>
+                  <div className="flex items-center gap-3">
+                    {/* Tijd + thuis/uit */}
+                    <div className="shrink-0 w-14 text-center">
+                      <span className="block text-sm font-bold text-vvz-green">{w.aanvangstijd || '--:--'}</span>
+                      <span className="block text-xs font-semibold text-gray-400 mt-0.5">{thuisUitLabel}</span>
+                    </div>
+                    {/* Thuisteam */}
+                    <div className="flex-1 min-w-0 text-right">
+                      <span className="font-semibold text-gray-800 text-sm truncate block">{w.thuisteam}</span>
+                    </div>
+                    {/* Score */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="text-xl font-bold text-gray-800 w-7 text-right">{thuisScore}</span>
+                      <span className="text-gray-400 text-sm">–</span>
+                      <span className="text-xl font-bold text-gray-800 w-7 text-left">{uitScore}</span>
+                    </div>
+                    {/* Uitteam */}
+                    <div className="flex-1 min-w-0">
+                      <span className="font-semibold text-gray-800 text-sm truncate block">{w.uitteam}</span>
+                    </div>
                   </div>
-                  {/* Score */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xl font-bold text-gray-800 w-7 text-right">{thuisScore}</span>
-                    <span className="text-gray-400 text-sm">-</span>
-                    <span className="text-xl font-bold text-gray-800 w-7 text-left">{uitScore}</span>
-                  </div>
-                  {/* Uitteam */}
-                  <div className="flex-1 min-w-0">
-                    <span className="font-semibold text-gray-800 text-sm truncate block">{w.uitteam}</span>
-                  </div>
-                  {/* Competitie - alleen op grotere schermen */}
-                  {w.competitienaam && (
-                    <span className="text-xs text-gray-400 shrink-0 hidden sm:block max-w-32 truncate">{w.competitienaam}</span>
-                  )}
                 </div>
               )
             })}
