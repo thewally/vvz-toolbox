@@ -39,13 +39,6 @@ const pages = [
     image: `${BASE_URL}/og/huistijl.png`,
     url: `${BASE_URL}/huistijl`,
   },
-  {
-    path: 'wedstrijden',
-    title: "Wedstrijden | VVZ'49 Toolbox",
-    description: "Wedstrijdprogramma, uitslagen en teampagina's van VVZ'49.",
-    image: `${BASE_URL}/og/wedstrijden.png`,
-    url: `${BASE_URL}/wedstrijden`,
-  },
 ]
 
 function ogTags(page) {
