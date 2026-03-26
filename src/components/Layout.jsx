@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 const SECTION_LABELS = {
   '/trainingsschema': 'Trainingsschema',
   '/agenda': 'Agenda',
+  '/wedstrijden': 'Wedstrijden',
   '/plattegrond': 'Plattegrond',
   '/huistijl': 'Huistijl',
 }

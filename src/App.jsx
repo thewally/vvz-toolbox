@@ -11,6 +11,11 @@ import HuistijlPage from './pages/HuistijlPage'
 import AgendaLayout from './components/AgendaLayout'
 import AgendaPage from './pages/AgendaPage'
 import AgendaBeheerPage from './pages/AgendaBeheerPage'
+import WedstrijdenLayout from './components/WedstrijdenLayout'
+import WedstrijdenProgrammaPage from './pages/WedstrijdenProgrammaPage'
+import WedstrijdenUitslagenPage from './pages/WedstrijdenUitslagenPage'
+import WedstrijdenTeamsPage from './pages/WedstrijdenTeamsPage'
+import TeamPage from './pages/TeamPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export default function App() {
@@ -34,6 +39,12 @@ export default function App() {
               <AgendaBeheerPage />
             </ProtectedRoute>
           } />
+        </Route>
+        <Route path="wedstrijden" element={<WedstrijdenLayout />}>
+          <Route index element={<WedstrijdenProgrammaPage />} />
+          <Route path="uitslagen" element={<WedstrijdenUitslagenPage />} />
+          <Route path="teams" element={<WedstrijdenTeamsPage />} />
+          <Route path="teams/:slug" element={<TeamPage />} />
         </Route>
         <Route path="plattegrond" element={<PlattegrondPage />} />
         <Route path="huistijl" element={<HuistijlPage />} />
