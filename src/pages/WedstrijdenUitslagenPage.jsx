@@ -57,29 +57,56 @@ export default function WedstrijdenUitslagenPage() {
     <div className="max-w-3xl mx-auto p-4 pt-6">
       {[...perDag.entries()].map(([datum, items]) => (
         <div key={datum} className="mb-8">
-          <h2 className="text-lg font-bold text-gray-700 capitalize mb-4 border-b border-gray-200 pb-2">
-            {formatDagLabel(items[0].wedstrijddatum)}
-          </h2>
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
+              {formatDagLabel(items[0].wedstrijddatum)}
+            </h2>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
           <div className="flex flex-col gap-3">
-            {items.map((w, i) => (
-              <div key={i} className="flex bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-                {/* Score badge */}
-                <div className="flex flex-col items-center justify-center w-20 shrink-0 bg-vvz-green text-white px-2 py-3">
-                  <span className="text-xl font-bold leading-tight">
-                    {w.uitslag || '- - -'}
-                  </span>
-                </div>
-                {/* Content */}
-                <div className="flex-1 p-4 min-w-0">
-                  <h3 className="font-semibold text-gray-800 leading-snug">
-                    {w.thuisteam} <span className="text-gray-400 font-normal">vs</span> {w.uitteam}
-                  </h3>
+            {items.map((w, i) => {
+              const isEigenTeam = w.eigenteam === 'true'
+              const scores = w.uitslag ? w.uitslag.split('-').map(s => s.trim()) : null
+              const thuisScore = scores?.[0] ?? '-'
+              const uitScore = scores?.[1] ?? '-'
+
+              let resultIndicator = 'bg-gray-100 border-gray-200' // default / geen eigenteam
+              if (isEigenTeam && scores && scores.length === 2) {
+                const t = parseInt(scores[0], 10)
+                const u = parseInt(scores[1], 10)
+                const isThuis = w.thuisteamclubrelatiecode === 'FZSZ66G'
+                const eigenScore = isThuis ? t : u
+                const tegenScore = isThuis ? u : t
+                if (!isNaN(eigenScore) && !isNaN(tegenScore)) {
+                  if (eigenScore > tegenScore) resultIndicator = 'bg-green-50 border-green-200'
+                  else if (eigenScore < tegenScore) resultIndicator = 'bg-red-50 border-red-200'
+                  else resultIndicator = 'bg-gray-50 border-gray-200'
+                }
+              }
+
+              return (
+                <div key={i} className={`flex items-center rounded-xl shadow-sm border px-4 py-3 gap-3 hover:shadow-md transition-shadow cursor-default ${resultIndicator}`}>
+                  {/* Thuisteam */}
+                  <div className="flex-1 min-w-0 text-right">
+                    <span className="font-semibold text-gray-800 text-sm truncate block">{w.thuisteam}</span>
+                  </div>
+                  {/* Score */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xl font-bold text-gray-800 w-7 text-right">{thuisScore}</span>
+                    <span className="text-gray-400 text-sm">-</span>
+                    <span className="text-xl font-bold text-gray-800 w-7 text-left">{uitScore}</span>
+                  </div>
+                  {/* Uitteam */}
+                  <div className="flex-1 min-w-0">
+                    <span className="font-semibold text-gray-800 text-sm truncate block">{w.uitteam}</span>
+                  </div>
+                  {/* Competitie - alleen op grotere schermen */}
                   {w.competitienaam && (
-                    <p className="text-sm text-gray-500 mt-1">{w.competitienaam}</p>
+                    <span className="text-xs text-gray-400 shrink-0 hidden sm:block max-w-32 truncate">{w.competitienaam}</span>
                   )}
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       ))}
