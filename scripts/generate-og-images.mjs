@@ -84,7 +84,6 @@ for (const page of pages) {
     ${page.icon}
     <text x="80" y="430" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="white">${page.title}</text>
     <text x="80" y="510" font-family="Arial, sans-serif" font-size="40" fill="rgba(255,255,255,0.8)">${page.sub}</text>
-    <text x="80" y="590" font-family="Arial, sans-serif" font-size="32" fill="rgba(255,255,255,0.45)">VVZ'49 · Soest</text>
   </svg>`
 
   await sharp(Buffer.from(svg))
