@@ -10,16 +10,8 @@ const pages = [
     title: "VVZ'49 Toolbox",
     sub: "De digitale toolbox van VVZ'49",
     icon: `<rect x="490" y="120" width="220" height="220" rx="24" fill="rgba(255,255,255,0.15)"/>
-           <circle cx="600" cy="230" r="80" fill="none" stroke="white" stroke-width="8"/>
-           <circle cx="600" cy="230" r="24" fill="white"/>
-           <line x1="600" y1="150" x2="600" y2="206" stroke="white" stroke-width="8" stroke-linecap="round"/>
-           <line x1="600" y1="254" x2="600" y2="310" stroke="white" stroke-width="8" stroke-linecap="round"/>
-           <line x1="520" y1="230" x2="576" y2="230" stroke="white" stroke-width="8" stroke-linecap="round"/>
-           <line x1="624" y1="230" x2="680" y2="230" stroke="white" stroke-width="8" stroke-linecap="round"/>
-           <line x1="543" y1="173" x2="581" y2="211" stroke="white" stroke-width="6" stroke-linecap="round"/>
-           <line x1="619" y1="249" x2="657" y2="287" stroke="white" stroke-width="6" stroke-linecap="round"/>
-           <line x1="657" y1="173" x2="619" y2="211" stroke="white" stroke-width="6" stroke-linecap="round"/>
-           <line x1="581" y1="249" x2="543" y2="287" stroke="white" stroke-width="6" stroke-linecap="round"/>`,
+           <polygon points="600,148 520,210 540,210 540,308 660,308 660,210 680,210" fill="none" stroke="white" stroke-width="8" stroke-linejoin="round"/>
+           <rect x="576" y="260" width="48" height="48" rx="4" fill="white"/>`,
   },
   {
     name: 'agenda',
