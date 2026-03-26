@@ -1,6 +1,6 @@
 const BASE_URL = 'https://data.sportlink.com'
 const CLIENT_ID = '0cQwbuN8B2'
-const COMMON_PARAMS = 'gebruiklokaleteamgegevens=NEE&eigenwedstrijden=JA&thuis=JA&uit=JA'
+const COMMON_PARAMS = 'eigenwedstrijden=JA&thuis=JA&uit=JA&gebruiklokaleteamgegevens=NEE'
 
 async function apiFetch(path) {
   try {
@@ -14,19 +14,19 @@ async function apiFetch(path) {
 }
 
 export function fetchProgramma() {
-  return apiFetch(`/programma?client_id=${CLIENT_ID}&${COMMON_PARAMS}&aantaldagen=14`)
+  return apiFetch(`/programma?${COMMON_PARAMS}&client_id=${CLIENT_ID}`)
 }
 
 export function fetchUitslagen() {
-  return apiFetch(`/uitslagen?client_id=${CLIENT_ID}&${COMMON_PARAMS}&aantaldagen=14`)
+  return apiFetch(`/uitslagen?${COMMON_PARAMS}&client_id=${CLIENT_ID}`)
 }
 
 export function fetchTeamProgramma(teamcode) {
-  return apiFetch(`/programma?client_id=${CLIENT_ID}&teamcode=${teamcode}&${COMMON_PARAMS}&aantaldagen=28`)
+  return apiFetch(`/programma?${COMMON_PARAMS}&teamcode=${teamcode}&client_id=${CLIENT_ID}`)
 }
 
 export function fetchTeamUitslagen(teamcode) {
-  return apiFetch(`/uitslagen?client_id=${CLIENT_ID}&teamcode=${teamcode}&${COMMON_PARAMS}&aantaldagen=28`)
+  return apiFetch(`/uitslagen?${COMMON_PARAMS}&teamcode=${teamcode}&client_id=${CLIENT_ID}`)
 }
 
 export function fetchTeams() {
