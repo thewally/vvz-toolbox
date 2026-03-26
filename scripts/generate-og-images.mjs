@@ -66,7 +66,7 @@ const pages = [
 
 await mkdir(BASE, { recursive: true })
 
-const LOGO_SIZE = 90
+const LOGO_SIZE = 150
 const logo = await sharp('public/huistijl/logo-vvz.png')
   .resize(LOGO_SIZE, LOGO_SIZE)
   .toBuffer()
