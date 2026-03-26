@@ -769,7 +769,7 @@ export default function SchedulePage() {
           </span>
         ) : null}
         {formatValidityLabel(currentSchedule) && (
-          <span className="text-xs text-gray-400 w-full sm:w-auto">
+          <span className="text-xs text-gray-400 w-full pl-3 sm:pl-0 sm:w-auto">
             Geldig: {formatValidityLabel(currentSchedule)}
           </span>
         )}
