@@ -786,7 +786,7 @@ export default function SchedulePage() {
             isAdmin={isAdmin}
             isExpanded={false}
             interactive={false}
-            onOpenOverlay={isAdmin ? () => setModalDay(day.value) : undefined}
+            onOpenOverlay={isAdmin ? () => { if (window.innerWidth >= 768) setModalDay(day.value) } : undefined}
             onEmptyCellClick={openPopoverForEmpty}
             onSlotClick={openPopoverForSlot}
             onDragStart={handleDragStart}
