@@ -33,6 +33,13 @@ const pages = [
     url: `${BASE_URL}/plattegrond`,
   },
   {
+    path: 'wedstrijden',
+    title: "Wedstrijden | VVZ'49 Toolbox",
+    description: "Programma, uitslagen en standen per team van VVZ'49.",
+    image: `${BASE_URL}/og/wedstrijden.png`,
+    url: `${BASE_URL}/wedstrijden`,
+  },
+  {
     path: 'huistijl',
     title: "Huistijl | VVZ'49 Toolbox",
     description: "Logo's en officiële huistijlmiddelen van VVZ'49.",

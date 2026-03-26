@@ -1,5 +1,5 @@
 import sharp from 'sharp'
-import { mkdir } from 'fs/promises'
+import { mkdir, readFile } from 'fs/promises'
 
 const BASE = 'public/og'
 const W = 1200, H = 630
@@ -52,6 +52,12 @@ const pages = [
            <circle cx="600" cy="193" r="8" fill="rgba(46,125,50,0.8)"/>`,
   },
   {
+    name: 'wedstrijden',
+    title: 'Wedstrijden',
+    sub: "Programma, uitslagen en standen per team",
+    icon: null,
+  },
+  {
     name: 'huistijl',
     title: 'Huistijl',
     sub: "Logo's en officiële huistijlmiddelen",
@@ -71,6 +77,12 @@ const logo = await sharp('public/huistijl/logo-vvz.png')
   .resize(LOGO_SIZE, LOGO_SIZE)
   .toBuffer()
 
+// Wedstrijden: composite voetbal.png with multiply blend onto green background
+const VOETBAL_SIZE = 180
+const voetbal = await sharp('public/voetbal.png')
+  .resize(VOETBAL_SIZE, VOETBAL_SIZE)
+  .toBuffer()
+
 for (const page of pages) {
   const svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
     <rect width="${W}" height="${H}" fill="#1B5E20"/>
@@ -81,13 +93,18 @@ for (const page of pages) {
         <stop offset="100%" style="stop-color:#1B5E20;stop-opacity:1"/>
       </linearGradient>
     </defs>
-    <g transform="translate(-410, 0)">${page.icon}</g>
+    ${page.icon ? `<g transform="translate(-410, 0)">${page.icon}</g>` : ''}
     <text x="80" y="430" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="white">${page.title}</text>
     <text x="80" y="510" font-family="Arial, sans-serif" font-size="40" fill="rgba(255,255,255,0.8)">${page.sub}</text>
   </svg>`
 
+  const composites = [{ input: logo, top: 100, left: W - LOGO_SIZE - 40 }]
+  if (page.name === 'wedstrijden') {
+    composites.unshift({ input: voetbal, top: 120, left: 80, blend: 'multiply' })
+  }
+
   await sharp(Buffer.from(svg))
-    .composite([{ input: logo, top: 100, left: W - LOGO_SIZE - 40 }])
+    .composite(composites)
     .png()
     .toFile(`${BASE}/${page.name}.png`)
   console.log(`Generated ${BASE}/${page.name}.png`)

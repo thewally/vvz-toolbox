@@ -89,6 +89,28 @@ export default function HomePage() {
             </p>
           </div>
         </Link>
+        {/* Wedstrijden kaartje */}
+        <Link
+          to="/wedstrijden"
+          className="group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 hover:-translate-y-1 border border-gray-100 overflow-hidden"
+        >
+          <div className="bg-vvz-green/10 p-6 flex items-center justify-center">
+            <img
+              src={`${import.meta.env.BASE_URL}voetbal.png`}
+              alt="Wedstrijden"
+              className="w-16 h-16 group-hover:scale-110 transition-transform duration-200"
+              style={{ filter: 'invert(27%) sepia(89%) saturate(500%) hue-rotate(86deg) brightness(85%) contrast(90%)' }}
+            />
+          </div>
+          <div className="p-5">
+            <h3 className="text-lg font-semibold text-gray-800 group-hover:text-vvz-green transition-colors">
+              Wedstrijden
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              Programma, uitslagen en standen per team
+            </p>
+          </div>
+        </Link>
         {/* Huistijl kaartje */}
         <Link
           to="/huistijl"
