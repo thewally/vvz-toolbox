@@ -88,7 +88,7 @@ for (const page of pages) {
   </svg>`
 
   await sharp(Buffer.from(svg))
-    .composite([{ input: logo, top: 40, left: W - LOGO_SIZE - 40 }])
+    .composite([{ input: logo, top: 100, left: W - LOGO_SIZE - 40 }])
     .png()
     .toFile(`${BASE}/${page.name}.png`)
   console.log(`Generated ${BASE}/${page.name}.png`)
