@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/generate-og-images.mjs && node scripts/generate-og-html.mjs",
+    "build": "vite build && node scripts/generate-og-html.mjs",
     "build:og": "node scripts/generate-og-images.mjs && node scripts/generate-og-html.mjs",
     "preview": "vite preview"
   },
