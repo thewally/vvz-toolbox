@@ -48,8 +48,7 @@ export default function TopNav() {
       </div>
 
       {/* Schermvullend menu */}
-      {menuOpen && (
-        <div className="fixed inset-0 z-50 bg-vvz-green text-white flex flex-col">
+      <div className={`fixed inset-0 z-50 bg-vvz-green text-white flex flex-col transition-transform duration-300 ease-in-out ${menuOpen ? 'translate-y-0' : '-translate-y-full'}`}>
           {/* Sluitknop */}
           <div className="flex items-center justify-end px-4 py-4">
             <button
@@ -133,7 +132,7 @@ export default function TopNav() {
             )}
           </div>
         </div>
-      )}
+      </div>
     </nav>
   )
 }
