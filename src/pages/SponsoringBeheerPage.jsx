@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getAllSponsors, createSponsor, updateSponsor, deleteSponsor, generateSlug } from '../services/sponsors'
+import RichTextEditor from '../components/RichTextEditor'
 
 const LEEG = {
   naam: '', categorie: 'goud', logo_url: '', website_url: '',
@@ -212,8 +213,7 @@ export default function SponsoringBeheerPage() {
               {form.categorie === 'goud' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Beschrijving</label>
-                  <textarea value={form.beschrijving} onChange={e => setForm(f => ({ ...f, beschrijving: e.target.value }))}
-                    rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green" />
+                  <RichTextEditor value={form.beschrijving} onChange={val => setForm(f => ({ ...f, beschrijving: val }))} />
                 </div>
               )}
               <div className="flex items-center gap-2 pt-1">
