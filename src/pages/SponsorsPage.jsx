@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getSponsors } from '../services/sponsors'
+import { useAuth } from '../context/AuthContext'
 
 const CATEGORIE_LABELS = { goud: 'Goud', zilver: 'Zilver', brons: 'Brons' }
 
@@ -11,6 +12,7 @@ const CATEGORIE_BADGE = {
 }
 
 export default function SponsorsPage() {
+  const { user } = useAuth()
   const [sponsors, setSponsors] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -29,7 +31,14 @@ export default function SponsorsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
-      <h2 className="text-2xl font-bold text-gray-800 mb-10">Onze sponsors</h2>
+      <div className="flex items-center justify-between mb-10">
+        <h2 className="text-2xl font-bold text-gray-800">Onze sponsors</h2>
+        {user && (
+          <Link to="/sponsoring/beheer" className="text-sm text-gray-400 hover:text-vvz-green transition-colors">
+            Beheer
+          </Link>
+        )}
+      </div>
 
       {/* Goud */}
       {goud.length > 0 && (

@@ -32,14 +32,14 @@ export default function SponsorSlider() {
   const doubled = [...base, ...base]
 
   return (
-    <div className="w-full overflow-hidden bg-white border-y border-gray-100 py-4">
+    <div className="w-full overflow-hidden bg-gray-200 border-y border-gray-300 py-4">
       <style>{`
         @keyframes marquee {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
         .marquee-inner {
-          animation: marquee 30s linear infinite;
+          animation: marquee 50s linear infinite;
         }
       `}</style>
       <div className="marquee-inner flex gap-12 items-center w-max">
