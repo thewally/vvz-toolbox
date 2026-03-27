@@ -6,20 +6,21 @@ export default function Layout() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-vvz-green text-white shadow-lg no-print relative">
         {/* Logo — absoluut gecentreerd, overlapt boven en onder */}
+        <TopNav />
+        {/* Logo — gecentreerd, hangt volledig onder de header */}
         <Link
           to="/"
           aria-label="Home"
-          className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 top-1/2 z-10"
+          className="absolute left-1/2 -translate-x-1/2 top-full z-10 -mt-4"
         >
           <img
             src={`${import.meta.env.BASE_URL}logo-vvz.png`}
             alt="VVZ'49"
-            className="h-32 w-32 object-contain drop-shadow-md"
+            className="h-40 w-40 object-contain drop-shadow-md"
           />
         </Link>
-        <TopNav />
       </header>
-      <main className="pt-16">
+      <main className="pt-40">
         <Outlet />
       </main>
       <footer className="mt-12 py-4 text-center text-xs text-gray-400 no-print">
