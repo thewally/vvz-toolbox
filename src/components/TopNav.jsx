@@ -48,12 +48,12 @@ export default function TopNav() {
       <div className={`fixed inset-0 z-50 bg-vvz-green text-white flex flex-col transition-transform duration-300 ease-in-out ${menuOpen ? 'translate-y-0 pointer-events-auto' : '-translate-y-full pointer-events-none'}`}>
 
         {/* Topbalk: logo links, sluiten rechts */}
-        <div className="flex items-start justify-between px-6 py-4 shrink-0">
+        <div className="flex items-start justify-between px-6 py-2 sm:py-4 shrink-0">
           <Link to="/" aria-label="Home" onClick={() => setMenuOpen(false)}>
             <img
               src={`${import.meta.env.BASE_URL}logo-vvz.png`}
               alt="VVZ'49"
-              className="h-16 w-16 sm:h-32 sm:w-32 object-contain"
+              className="h-10 w-10 sm:h-32 sm:w-32 object-contain"
             />
           </Link>
           <button
@@ -69,11 +69,11 @@ export default function TopNav() {
         </div>
 
         {/* Twee kolommen */}
-        <div className="flex-1 overflow-y-auto flex justify-center px-6 py-6">
-          <div className="flex flex-col sm:flex-row gap-8 sm:gap-16 w-full max-w-2xl items-start">
+        <div className="flex-1 overflow-y-auto flex justify-center px-6 py-2 sm:py-6">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-16 w-full max-w-2xl items-start">
 
             {/* Kolom 1: quick links + inloggen */}
-            <div className="flex flex-col gap-3 whitespace-nowrap order-2 sm:order-1">
+            <div className="flex flex-col gap-1.5 sm:gap-3 whitespace-nowrap order-2 sm:order-1">
               {QUICK_LINKS.map(item =>
                 item.href ? (
                   <a
@@ -81,7 +81,7 @@ export default function TopNav() {
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-lg sm:text-2xl font-light text-white/70 hover:text-white transition-colors"
+                    className="text-sm sm:text-2xl font-light text-white/70 hover:text-white transition-colors"
                   >
                     {item.label}
                   </a>
@@ -90,7 +90,7 @@ export default function TopNav() {
                     key={item.to}
                     to={item.to}
                     className={({ isActive }) =>
-                      `text-lg sm:text-2xl font-light ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
+                      `text-sm sm:text-2xl font-light ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
                     }
                   >
                     {item.label}
@@ -125,7 +125,7 @@ export default function TopNav() {
                       <button
                         onClick={() => setAccordion(expanded ? null : section.label)}
                         aria-expanded={expanded}
-                        className={`flex items-center gap-2 text-xl sm:text-3xl font-semibold uppercase tracking-wider text-white ${idx === 0 ? 'pb-2 sm:pb-3 pt-0' : 'py-2 sm:py-3'}`}
+                        className={`flex items-center gap-2 text-base sm:text-3xl font-semibold uppercase tracking-wider text-white ${idx === 0 ? 'pb-1 sm:pb-3 pt-0' : 'py-1 sm:py-3'}`}
                       >
                         {section.label}
                         <svg className={`w-4 h-4 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -155,7 +155,7 @@ export default function TopNav() {
                     key={section.to}
                     to={section.to}
                     className={({ isActive }) =>
-                      `text-xl sm:text-3xl font-semibold uppercase tracking-wider ${idx === 0 ? 'pb-2 sm:pb-3 pt-0' : 'py-2 sm:py-3'} ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
+                      `text-base sm:text-3xl font-semibold uppercase tracking-wider ${idx === 0 ? 'pb-1 sm:pb-3 pt-0' : 'py-1 sm:py-3'} ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
                     }
                   >
                     {section.label}
@@ -184,8 +184,8 @@ export default function TopNav() {
         </div>
 
         {/* Slogan */}
-        <div className="px-6 py-6 border-t border-white/20 shrink-0 text-center">
-          <p className="text-white/80 text-3xl" style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>
+        <div className="px-6 py-3 sm:py-6 border-t border-white/20 shrink-0 text-center">
+          <p className="text-white/80 text-xl sm:text-3xl" style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>
             Er is maar één club en dat is vvz!
           </p>
         </div>
