@@ -60,14 +60,14 @@ export default function SponsorSlider() {
               />
             </a>
           ) : (
-            <div key={idx} className="shrink-0 flex flex-col gap-0.5 h-7 sm:h-20 w-[70px] sm:w-[200px]">
+            <div key={idx} className="shrink-0 flex flex-col gap-px w-[70px] sm:w-[200px]">
               {item.paar.map(s => (
                 <a
                   key={s.id}
                   href={s.website_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center rounded p-0.5 sm:p-1.5 shadow-sm w-full"
+                  className="flex items-center justify-center rounded shadow-sm w-full h-[13px] sm:h-[39px] p-0.5 sm:p-1.5"
                   style={{ backgroundColor: s.logo_achtergrond || '#ffffff' }}
                 >
                   <img
