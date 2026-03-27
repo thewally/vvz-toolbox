@@ -51,6 +51,7 @@ export default function SponsoringBeheerPage() {
     setFout(null)
     const slug = form.slug || generateSlug(form.naam)
     const data = { ...form, slug }
+    if (data.categorie === 'brons') { data.logo_url = null; data.logo_achtergrond = null }
     const { error } = modal.mode === 'nieuw'
       ? await createSponsor(data)
       : await updateSponsor(modal.id, data)
@@ -181,27 +182,31 @@ export default function SponsoringBeheerPage() {
                   <option value="brons">Brons</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
-                <input type="url" value={form.logo_url} onChange={e => setForm(f => ({ ...f, logo_url: e.target.value }))}
-                  placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Logo achtergrondkleur</label>
-                <div className="flex items-center gap-3">
-                  <input type="color" value={form.logo_achtergrond || '#ffffff'}
-                    onChange={e => setForm(f => ({ ...f, logo_achtergrond: e.target.value }))}
-                    className="h-9 w-14 rounded border border-gray-300 cursor-pointer p-0.5" />
-                  <button type="button" onClick={() => setForm(f => ({ ...f, logo_achtergrond: '#ffffff' }))}
-                    className="text-xs text-gray-400 hover:text-vvz-green transition-colors">Reset naar wit</button>
-                </div>
-                {form.logo_url && (
-                  <div className="mt-2 flex items-center justify-center rounded-lg p-4 border border-gray-200 h-20 w-[200px]"
-                    style={{ backgroundColor: form.logo_achtergrond || '#ffffff' }}>
-                    <img src={form.logo_url} alt="preview" className="max-h-12 max-w-[160px] w-auto object-contain" />
+              {form.categorie !== 'brons' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
+                    <input type="url" value={form.logo_url} onChange={e => setForm(f => ({ ...f, logo_url: e.target.value }))}
+                      placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green" />
                   </div>
-                )}
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Logo achtergrondkleur</label>
+                    <div className="flex items-center gap-3">
+                      <input type="color" value={form.logo_achtergrond || '#ffffff'}
+                        onChange={e => setForm(f => ({ ...f, logo_achtergrond: e.target.value }))}
+                        className="h-9 w-14 rounded border border-gray-300 cursor-pointer p-0.5" />
+                      <button type="button" onClick={() => setForm(f => ({ ...f, logo_achtergrond: '#ffffff' }))}
+                        className="text-xs text-gray-400 hover:text-vvz-green transition-colors">Reset naar wit</button>
+                    </div>
+                    {form.logo_url && (
+                      <div className="mt-2 flex items-center justify-center rounded-lg p-4 border border-gray-200 h-20 w-[200px]"
+                        style={{ backgroundColor: form.logo_achtergrond || '#ffffff' }}>
+                        <img src={form.logo_url} alt="preview" className="max-h-12 max-w-[160px] w-auto object-contain" />
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
                 <input type="url" value={form.website_url} onChange={e => setForm(f => ({ ...f, website_url: e.target.value }))}
