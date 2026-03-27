@@ -70,13 +70,13 @@ export default function SponsoringBeheerPage() {
     if (error) { setFout(error.message); setOpslaan(false); return }
     setModal(null)
     setOpslaan(false)
-    laadSponsors()
+    window.location.reload()
   }
 
   async function handleVerwijderen(id) {
     if (!confirm('Sponsor verwijderen?')) return
     await deleteSponsor(id)
-    laadSponsors()
+    window.location.reload()
   }
 
   async function handleDrop(categorie, toIndex) {
