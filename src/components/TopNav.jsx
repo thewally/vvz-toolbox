@@ -97,8 +97,8 @@ export default function TopNav() {
                   </NavLink>
                 )
               )}
-              {/* Inloggen/uitloggen — duidelijk gescheiden van menu */}
-              <div className="mt-6 pt-4 border-t border-white/20">
+              {/* Inloggen/uitloggen — alleen zichtbaar op desktop */}
+              <div className="hidden sm:block mt-6 pt-4 border-t border-white/20">
                 {user ? (
                   <button onClick={signOut} className="text-sm text-white/50 hover:text-white/80 transition-colors">
                     Uitloggen
@@ -164,6 +164,23 @@ export default function TopNav() {
               })}
             </div>
           </div>
+        </div>
+
+        {/* Auth op mobiel — boven de lijn */}
+        <div className="sm:hidden px-6 pb-3 flex justify-end shrink-0">
+          {user ? (
+            <button onClick={signOut} className="text-sm text-white/50 hover:text-white/80 transition-colors">
+              Uitloggen
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              state={{ from: { pathname: location.pathname } }}
+              className="text-sm text-white/50 hover:text-white/80 transition-colors"
+            >
+              Inloggen
+            </Link>
+          )}
         </div>
 
         {/* Slogan */}
