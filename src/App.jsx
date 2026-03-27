@@ -12,6 +12,7 @@ import AgendaLayout from './components/AgendaLayout'
 import AgendaPage from './pages/AgendaPage'
 import AgendaBeheerPage from './pages/AgendaBeheerPage'
 import ProtectedRoute from './components/ProtectedRoute'
+import PlaceholderPage from './pages/PlaceholderPage'
 
 export default function App() {
   return (
@@ -35,6 +36,8 @@ export default function App() {
             </ProtectedRoute>
           } />
         </Route>
+        <Route path="nieuws" element={<PlaceholderPage title="Nieuws" />} />
+        <Route path="wedstrijden" element={<PlaceholderPage title="Wedstrijden" />} />
         <Route path="plattegrond" element={<PlattegrondPage />} />
         <Route path="huistijl" element={<HuistijlPage />} />
         <Route path="login" element={<LoginPage />} />
