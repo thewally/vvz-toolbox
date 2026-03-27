@@ -79,7 +79,7 @@ export default function TopNav() {
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `text-2xl ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
+                    `text-4xl ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
                   }
                 >
                   {item.label}
@@ -97,7 +97,7 @@ export default function TopNav() {
                       <button
                         onClick={() => setAccordion(expanded ? null : section.label)}
                         aria-expanded={expanded}
-                        className={`flex items-center gap-2 text-xl font-semibold uppercase tracking-wider text-white ${idx === 0 ? 'pb-3 pt-0' : 'py-3'}`}
+                        className={`flex items-center gap-2 text-3xl font-semibold uppercase tracking-wider text-white ${idx === 0 ? 'pb-3 pt-0' : 'py-3'}`}
                       >
                         {section.label}
                         <svg className={`w-4 h-4 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -111,7 +111,7 @@ export default function TopNav() {
                               key={child.to}
                               to={child.to}
                               className={({ isActive }) =>
-                                `py-1 text-xl ${isActive ? 'text-white font-medium' : 'text-white/70 hover:text-white'} transition-colors`
+                                `py-1 text-2xl ${isActive ? 'text-white font-medium' : 'text-white/70 hover:text-white'} transition-colors`
                               }
                             >
                               {child.label}
@@ -127,7 +127,7 @@ export default function TopNav() {
                     key={section.to}
                     to={section.to}
                     className={({ isActive }) =>
-                      `text-xl font-semibold uppercase tracking-wider ${idx === 0 ? 'pb-3 pt-0' : 'py-3'} ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
+                      `text-3xl font-semibold uppercase tracking-wider ${idx === 0 ? 'pb-3 pt-0' : 'py-3'} ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
                     }
                   >
                     {section.label}
