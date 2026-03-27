@@ -1,7 +1,7 @@
 export const QUICK_LINKS = [
   { label: 'Nieuws', to: '/nieuws' },
   { label: 'Activiteiten', to: '/agenda' },
-  { label: 'Wordt vrijwilliger', to: '/vrijwilliger' },
+  { label: 'Vrijwilliger worden?', to: '/vrijwilliger' },
   { label: 'Sponsors', to: '/sponsors' },
   { label: 'Ledenshop', href: 'https://clubs.stanno.com/nl/vvz-49/clubcollectie' },
   { label: 'Lid worden?', to: '/lid-worden' },
