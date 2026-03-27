@@ -1,5 +1,5 @@
 const BASE_URL = 'https://data.sportlink.com'
-const CLIENT_ID = '0cQwbuN8B2'
+const CLIENT_ID = import.meta.env.VITE_SPORTLINK_CLIENT_ID
 const COMMON_PARAMS = 'eigenwedstrijden=JA&thuis=JA&uit=JA&gebruiklokaleteamgegevens=NEE'
 
 async function apiFetch(path) {
