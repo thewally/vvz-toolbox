@@ -99,9 +99,9 @@ export default function WedstrijdenUitslagenPage() {
                   </div>
                   {/* Score — vaste breedte zodat streepje altijd uitlijnt */}
                   <div className="shrink-0 flex items-center w-16 justify-center gap-0.5">
-                    <span className="text-xl font-bold text-gray-800 w-6 text-right tabular-nums">{thuisScore}</span>
-                    <span className="text-gray-400 text-lg mx-1">–</span>
-                    <span className="text-xl font-bold text-gray-800 w-6 text-left tabular-nums">{uitScore}</span>
+                    <span className="text-sm font-semibold text-gray-800 tabular-nums">{thuisScore}</span>
+                    <span className="text-gray-400 text-sm mx-1">–</span>
+                    <span className="text-sm font-semibold text-gray-800 tabular-nums">{uitScore}</span>
                   </div>
                   {/* Uitteam */}
                   <div className="flex-1 min-w-0">

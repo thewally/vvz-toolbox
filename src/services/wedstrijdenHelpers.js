@@ -18,6 +18,15 @@ export function formatDagLabel(wedstrijddatum) {
   return `${DUTCH_DAYS[d.getDay()]} ${d.getDate()} ${DUTCH_MONTHS[d.getMonth()]}`
 }
 
+// Korte dag + datum op twee regels: { dag: 'zat', datum: '29 mrt' }
+const DUTCH_DAYS_SHORT = ['zo','ma','di','wo','do','vr','za']
+const DUTCH_MONTHS_SHORT = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec']
+
+export function formatDatumKort(wedstrijddatum) {
+  const d = parseWedstrijdDatum(wedstrijddatum)
+  return { dag: DUTCH_DAYS_SHORT[d.getDay()], datum: `${d.getDate()} ${DUTCH_MONTHS_SHORT[d.getMonth()]}` }
+}
+
 // Groepeer op yyyy-mm-dd sleutel, gesorteerd
 export function groepeerPerDag(wedstrijden) {
   const map = new Map()

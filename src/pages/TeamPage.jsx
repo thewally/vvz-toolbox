@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getTeamProgramma, getTeamUitslagen, getTeams, getPoulestand } from '../services/wedstrijden'
-import { groepeerPerDag, formatDagLabel, datumSleutel, parseWedstrijdDatum } from '../services/wedstrijdenHelpers'
+import { groepeerPerDag, formatDagLabel, formatDatumKort, datumSleutel, parseWedstrijdDatum } from '../services/wedstrijdenHelpers'
 
 const CLUB_RELATIECODE = 'FZSZ66G'
 const WEBCAL_BASE = 'webcal://thewally.github.io/vvz-toolbox/wedstrijden/ical'
@@ -134,49 +134,50 @@ export default function TeamPage() {
               <p className="text-sm font-medium capitalize">{formatDagLabel(eerstvolgende.wedstrijddatum)}</p>
               <ThuisUitBadge wedstrijd={eerstvolgende} />
             </div>
-            <div className="p-5">
-              {/* Team logos + namen */}
-              <div className="flex items-center gap-4 mb-4">
-                {eerstvolgende.thuisteamlogo && (
-                  <img src={eerstvolgende.thuisteamlogo} alt={eerstvolgende.thuisteam} className="w-12 h-12 object-contain" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-2xl font-bold text-gray-800 leading-tight">
+            <div className="p-5 flex flex-col items-center text-center">
+              {/* Team logos + namen — gecentreerd */}
+              <div className="flex items-center justify-center gap-4 mb-2">
+                {eerstvolgende.thuisteamlogo
+                  ? <img src={eerstvolgende.thuisteamlogo} alt={eerstvolgende.thuisteam} className="w-14 h-14 object-contain" />
+                  : <div className="w-14 h-14" />
+                }
+                <div>
+                  <p className="text-xl font-bold text-gray-800 leading-tight">
                     {eerstvolgende.thuisteam}
                     <span className="text-gray-400 font-normal mx-2">vs</span>
                     {eerstvolgende.uitteam}
                   </p>
+                  <p className="text-2xl font-bold text-gray-800 mt-1">{eerstvolgende.aanvangstijd || '--:--'}</p>
                 </div>
-                {eerstvolgende.uitteamlogo && (
-                  <img src={eerstvolgende.uitteamlogo} alt={eerstvolgende.uitteam} className="w-12 h-12 object-contain" />
-                )}
+                {eerstvolgende.uitteamlogo
+                  ? <img src={eerstvolgende.uitteamlogo} alt={eerstvolgende.uitteam} className="w-14 h-14 object-contain" />
+                  : <div className="w-14 h-14" />
+                }
               </div>
 
-              <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
-                <span><span className="font-semibold text-gray-800">{eerstvolgende.aanvangstijd || '--:--'}</span> aanvang</span>
-                {eerstvolgende.verzameltijd && (
-                  <span><span className="font-semibold text-gray-800">{eerstvolgende.verzameltijd}</span> verzamelen</span>
-                )}
-                {eerstvolgende.vertrektijd && (
-                  <span><span className="font-semibold text-gray-800">{eerstvolgende.vertrektijd}</span> vertrek</span>
-                )}
-              </div>
+              {(eerstvolgende.verzameltijd || eerstvolgende.vertrektijd) && (
+                <p className="text-sm text-gray-500 mb-1">
+                  {eerstvolgende.verzameltijd && <span>Verzamelen {eerstvolgende.verzameltijd}</span>}
+                  {eerstvolgende.verzameltijd && eerstvolgende.vertrektijd && <span> · </span>}
+                  {eerstvolgende.vertrektijd && <span>Vertrek {eerstvolgende.vertrektijd}</span>}
+                </p>
+              )}
 
               {eerstvolgende.accommodatie && (
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-sm text-gray-500 mb-1">
                   📍 {eerstvolgende.accommodatie}{eerstvolgende.plaats ? `, ${eerstvolgende.plaats}` : ''}
                 </p>
               )}
 
               {eerstvolgende.kleedkamerthuisteam && (
-                <p className="text-sm text-gray-500 mb-4">Kleedkamer: {eerstvolgende.kleedkamerthuisteam}</p>
+                <p className="text-sm text-gray-500 mb-3">Kleedkamer: {eerstvolgende.kleedkamerthuisteam}</p>
               )}
 
               <a
                 href={buildWhatsAppUrl(eerstvolgende, teamnaam)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                className="mt-2 inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
@@ -197,38 +198,46 @@ export default function TeamPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {toekomstig.map((w, i) => (
-              <div key={i} className="flex items-center bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 gap-3 hover:shadow-md transition-shadow">
-                {/* Tijd + badge */}
-                <div className="shrink-0 w-14 text-center">
-                  <span className="block text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
-                  <span className="block mt-1"><ThuisUitBadge wedstrijd={w} /></span>
+              <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-3">
+                  {/* Tijd + badge */}
+                  <div className="shrink-0 w-14 text-center">
+                    <span className="block text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
+                    <span className="block mt-1"><ThuisUitBadge wedstrijd={w} /></span>
+                  </div>
+                  {/* Thuisteam rechts */}
+                  <div className="flex-1 min-w-0 text-right">
+                    <span className={`font-semibold text-sm truncate block ${isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                  </div>
+                  {/* vs center */}
+                  <div className="shrink-0 w-16 text-center">
+                    <span className="text-gray-400 text-sm">vs</span>
+                  </div>
+                  {/* Uitteam links */}
+                  <div className="flex-1 min-w-0">
+                    <span className={`font-semibold text-sm truncate block ${!isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                  </div>
+                  {/* Datum rechts */}
+                  <div className="shrink-0 text-right text-xs text-gray-400 capitalize whitespace-nowrap">
+                    {formatDagLabel(w.wedstrijddatum)}
+                  </div>
                 </div>
-                {/* Thuisteam */}
-                <div className="flex-1 min-w-0 text-right">
-                  <span className={`font-semibold text-sm truncate block ${isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
-                </div>
-                {/* vs */}
-                <div className="shrink-0 w-8 flex justify-center">
-                  <span className="text-gray-400 text-sm">vs</span>
-                </div>
-                {/* Uitteam + locatie */}
-                <div className="flex-1 min-w-0">
-                  <span className={`font-semibold text-sm truncate block ${!isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
-                  {w.accommodatie && <span className="text-xs text-gray-400 truncate block mt-0.5">{w.accommodatie}</span>}
-                  {(w.verzameltijd || w.vertrektijd) && (
-                    <span className="text-xs text-gray-400 truncate block mt-0.5">
-                      {w.verzameltijd ? `Verzamelen ${w.verzameltijd}` : ''}
-                      {w.verzameltijd && w.vertrektijd ? ' · ' : ''}
-                      {w.vertrektijd ? `Vertrek ${w.vertrektijd}` : ''}
-                    </span>
-                  )}
-                  {w.kleedkamerthuisteam && isThuis(w) && (
-                    <span className="text-xs text-gray-400 block mt-0.5">Kleedkamer: {w.kleedkamerthuisteam}</span>
-                  )}
-                </div>
-                <span className="text-xs text-gray-400 shrink-0 hidden sm:block whitespace-nowrap">
-                  {formatDagLabel(w.wedstrijddatum)}
-                </span>
+                {(w.accommodatie || w.verzameltijd || w.vertrektijd) && (
+                  <div className="flex gap-3 -mt-2">
+                    <div className="shrink-0 w-14" />
+                    <div className="flex-1 text-center">
+                      {w.accommodatie && <p className="text-xs text-gray-400">{w.accommodatie}</p>}
+                      {(w.verzameltijd || w.vertrektijd) && (
+                        <p className="text-xs text-gray-400">
+                          {w.verzameltijd ? `Verzamelen ${w.verzameltijd}` : ''}
+                          {w.verzameltijd && w.vertrektijd ? ' · ' : ''}
+                          {w.vertrektijd ? `Vertrek ${w.vertrektijd}` : ''}
+                        </p>
+                      )}
+                    </div>
+                    <div className="shrink-0 whitespace-nowrap invisible text-xs">{formatDagLabel(w.wedstrijddatum)}</div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -249,33 +258,26 @@ export default function TeamPage() {
                 const thuisScore = scores?.[0] ?? '-'
                 const uitScore = scores?.[1] ?? '-'
                 const thuis = isThuis(w)
-                const eigenScore = scores ? parseInt(thuis ? scores[0] : scores[1], 10) : NaN
-                const tegenScore = scores ? parseInt(thuis ? scores[1] : scores[0], 10) : NaN
-                let resultLabel = null
-                if (!isNaN(eigenScore) && !isNaN(tegenScore)) {
-                  if (eigenScore > tegenScore) resultLabel = <span className="text-xs font-bold text-green-600 shrink-0 w-16 text-right">Gewonnen</span>
-                  else if (eigenScore < tegenScore) resultLabel = <span className="text-xs font-bold text-red-500 shrink-0 w-16 text-right">Verloren</span>
-                  else resultLabel = <span className="text-xs font-bold text-orange-400 shrink-0 w-16 text-right">Gelijk</span>
-                }
                 return (
                   <div key={i} className="flex items-center bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 gap-3 hover:shadow-md transition-shadow">
                     <div className="shrink-0 w-14 text-center">
-                      <span className="block text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
-                      <span className="block mt-1"><ThuisUitBadge wedstrijd={w} /></span>
+                      <ThuisUitBadge wedstrijd={w} />
                     </div>
                     <div className="flex-1 min-w-0 text-right">
                       <span className={`font-semibold text-sm truncate block ${thuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
                     </div>
                     <div className="shrink-0 flex items-center w-16 justify-center gap-0.5">
-                      <span className="text-xl font-bold text-gray-800 w-6 text-right tabular-nums">{thuisScore}</span>
-                      <span className="text-gray-400 text-lg mx-1">–</span>
-                      <span className="text-xl font-bold text-gray-800 w-6 text-left tabular-nums">{uitScore}</span>
+                      <span className="text-sm font-semibold text-gray-800 tabular-nums">{thuisScore}</span>
+                      <span className="text-gray-400 text-sm mx-1">–</span>
+                      <span className="text-sm font-semibold text-gray-800 tabular-nums">{uitScore}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <span className={`font-semibold text-sm truncate block ${!thuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
-                      <span className="text-xs text-gray-400 block mt-0.5">{formatDagLabel(w.wedstrijddatum)}</span>
                     </div>
-                    {resultLabel ?? <span className="shrink-0 w-16" />}
+                    {/* Datum rechts */}
+                    <div className="shrink-0 text-right text-xs text-gray-400 capitalize max-w-[5.5rem] leading-tight">
+                      {formatDagLabel(w.wedstrijddatum)}
+                    </div>
                   </div>
                 )
               })}

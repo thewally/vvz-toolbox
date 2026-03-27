@@ -69,31 +69,34 @@ export default function WedstrijdenProgrammaPage() {
             {items.map((w, i) => {
               const isThuis = w.thuisteamclubrelatiecode === 'FZSZ66G'
               return (
-                <div key={i} className="flex items-center bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 gap-3 hover:shadow-md transition-shadow cursor-default">
-                  {/* Tijd + thuis/uit badge */}
-                  <div className="shrink-0 w-14 text-center">
-                    <span className="block text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
-                    <span className={`inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                      {isThuis ? 'THUIS' : 'UIT'}
-                    </span>
+                <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 hover:shadow-md transition-shadow cursor-default">
+                  <div className="flex items-center gap-3">
+                    {/* Tijd + thuis/uit badge */}
+                    <div className="shrink-0 w-14 text-center">
+                      <span className="block text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
+                      <span className={`inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {isThuis ? 'THUIS' : 'UIT'}
+                      </span>
+                    </div>
+                    {/* Thuisteam rechts */}
+                    <div className="flex-1 min-w-0 text-right">
+                      <span className={`font-semibold text-sm truncate block ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                    </div>
+                    {/* vs center */}
+                    <div className="shrink-0 w-16 text-center">
+                      <span className="text-gray-400 text-sm">vs</span>
+                    </div>
+                    {/* Uitteam links */}
+                    <div className="flex-1 min-w-0">
+                      <span className={`font-semibold text-sm truncate block ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                    </div>
                   </div>
-                  {/* Thuisteam */}
-                  <div className="flex-1 min-w-0 text-right">
-                    <span className={`font-semibold text-sm truncate block ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
-                  </div>
-                  {/* vs */}
-                  <div className="shrink-0 flex items-center w-16 justify-center">
-                    <span className="text-gray-400 font-normal text-sm">vs</span>
-                  </div>
-                  {/* Uitteam */}
-                  <div className="flex-1 min-w-0">
-                    <span className={`font-semibold text-sm truncate block ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
-                    {w.accommodatie && (
-                      <span className="text-xs text-gray-400 truncate block mt-0.5">{w.accommodatie}</span>
-                    )}
-                  </div>
-                  {/* Placeholder zodat breedte overeenkomt met uitslagen (resultaat-kolom) */}
-                  <span className="shrink-0 w-16" />
+                  {w.accommodatie && (
+                    <div className="flex gap-3 -mt-2">
+                      <div className="shrink-0 w-14" />
+                      <p className="flex-1 text-xs text-gray-400 text-center">{w.accommodatie}</p>
+                    </div>
+                  )}
                 </div>
               )
             })}
