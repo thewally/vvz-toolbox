@@ -4,7 +4,7 @@ export default function HomePage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="text-center mb-10">
-        <h2 className="text-2xl font-bold text-gray-800">Welkom bij de VVZ'49 Toolbox</h2>
+        <h2 className="text-2xl font-bold text-gray-800">Welkom bij de website van VVZ'49</h2>
         <p className="text-gray-500 mt-2">Kies een tool om aan de slag te gaan</p>
       </div>
 

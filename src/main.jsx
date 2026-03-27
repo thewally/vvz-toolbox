@@ -7,7 +7,7 @@ import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter basename="/vvz-toolbox">
+    <BrowserRouter>
       <AuthProvider>
         <App />
       </AuthProvider>

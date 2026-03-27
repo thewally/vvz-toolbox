@@ -6,35 +6,35 @@ const DIST = 'dist'
 const pages = [
   {
     path: '',
-    title: "VVZ'49 Toolbox",
+    title: "Website van VVZ'49",
     description: "De digitale toolbox van VVZ'49 – trainingsschema, agenda, plattegrond en huistijl.",
     image: `${BASE_URL}/og/home.png`,
     url: `${BASE_URL}/`,
   },
   {
     path: 'agenda',
-    title: "Agenda | VVZ'49 Toolbox",
+    title: "Agenda | Website van VVZ'49",
     description: "Komende activiteiten en evenementen van VVZ'49.",
     image: `${BASE_URL}/og/agenda.png`,
     url: `${BASE_URL}/agenda`,
   },
   {
     path: 'trainingsschema',
-    title: "Trainingsschema | VVZ'49 Toolbox",
+    title: "Trainingsschema | Website van VVZ'49",
     description: "Weekoverzicht van trainingstijden en veldindeling bij VVZ'49.",
     image: `${BASE_URL}/og/trainingsschema.png`,
     url: `${BASE_URL}/trainingsschema`,
   },
   {
     path: 'plattegrond',
-    title: "Plattegrond | VVZ'49 Toolbox",
+    title: "Plattegrond | Website van VVZ'49",
     description: 'Overzicht van Sportpark Zonnegloren met downloadbare bestanden.',
     image: `${BASE_URL}/og/plattegrond.png`,
     url: `${BASE_URL}/plattegrond`,
   },
   {
     path: 'huistijl',
-    title: "Huistijl | VVZ'49 Toolbox",
+    title: "Huistijl | Website van VVZ'49",
     description: "Logo's en officiële huistijlmiddelen van VVZ'49.",
     image: `${BASE_URL}/og/huistijl.png`,
     url: `${BASE_URL}/huistijl`,
@@ -51,7 +51,7 @@ function ogTags(page) {
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:url" content="${page.url}">
-  <meta property="og:site_name" content="VVZ'49 Toolbox">
+  <meta property="og:site_name" content="Website van VVZ'49">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${page.title}">
   <meta name="twitter:description" content="${page.description}">

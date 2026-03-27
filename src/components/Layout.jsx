@@ -24,7 +24,7 @@ export default function Layout() {
         <Outlet />
       </main>
       <footer className="mt-12 py-4 text-center text-xs text-gray-400 no-print">
-        © {new Date().getFullYear()} VVZ'49 Toolbox · Gemaakt door Arjen van der Wal
+        © {new Date().getFullYear()} Website van VVZ'49 · Gemaakt door Arjen van der Wal
       </footer>
     </div>
   )
