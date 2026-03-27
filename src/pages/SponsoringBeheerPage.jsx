@@ -196,9 +196,9 @@ export default function SponsoringBeheerPage() {
                     className="text-xs text-gray-400 hover:text-vvz-green transition-colors">Reset naar wit</button>
                 </div>
                 {form.logo_url && (
-                  <div className="mt-2 inline-flex items-center justify-center rounded-lg p-2 border border-gray-200"
+                  <div className="mt-2 flex items-center justify-center rounded-lg p-4 border border-gray-200 h-20 w-[200px]"
                     style={{ backgroundColor: form.logo_achtergrond || '#ffffff' }}>
-                    <img src={form.logo_url} alt="preview" className="h-10 object-contain" />
+                    <img src={form.logo_url} alt="preview" className="max-h-12 max-w-[160px] w-auto object-contain" />
                   </div>
                 )}
               </div>
