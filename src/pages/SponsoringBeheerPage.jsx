@@ -135,9 +135,9 @@ export default function SponsoringBeheerPage() {
                             style={{ backgroundColor: s.logo_achtergrond || '#ffffff' }}>
                             <img src={s.logo_url} alt={s.naam} className="max-h-7 max-w-[36px] object-contain" />
                           </div>
-                        ) : (
+                        ) : s.categorie !== 'brons' ? (
                           <div className="w-10 h-8 bg-gray-100 rounded shrink-0" />
-                        )}
+                        ) : null}
 
                         <span className="font-medium text-gray-800 flex-1">{s.naam}</span>
 
