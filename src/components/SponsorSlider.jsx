@@ -50,16 +50,16 @@ export default function SponsorSlider() {
               href={item.sponsor.website_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="shrink-0 flex items-center"
+              className="shrink-0 flex items-center justify-center h-16 w-[180px]"
             >
               <img
                 src={item.sponsor.logo_url}
                 alt={item.sponsor.naam}
-                className="h-16 w-auto max-w-[180px] object-contain grayscale hover:grayscale-0 transition-all"
+                className="h-16 w-auto max-w-[180px] object-contain"
               />
             </a>
           ) : (
-            <div key={idx} className="shrink-0 flex flex-col gap-2 justify-center">
+            <div key={idx} className="shrink-0 flex flex-col gap-2 items-center justify-center h-16 w-[120px]">
               {item.paar.map(s => (
                 <a
                   key={s.id}
@@ -70,7 +70,7 @@ export default function SponsorSlider() {
                   <img
                     src={s.logo_url}
                     alt={s.naam}
-                    className="h-7 w-auto max-w-[120px] object-contain grayscale hover:grayscale-0 transition-all"
+                    className="h-7 w-auto max-w-[120px] object-contain"
                   />
                 </a>
               ))}
