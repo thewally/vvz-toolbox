@@ -51,7 +51,7 @@ export default function SponsorSlider() {
               target="_blank"
               rel="noopener noreferrer"
               className={`shrink-0 flex items-center justify-center rounded-lg ${item.sponsor.logo_achtergrond ? 'h-7 w-[70px] sm:h-20 sm:w-[200px] p-1 sm:p-4 shadow-sm' : 'h-6 w-[60px] sm:h-16 sm:w-[180px] p-0.5 sm:p-2'}`}
-              style={{ backgroundColor: item.sponsor.logo_achtergrond || 'transparent' }}
+              style={{ backgroundColor: item.sponsor.logo_achtergrond || '#ffffff' }}
             >
               <img
                 src={item.sponsor.logo_url}
@@ -68,7 +68,7 @@ export default function SponsorSlider() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`flex items-center justify-center rounded ${s.logo_achtergrond ? 'p-1 sm:p-2 shadow-sm' : 'p-0.5 sm:p-1'}`}
-                  style={{ backgroundColor: s.logo_achtergrond || 'transparent' }}
+                  style={{ backgroundColor: s.logo_achtergrond || '#ffffff' }}
                 >
                   <img
                     src={s.logo_url}

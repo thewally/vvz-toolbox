@@ -4,7 +4,7 @@ import RichTextEditor from '../components/RichTextEditor'
 
 const LEEG = {
   naam: '', categorie: 'goud', logo_url: '', website_url: '',
-  beschrijving: '', volgorde: 0, actief: true, logo_achtergrond: '',
+  beschrijving: '', volgorde: 0, actief: true, logo_achtergrond: '#ffffff',
 }
 
 const CATEGORIEEN = ['goud', 'zilver', 'brons']
@@ -131,7 +131,7 @@ export default function SponsoringBeheerPage() {
                         {/* Logo preview */}
                         {s.logo_url ? (
                           <div className="w-10 h-8 flex items-center justify-center rounded shrink-0"
-                            style={{ backgroundColor: s.logo_achtergrond || 'transparent' }}>
+                            style={{ backgroundColor: s.logo_achtergrond || '#ffffff' }}>
                             <img src={s.logo_url} alt={s.naam} className="max-h-7 max-w-[36px] object-contain" />
                           </div>
                         ) : (
@@ -192,15 +192,12 @@ export default function SponsoringBeheerPage() {
                   <input type="color" value={form.logo_achtergrond || '#ffffff'}
                     onChange={e => setForm(f => ({ ...f, logo_achtergrond: e.target.value }))}
                     className="h-9 w-14 rounded border border-gray-300 cursor-pointer p-0.5" />
-                  <span className="text-xs text-gray-400">Laat leeg voor transparant</span>
-                  {form.logo_achtergrond && (
-                    <button type="button" onClick={() => setForm(f => ({ ...f, logo_achtergrond: '' }))}
-                      className="text-xs text-gray-400 hover:text-red-500 transition-colors">Wissen</button>
-                  )}
+                  <button type="button" onClick={() => setForm(f => ({ ...f, logo_achtergrond: '#ffffff' }))}
+                    className="text-xs text-gray-400 hover:text-vvz-green transition-colors">Reset naar wit</button>
                 </div>
                 {form.logo_url && (
                   <div className="mt-2 inline-flex items-center justify-center rounded-lg p-2 border border-gray-200"
-                    style={{ backgroundColor: form.logo_achtergrond || 'transparent' }}>
+                    style={{ backgroundColor: form.logo_achtergrond || '#ffffff' }}>
                     <img src={form.logo_url} alt="preview" className="h-10 object-contain" />
                   </div>
                 )}
