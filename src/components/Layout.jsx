@@ -20,7 +20,7 @@ export default function Layout() {
           />
         </Link>
       </header>
-      <main className="pt-36">
+      <main className="pt-60">
         <Outlet />
       </main>
       <footer className="mt-12 py-4 text-center text-xs text-gray-400 no-print">
