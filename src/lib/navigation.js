@@ -28,6 +28,7 @@ export const NAV_SECTIONS = [
     children: [
       { label: 'Plattegrond', to: '/plattegrond' },
       { label: 'Huisstijl', to: '/huistijl' },
+      { label: 'Trainingsschema', to: '/trainingsschema' },
     ],
   },
   { label: 'Contact', to: '/contact' },
