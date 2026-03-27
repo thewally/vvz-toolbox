@@ -79,7 +79,7 @@ export default function TopNav() {
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `text-4xl ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
+                    `text-4xl font-light ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
                   }
                 >
                   {item.label}
