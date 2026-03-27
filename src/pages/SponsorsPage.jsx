@@ -52,7 +52,7 @@ export default function SponsorsPage() {
               <Link
                 key={s.id}
                 to={`/sponsors/${s.slug}`}
-              className="group flex items-center justify-center rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-8"
+              className="group flex items-center justify-center rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-8 h-40"
             style={{ backgroundColor: s.logo_achtergrond || '#ffffff' }}
               >
                 {s.logo_url ? (
@@ -80,7 +80,7 @@ export default function SponsorsPage() {
                 href={s.website_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center justify-center rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-4"
+                className="group flex items-center justify-center rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-4 h-24"
                 style={{ backgroundColor: s.logo_achtergrond || '#ffffff' }}
               >
                 {s.logo_url ? (
