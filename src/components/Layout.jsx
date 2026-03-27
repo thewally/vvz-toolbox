@@ -11,16 +11,16 @@ export default function Layout() {
         <Link
           to="/"
           aria-label="Home"
-          className="absolute left-1/2 -translate-x-1/2 top-full z-10 -mt-4"
+          className="absolute left-1/2 -translate-x-1/2 top-1/2 z-10"
         >
           <img
             src={`${import.meta.env.BASE_URL}logo-vvz.png`}
             alt="VVZ'49"
-            className="h-40 w-40 object-contain drop-shadow-md"
+            className="h-48 w-48 object-contain drop-shadow-md"
           />
         </Link>
       </header>
-      <main className="pt-40">
+      <main className="pt-28">
         <Outlet />
       </main>
       <footer className="mt-12 py-4 text-center text-xs text-gray-400 no-print">
