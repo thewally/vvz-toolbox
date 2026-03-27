@@ -40,8 +40,7 @@ export default function App() {
         <Route path="vrijwilliger" element={<PlaceholderPage title="Wordt vrijwilliger" />} />
         <Route path="techniektrainingen" element={<PlaceholderPage title="Techniektrainingen" />} />
         <Route path="sponsors" element={<PlaceholderPage title="Sponsors" />} />
-        <Route path="webshop" element={<PlaceholderPage title="Webshop" />} />
-        <Route path="lid-worden" element={<PlaceholderPage title="Lid worden?" />} />
+<Route path="lid-worden" element={<PlaceholderPage title="Lid worden?" />} />
         <Route path="contact" element={<PlaceholderPage title="Contact" />} />
         <Route path="wedstrijden">
           <Route index element={<PlaceholderPage title="Wedstrijden" />} />
