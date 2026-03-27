@@ -26,8 +26,10 @@ export default function SponsorSlider() {
 
   if (items.length === 0) return null
 
-  // Dupliceer voor naadloze loop
-  const doubled = [...items, ...items]
+  // Herhaal items tot we er minimaal 12 hebben, zodat de content altijd breder is dan het scherm
+  let base = [...items]
+  while (base.length < 12) base = [...base, ...items]
+  const doubled = [...base, ...base]
 
   return (
     <div className="w-full overflow-hidden bg-white border-y border-gray-100 py-4">
