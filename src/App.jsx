@@ -37,7 +37,22 @@ export default function App() {
           } />
         </Route>
         <Route path="nieuws" element={<PlaceholderPage title="Nieuws" />} />
-        <Route path="wedstrijden" element={<PlaceholderPage title="Wedstrijden" />} />
+        <Route path="vrijwilliger" element={<PlaceholderPage title="Wordt vrijwilliger" />} />
+        <Route path="sponsors" element={<PlaceholderPage title="Sponsors" />} />
+        <Route path="webshop" element={<PlaceholderPage title="Webshop" />} />
+        <Route path="lid-worden" element={<PlaceholderPage title="Lid worden?" />} />
+        <Route path="contact" element={<PlaceholderPage title="Contact" />} />
+        <Route path="wedstrijden">
+          <Route index element={<PlaceholderPage title="Wedstrijden" />} />
+          <Route path="programma" element={<PlaceholderPage title="Programma" />} />
+          <Route path="uitslagen" element={<PlaceholderPage title="Uitslagen" />} />
+          <Route path="teams">
+            <Route index element={<PlaceholderPage title="Teams" />} />
+            <Route path="senioren" element={<PlaceholderPage title="Senioren" />} />
+            <Route path="junioren" element={<PlaceholderPage title="Junioren" />} />
+            <Route path="pupillen" element={<PlaceholderPage title="Pupillen" />} />
+          </Route>
+        </Route>
         <Route path="plattegrond" element={<PlattegrondPage />} />
         <Route path="huistijl" element={<HuistijlPage />} />
         <Route path="login" element={<LoginPage />} />
