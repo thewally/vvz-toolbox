@@ -52,6 +52,16 @@ export default function SponsoringBeheerPage() {
     const slug = form.slug || generateSlug(form.naam)
     const data = { ...form, slug }
     if (data.categorie === 'brons') { data.logo_url = null; data.logo_achtergrond = null }
+    // Bij categoriewijziging: sponsor onderaan de nieuwe categorie plaatsen
+    if (modal.mode === 'bewerken') {
+      const origineel = sponsors.find(s => s.id === modal.id)
+      if (origineel && origineel.categorie !== data.categorie) {
+        const maxVolgorde = sponsors
+          .filter(s => s.categorie === data.categorie)
+          .reduce((max, s) => Math.max(max, s.volgorde), -1)
+        data.volgorde = maxVolgorde + 1
+      }
+    }
     const { error } = modal.mode === 'nieuw'
       ? await createSponsor(data)
       : await updateSponsor(modal.id, data)
