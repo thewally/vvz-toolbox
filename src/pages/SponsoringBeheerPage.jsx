@@ -7,13 +7,14 @@ const LEEG = {
   beschrijving: '', volgorde: 0, actief: true, logo_achtergrond: '#ffffff',
 }
 
-const CATEGORIEEN = ['goud', 'zilver', 'brons']
+const CATEGORIEEN = ['goud', 'zilver', 'brons', 'jeugdplan']
 const BADGE = {
   goud: 'bg-yellow-100 text-yellow-800',
   zilver: 'bg-gray-100 text-gray-700',
   brons: 'bg-orange-100 text-orange-800',
+  jeugdplan: 'bg-green-100 text-green-800',
 }
-const LABEL = { goud: 'Goud', zilver: 'Zilver', brons: 'Brons' }
+const LABEL = { goud: 'Goud', zilver: 'Zilver', brons: 'Brons', jeugdplan: 'Jeugdplan Sponsor' }
 
 export default function SponsoringBeheerPage() {
   const [sponsors, setSponsors] = useState([])
@@ -53,7 +54,7 @@ export default function SponsoringBeheerPage() {
     // eslint-disable-next-line no-unused-vars
     const { id: _id, created_at: _cat, ...rest } = form
     const data = { ...rest, slug }
-    if (data.categorie === 'brons') { data.logo_url = null; data.logo_achtergrond = null }
+    if (['brons', 'jeugdplan'].includes(data.categorie)) { data.logo_url = null; data.logo_achtergrond = null }
     // Bij categoriewijziging: sponsor onderaan de nieuwe categorie plaatsen
     if (modal.mode === 'bewerken') {
       const origineel = sponsors.find(s => s.id === modal.id)
@@ -147,7 +148,7 @@ export default function SponsoringBeheerPage() {
                             style={{ backgroundColor: s.logo_achtergrond || '#ffffff' }}>
                             <img src={s.logo_url} alt={s.naam} className="max-h-7 max-w-[36px] object-contain" />
                           </div>
-                        ) : s.categorie !== 'brons' ? (
+                        ) : !['brons', 'jeugdplan'].includes(s.categorie) ? (
                           <div className="w-10 h-8 bg-gray-100 rounded shrink-0" />
                         ) : null}
 
@@ -192,9 +193,10 @@ export default function SponsoringBeheerPage() {
                   <option value="goud">Goud</option>
                   <option value="zilver">Zilver</option>
                   <option value="brons">Brons</option>
+                  <option value="jeugdplan">Jeugdplan Sponsor</option>
                 </select>
               </div>
-              {form.categorie !== 'brons' && (
+              {!['brons', 'jeugdplan'].includes(form.categorie) && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
