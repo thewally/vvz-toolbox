@@ -1,13 +1,34 @@
-export const NAV_ITEMS = [
+export const QUICK_LINKS = [
   { label: 'Nieuws', to: '/nieuws' },
-  { label: 'Wedstrijden', to: '/wedstrijden' },
   { label: 'Activiteiten', to: '/agenda' },
-  { label: 'Trainingsschema', to: '/trainingsschema' },
+  { label: 'Wordt vrijwilliger', to: '/vrijwilliger' },
+  { label: 'Sponsors', to: '/sponsors' },
+  { label: 'Webshop', to: '/webshop' },
+  { label: 'Lid worden?', to: '/lid-worden' },
+]
+
+export const NAV_SECTIONS = [
   {
-    label: 'Clubinformatie',
+    label: 'WEDSTRIJDINFORMATIE',
+    children: [
+      { label: 'Programma', to: '/wedstrijden/programma' },
+      { label: 'Uitslagen', to: '/wedstrijden/uitslagen' },
+    ],
+  },
+  {
+    label: 'TEAMS',
+    children: [
+      { label: 'Senioren', to: '/wedstrijden/teams/senioren' },
+      { label: 'Junioren', to: '/wedstrijden/teams/junioren' },
+      { label: 'Pupillen', to: '/wedstrijden/teams/pupillen' },
+    ],
+  },
+  {
+    label: 'CLUBINFORMATIE',
     children: [
       { label: 'Plattegrond', to: '/plattegrond' },
       { label: 'Huisstijl', to: '/huistijl' },
     ],
   },
+  { label: 'Contact', to: '/contact' },
 ]

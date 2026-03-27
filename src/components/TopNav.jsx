@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { NAV_ITEMS } from '../lib/navigation'
+import { QUICK_LINKS, NAV_SECTIONS } from '../lib/navigation'
 
 export default function TopNav() {
   const { user, signOut } = useAuth()
@@ -9,19 +9,16 @@ export default function TopNav() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [accordion, setAccordion] = useState(null)
 
-  // Sluit menu bij route change
   useEffect(() => {
     setMenuOpen(false)
     setAccordion(null)
   }, [location.pathname])
 
-  // Vergrendel body scroll als menu open is
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
 
-  // Sluit met Escape
   useEffect(() => {
     function handleKeyDown(e) {
       if (e.key === 'Escape') setMenuOpen(false)
@@ -32,7 +29,7 @@ export default function TopNav() {
 
   return (
     <nav className="bg-vvz-green no-print">
-      {/* Balk met hamburger rechtsbovenin */}
+      {/* Hamburgerbalk */}
       <div className="flex items-center justify-end px-4 py-2">
         {!menuOpen && (
           <button
@@ -49,88 +46,114 @@ export default function TopNav() {
 
       {/* Schermvullend menu */}
       <div className={`fixed inset-0 z-50 bg-vvz-green text-white flex flex-col transition-transform duration-300 ease-in-out ${menuOpen ? 'translate-y-0 pointer-events-auto' : '-translate-y-full pointer-events-none'}`}>
-          {/* Sluitknop */}
-          <div className="flex items-center justify-end px-4 py-4">
-            <button
-              onClick={() => setMenuOpen(false)}
-              aria-label="Menu sluiten"
-              className="flex items-center gap-2 text-white font-medium"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Sluiten
-            </button>
-          </div>
 
-          {/* Menu-items */}
-          <div className="flex-1 overflow-y-auto px-6 py-4">
-            {NAV_ITEMS.map(item => {
-              if (item.children) {
-                const expanded = accordion === item.label
-                return (
-                  <div key={item.label} className="border-b border-white/20">
-                    <button
-                      onClick={() => setAccordion(expanded ? null : item.label)}
-                      aria-expanded={expanded}
-                      className="flex items-center justify-between w-full py-4 text-xl font-semibold"
-                    >
-                      {item.label}
-                      <svg className={`w-5 h-5 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    {expanded && (
-                      <div className="pb-3 pl-4 flex flex-col gap-2">
-                        {item.children.map(child => (
-                          <NavLink
-                            key={child.to}
-                            to={child.to}
-                            className={({ isActive }) =>
-                              `py-2 text-lg ${isActive ? 'font-bold' : 'opacity-80'}`
-                            }
-                          >
-                            {child.label}
-                          </NavLink>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              }
-              return (
+        {/* Topbalk: logo links, sluiten rechts */}
+        <div className="flex items-center justify-between px-6 py-4 shrink-0">
+          <Link to="/" aria-label="Home" onClick={() => setMenuOpen(false)}>
+            <img
+              src={`${import.meta.env.BASE_URL}logo-vvz.png`}
+              alt="VVZ'49"
+              className="h-14 w-14 object-contain"
+            />
+          </Link>
+          <button
+            onClick={() => setMenuOpen(false)}
+            aria-label="Menu sluiten"
+            className="flex items-center gap-2 text-white font-medium"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Sluiten
+          </button>
+        </div>
+
+        {/* Twee kolommen */}
+        <div className="flex-1 overflow-y-auto flex justify-center px-6 py-6">
+          <div className="flex gap-16 w-full max-w-2xl">
+
+            {/* Kolom 1: quick links */}
+            <div className="flex flex-col gap-3 min-w-[140px]">
+              {QUICK_LINKS.map(item => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `block py-4 text-xl font-semibold border-b border-white/20 ${isActive ? 'opacity-100' : 'opacity-80 hover:opacity-100'}`
+                    `text-base ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
                   }
                 >
                   {item.label}
                 </NavLink>
-              )
-            })}
-          </div>
+              ))}
+            </div>
 
-          {/* Auth onderaan */}
-          <div className="px-6 py-6 border-t border-white/30">
-            {user ? (
-              <button
-                onClick={signOut}
-                className="text-lg font-semibold opacity-80 hover:opacity-100"
-              >
-                Uitloggen
-              </button>
-            ) : (
-              <Link
-                to="/login"
-                state={{ from: { pathname: location.pathname } }}
-                className="text-lg font-semibold opacity-80 hover:opacity-100"
-              >
-                Inloggen
-              </Link>
-            )}
+            {/* Kolom 2: secties met accordion */}
+            <div className="flex flex-col flex-1">
+              {NAV_SECTIONS.map(section => {
+                if (section.children) {
+                  const expanded = accordion === section.label
+                  return (
+                    <div key={section.label} className="border-b border-white/20">
+                      <button
+                        onClick={() => setAccordion(expanded ? null : section.label)}
+                        aria-expanded={expanded}
+                        className="flex items-center justify-between w-full py-3 text-sm font-semibold uppercase tracking-wider text-white"
+                      >
+                        {section.label}
+                        <svg className={`w-4 h-4 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      {expanded && (
+                        <div className="pb-3 flex flex-col gap-1 pl-2">
+                          {section.children.map(child => (
+                            <NavLink
+                              key={child.to}
+                              to={child.to}
+                              className={({ isActive }) =>
+                                `py-1 text-sm ${isActive ? 'text-white font-medium' : 'text-white/70 hover:text-white'} transition-colors`
+                              }
+                            >
+                              {child.label}
+                            </NavLink>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                }
+                return (
+                  <NavLink
+                    key={section.to}
+                    to={section.to}
+                    className={({ isActive }) =>
+                      `py-3 text-sm font-semibold uppercase tracking-wider border-b border-white/20 ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
+                    }
+                  >
+                    {section.label}
+                  </NavLink>
+                )
+              })}
+            </div>
           </div>
+        </div>
+
+        {/* Auth onderaan */}
+        <div className="px-6 py-4 border-t border-white/20 shrink-0">
+          {user ? (
+            <button onClick={signOut} className="text-sm text-white/70 hover:text-white transition-colors">
+              Uitloggen
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              state={{ from: { pathname: location.pathname } }}
+              className="text-sm text-white/70 hover:text-white transition-colors"
+            >
+              Inloggen
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   )
