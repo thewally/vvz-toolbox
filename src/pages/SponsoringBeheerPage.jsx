@@ -50,7 +50,9 @@ export default function SponsoringBeheerPage() {
     setOpslaan(true)
     setFout(null)
     const slug = form.slug || generateSlug(form.naam)
-    const data = { ...form, slug }
+    // eslint-disable-next-line no-unused-vars
+    const { id: _id, created_at: _cat, ...rest } = form
+    const data = { ...rest, slug }
     if (data.categorie === 'brons') { data.logo_url = null; data.logo_achtergrond = null }
     // Bij categoriewijziging: sponsor onderaan de nieuwe categorie plaatsen
     if (modal.mode === 'bewerken') {
