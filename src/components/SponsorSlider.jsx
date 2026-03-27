@@ -31,7 +31,16 @@ export default function SponsorSlider() {
 
   return (
     <div className="w-full overflow-hidden bg-white border-y border-gray-100 py-4">
-      <div className="flex animate-marquee gap-12 items-center w-max">
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .marquee-inner {
+          animation: marquee 30s linear infinite;
+        }
+      `}</style>
+      <div className="marquee-inner flex gap-12 items-center w-max">
         {doubled.map((item, idx) =>
           item.type === 'goud' ? (
             <a
