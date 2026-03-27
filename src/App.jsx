@@ -38,6 +38,7 @@ export default function App() {
         </Route>
         <Route path="nieuws" element={<PlaceholderPage title="Nieuws" />} />
         <Route path="vrijwilliger" element={<PlaceholderPage title="Wordt vrijwilliger" />} />
+        <Route path="techniektrainingen" element={<PlaceholderPage title="Techniektrainingen" />} />
         <Route path="sponsors" element={<PlaceholderPage title="Sponsors" />} />
         <Route path="webshop" element={<PlaceholderPage title="Webshop" />} />
         <Route path="lid-worden" element={<PlaceholderPage title="Lid worden?" />} />

@@ -156,7 +156,7 @@ export default function TopNav() {
 
         {/* Slogan */}
         <div className="px-6 py-6 border-t border-white/20 shrink-0 text-center">
-          <p className="text-white/80 text-3xl" style={{ fontFamily: "'Lora', serif", fontStyle: 'italic' }}>
+          <p className="text-white/80 text-3xl" style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}>
             Er is maar één club en dat is vvz!
           </p>
         </div>

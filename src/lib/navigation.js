@@ -24,11 +24,17 @@ export const NAV_SECTIONS = [
     ],
   },
   {
+    label: 'TRAINEN',
+    children: [
+      { label: 'Trainingsschema', to: '/trainingsschema' },
+      { label: 'Techniektrainingen', to: '/techniektrainingen' },
+    ],
+  },
+  {
     label: 'CLUBINFORMATIE',
     children: [
       { label: 'Plattegrond', to: '/plattegrond' },
       { label: 'Huisstijl', to: '/huistijl' },
-      { label: 'Trainingsschema', to: '/trainingsschema' },
     ],
   },
   { label: 'Contact', to: '/contact' },
