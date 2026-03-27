@@ -16,11 +16,11 @@ export default function Layout() {
           <img
             src={`${import.meta.env.BASE_URL}logo-vvz.png`}
             alt="VVZ'49"
-            className="h-48 w-48 object-contain drop-shadow-md"
+            className="h-64 w-64 object-contain drop-shadow-md"
           />
         </Link>
       </header>
-      <main className="pt-28">
+      <main className="pt-36">
         <Outlet />
       </main>
       <footer className="mt-12 py-4 text-center text-xs text-gray-400 no-print">
