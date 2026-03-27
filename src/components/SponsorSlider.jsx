@@ -50,17 +50,17 @@ export default function SponsorSlider() {
               href={item.sponsor.website_url}
               target="_blank"
               rel="noopener noreferrer"
-              className={`shrink-0 flex items-center justify-center rounded-lg ${item.sponsor.logo_achtergrond ? 'h-10 w-[100px] sm:h-20 sm:w-[200px] p-2 sm:p-4 shadow-sm' : 'h-8 w-[90px] sm:h-16 sm:w-[180px] p-1 sm:p-2'}`}
+              className={`shrink-0 flex items-center justify-center rounded-lg ${item.sponsor.logo_achtergrond ? 'h-7 w-[70px] sm:h-20 sm:w-[200px] p-1 sm:p-4 shadow-sm' : 'h-6 w-[60px] sm:h-16 sm:w-[180px] p-0.5 sm:p-2'}`}
               style={{ backgroundColor: item.sponsor.logo_achtergrond || 'transparent' }}
             >
               <img
                 src={item.sponsor.logo_url}
                 alt={item.sponsor.naam}
-                className="h-8 sm:h-16 w-auto max-w-[90px] sm:max-w-[180px] object-contain"
+                className="h-6 sm:h-16 w-auto max-w-[60px] sm:max-w-[180px] object-contain"
               />
             </a>
           ) : (
-            <div key={idx} className="shrink-0 flex flex-col gap-1 items-center justify-center h-8 sm:h-16 w-[60px] sm:w-[120px]">
+            <div key={idx} className="shrink-0 flex flex-col gap-0.5 items-center justify-center h-6 sm:h-16 w-[40px] sm:w-[120px]">
               {item.paar.map(s => (
                 <a
                   key={s.id}
@@ -73,7 +73,7 @@ export default function SponsorSlider() {
                   <img
                     src={s.logo_url}
                     alt={s.naam}
-                    className="h-3 sm:h-7 w-auto max-w-[56px] sm:max-w-[120px] object-contain"
+                    className="h-2.5 sm:h-7 w-auto max-w-[36px] sm:max-w-[120px] object-contain"
                   />
                 </a>
               ))}
