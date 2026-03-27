@@ -1,5 +1,6 @@
 import { Link, Outlet } from 'react-router-dom'
 import TopNav from './TopNav'
+import SponsorSlider from './SponsorSlider'
 
 export default function Layout() {
   return (
@@ -23,9 +24,14 @@ export default function Layout() {
       <main className="pt-60">
         <Outlet />
       </main>
-      <footer className="mt-12 py-4 text-center text-xs text-gray-400 no-print">
+      <footer className="mt-12 py-4 text-center text-xs text-gray-400 no-print pb-20">
         © {new Date().getFullYear()} Website van VVZ'49 · Gemaakt door Arjen van der Wal
       </footer>
+
+      {/* Sponsor slider — altijd zichtbaar onderaan */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
+        <SponsorSlider />
+      </div>
     </div>
   )
 }

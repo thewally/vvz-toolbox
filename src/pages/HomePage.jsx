@@ -1,10 +1,7 @@
 import { Link } from 'react-router-dom'
-import SponsorSlider from '../components/SponsorSlider'
 
 export default function HomePage() {
   return (
-    <>
-    <SponsorSlider />
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="text-center mb-10">
         <h2 className="text-2xl font-bold text-gray-800">Welkom bij de website van VVZ'49</h2>
@@ -119,6 +116,5 @@ export default function HomePage() {
         </Link>
       </div>
     </div>
-    </>
   )
 }
