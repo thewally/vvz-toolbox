@@ -14,7 +14,7 @@ const BADGE = {
   brons: 'bg-orange-100 text-orange-800',
   jeugdplan: 'bg-green-100 text-green-800',
 }
-const LABEL = { goud: 'Goud', zilver: 'Zilver', brons: 'Brons', jeugdplan: 'Jeugdplan Sponsor' }
+const LABEL = { goud: 'Goud', zilver: 'Zilver', brons: 'Brons', jeugdplan: 'Jeugdplan' }
 
 export default function SponsoringBeheerPage() {
   const [sponsors, setSponsors] = useState([])
@@ -193,7 +193,7 @@ export default function SponsoringBeheerPage() {
                   <option value="goud">Goud</option>
                   <option value="zilver">Zilver</option>
                   <option value="brons">Brons</option>
-                  <option value="jeugdplan">Jeugdplan Sponsor</option>
+                  <option value="jeugdplan">Jeugdplan</option>
                 </select>
               </div>
               {!['brons', 'jeugdplan'].includes(form.categorie) && (

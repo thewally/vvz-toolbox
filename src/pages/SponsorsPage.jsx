@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { getSponsors } from '../services/sponsors'
 import { useAuth } from '../context/AuthContext'
 
-const CATEGORIE_LABELS = { goud: 'Goud', zilver: 'Zilver', brons: 'Brons', jeugdplan: 'Jeugdplan Sponsor' }
+const CATEGORIE_LABELS = { goud: 'Goud', zilver: 'Zilver', brons: 'Brons', jeugdplan: 'Jeugdplan' }
 
 const CATEGORIE_BADGE = {
   goud: 'bg-yellow-100 text-yellow-800',
@@ -120,11 +120,11 @@ export default function SponsorsPage() {
         </section>
       )}
 
-      {/* Jeugdplan Sponsor */}
+      {/* Jeugdplan */}
       {jeugdplan.length > 0 && (
         <section>
           <div className="flex items-center gap-3 mb-6">
-            <h3 className="text-lg font-semibold text-gray-700">Jeugdplan Sponsor</h3>
+            <h3 className="text-lg font-semibold text-gray-700">Jeugdplan</h3>
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${CATEGORIE_BADGE.jeugdplan}`}>Sponsors</span>
           </div>
           <div className="flex flex-wrap gap-3">
