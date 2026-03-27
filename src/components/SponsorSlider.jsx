@@ -50,7 +50,7 @@ export default function SponsorSlider() {
               href={item.sponsor.website_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="shrink-0 flex items-center justify-center h-16 w-[180px] rounded-lg p-2"
+              className={`shrink-0 flex items-center justify-center rounded-lg ${item.sponsor.logo_achtergrond ? 'h-20 w-[200px] p-4 shadow-sm' : 'h-16 w-[180px] p-2'}`}
               style={{ backgroundColor: item.sponsor.logo_achtergrond || 'transparent' }}
             >
               <img
@@ -67,7 +67,7 @@ export default function SponsorSlider() {
                   href={s.website_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center rounded p-1"
+                  className={`flex items-center justify-center rounded ${s.logo_achtergrond ? 'p-2 shadow-sm' : 'p-1'}`}
                   style={{ backgroundColor: s.logo_achtergrond || 'transparent' }}
                 >
                   <img
