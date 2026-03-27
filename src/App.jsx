@@ -13,6 +13,10 @@ import AgendaPage from './pages/AgendaPage'
 import AgendaBeheerPage from './pages/AgendaBeheerPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import PlaceholderPage from './pages/PlaceholderPage'
+import SponsorsPage from './pages/SponsorsPage'
+import SponsorDetailPage from './pages/SponsorDetailPage'
+import SponsorWordenPage from './pages/SponsorWordenPage'
+import SponsoringBeheerPage from './pages/SponsoringBeheerPage'
 
 export default function App() {
   return (
@@ -39,7 +43,8 @@ export default function App() {
         <Route path="nieuws" element={<PlaceholderPage title="Nieuws" />} />
         <Route path="vrijwilliger" element={<PlaceholderPage title="Vrijwilliger worden?" />} />
         <Route path="techniektrainingen" element={<PlaceholderPage title="Techniektrainingen" />} />
-        <Route path="sponsors" element={<PlaceholderPage title="Sponsors" />} />
+        <Route path="sponsors" element={<SponsorsPage />} />
+        <Route path="sponsors/:slug" element={<SponsorDetailPage />} />
 <Route path="lid-worden" element={<PlaceholderPage title="Lid worden?" />} />
         <Route path="wedstrijden">
           <Route index element={<PlaceholderPage title="Wedstrijden" />} />
@@ -56,8 +61,13 @@ export default function App() {
           </Route>
         </Route>
         <Route path="sponsoring">
-          <Route path="sponsor-worden" element={<PlaceholderPage title="Sponsor worden?" />} />
+          <Route path="sponsor-worden" element={<SponsorWordenPage />} />
           <Route path="acties" element={<PlaceholderPage title="Sponsor Acties" />} />
+          <Route path="beheer" element={
+            <ProtectedRoute>
+              <SponsoringBeheerPage />
+            </ProtectedRoute>
+          } />
         </Route>
         <Route path="club">
           <Route path="historie" element={<PlaceholderPage title="Historie" />} />
