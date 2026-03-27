@@ -72,7 +72,7 @@ export default function TopNav() {
         <div className="flex-1 overflow-y-auto flex justify-center px-6 py-6">
           <div className="flex gap-16 w-full max-w-2xl items-start">
 
-            {/* Kolom 1: quick links */}
+            {/* Kolom 1: quick links + inloggen */}
             <div className="flex flex-col gap-3 whitespace-nowrap">
               {QUICK_LINKS.map(item => (
                 <NavLink
@@ -85,6 +85,22 @@ export default function TopNav() {
                   {item.label}
                 </NavLink>
               ))}
+              {/* Inloggen/uitloggen — duidelijk gescheiden van menu */}
+              <div className="mt-6 pt-4 border-t border-white/20">
+                {user ? (
+                  <button onClick={signOut} className="text-sm text-white/50 hover:text-white/80 transition-colors">
+                    Uitloggen
+                  </button>
+                ) : (
+                  <Link
+                    to="/login"
+                    state={{ from: { pathname: location.pathname } }}
+                    className="text-sm text-white/50 hover:text-white/80 transition-colors"
+                  >
+                    Inloggen
+                  </Link>
+                )}
+              </div>
             </div>
 
             {/* Kolom 2: secties met accordion */}
@@ -138,21 +154,11 @@ export default function TopNav() {
           </div>
         </div>
 
-        {/* Auth onderaan */}
-        <div className="px-6 py-4 border-t border-white/20 shrink-0">
-          {user ? (
-            <button onClick={signOut} className="text-sm text-white/70 hover:text-white transition-colors">
-              Uitloggen
-            </button>
-          ) : (
-            <Link
-              to="/login"
-              state={{ from: { pathname: location.pathname } }}
-              className="text-sm text-white/70 hover:text-white transition-colors"
-            >
-              Inloggen
-            </Link>
-          )}
+        {/* Slogan */}
+        <div className="px-6 py-6 border-t border-white/20 shrink-0 text-center">
+          <p className="text-white/80 text-3xl" style={{ fontFamily: "'Lora', serif", fontStyle: 'italic' }}>
+            Er is maar één club en dat is VVZ!
+          </p>
         </div>
       </div>
     </nav>
