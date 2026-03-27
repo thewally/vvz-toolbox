@@ -13,6 +13,9 @@ export const NAV_SECTIONS = [
     children: [
       { label: 'Programma', to: '/wedstrijden/programma' },
       { label: 'Uitslagen', to: '/wedstrijden/uitslagen' },
+      { label: 'Afgelastingen', to: '/wedstrijden/afgelastingen' },
+      { label: 'Wedstrijdverslagen', to: '/wedstrijden/verslagen' },
+      { label: 'Topscorers & Keeperstrofee', to: '/wedstrijden/topscorers' },
     ],
   },
   {
@@ -31,11 +34,37 @@ export const NAV_SECTIONS = [
     ],
   },
   {
+    label: 'SPONSORING',
+    children: [
+      { label: 'Sponsors', to: '/sponsors' },
+      { label: 'Sponsor worden?', to: '/sponsoring/sponsor-worden' },
+      { label: 'Sponsor Acties', to: '/sponsoring/acties' },
+    ],
+  },
+  {
     label: 'CLUBINFORMATIE',
     children: [
       { label: 'Plattegrond', to: '/plattegrond' },
       { label: 'Huisstijl', to: '/huistijl' },
+      { label: 'Historie', to: '/club/historie' },
+      { label: 'Ereleden', to: '/club/ereleden' },
+      { label: 'Reglementen', to: '/club/reglementen' },
     ],
   },
-  { label: 'Contact', to: '/contact' },
+  {
+    label: 'LIDMAATSCHAP',
+    children: [
+      { label: 'Lid worden?', to: '/lid-worden' },
+      { label: 'Contributie', to: '/lidmaatschap/contributie' },
+      { label: 'Vrijwilliger worden?', to: '/vrijwilliger' },
+    ],
+  },
+  {
+    label: 'CONTACT',
+    children: [
+      { label: 'Contactgegevens', to: '/contact/gegevens' },
+      { label: 'Wie doet wat?', to: '/contact/wie-doet-wat' },
+      { label: 'Locatie & Routebeschrijving', to: '/contact/locatie' },
+    ],
+  },
 ]
