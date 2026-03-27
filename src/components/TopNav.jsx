@@ -73,7 +73,7 @@ export default function TopNav() {
           <div className="flex gap-16 w-full max-w-2xl items-start">
 
             {/* Kolom 1: quick links */}
-            <div className="flex flex-col gap-3 min-w-[140px]">
+            <div className="flex flex-col gap-3 whitespace-nowrap">
               {QUICK_LINKS.map(item => (
                 <NavLink
                   key={item.to}
