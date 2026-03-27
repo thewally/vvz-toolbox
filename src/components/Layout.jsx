@@ -7,7 +7,7 @@ export default function Layout() {
       <header className="bg-vvz-green text-white shadow-lg no-print">
         {/* Logo — gecentreerd, overlapt onderrand */}
         <div className="flex justify-center pt-4 pb-0">
-          <Link to="/" className="relative z-10 block" style={{ marginBottom: '-2.5rem' }}>
+          <Link to="/" className="relative z-10 block -mb-10" aria-label="Home">
             <img
               src={`${import.meta.env.BASE_URL}logo-vvz.png`}
               alt="VVZ'49"

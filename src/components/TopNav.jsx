@@ -24,16 +24,29 @@ export default function TopNav() {
     setOpenDropdown(null)
   }, [location.pathname])
 
-  // Sluit dropdown bij klik buiten nav
+  // Sluit dropdown bij klik buiten nav of Escape
   useEffect(() => {
     function handleClick(e) {
       if (navRef.current && !navRef.current.contains(e.target)) {
         setOpenDropdown(null)
       }
     }
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') setOpenDropdown(null)
+    }
     document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
   }, [])
+
+  // Vergrendel body scroll als mobiel menu open is
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [mobileOpen])
 
   function handleMouseEnter(label) {
     clearTimeout(dropdownTimeout.current)
@@ -54,6 +67,7 @@ export default function TopNav() {
         {NAV_ITEMS.map(item => {
           const active = isActive(item, location.pathname)
           if (item.children) {
+            const isOpen = openDropdown === item.label
             return (
               <div
                 key={item.label}
@@ -62,20 +76,26 @@ export default function TopNav() {
                 onMouseLeave={handleMouseLeave}
               >
                 <button
-                  onClick={() => setOpenDropdown(openDropdown === item.label ? null : item.label)}
+                  onClick={() => setOpenDropdown(isOpen ? null : item.label)}
                   className={`${baseClass} ${active ? activeClass : ''} flex items-center gap-1`}
+                  aria-expanded={isOpen}
+                  aria-haspopup="true"
                 >
                   {item.label}
                   <svg className="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                {openDropdown === item.label && (
-                  <div className="absolute top-full left-0 mt-1 bg-white text-gray-800 shadow-lg rounded-md border border-gray-200 min-w-[180px] z-50">
+                {isOpen && (
+                  <div
+                    role="menu"
+                    className="absolute top-full left-0 mt-1 bg-white text-gray-800 shadow-lg rounded-md border border-gray-200 min-w-[180px] z-50 py-1 overflow-hidden"
+                  >
                     {item.children.map(child => (
                       <NavLink
                         key={child.to}
                         to={child.to}
+                        role="menuitem"
                         className={({ isActive }) =>
                           `block px-4 py-2 text-sm hover:bg-gray-100 transition-colors ${isActive ? 'font-semibold text-vvz-green' : ''}`
                         }
@@ -102,14 +122,14 @@ export default function TopNav() {
         {/* Auth knop rechts */}
         <div className="ml-auto">
           {user ? (
-            <button onClick={signOut} className={`${baseClass} bg-white/20`}>
+            <button onClick={signOut} className={`${baseClass} opacity-80 hover:opacity-100`}>
               Uitloggen
             </button>
           ) : (
             <Link
               to="/login"
               state={{ from: { pathname: location.pathname } }}
-              className={`${baseClass} bg-white/20`}
+              className={`${baseClass} opacity-80 hover:opacity-100`}
             >
               Inloggen
             </Link>
@@ -118,8 +138,7 @@ export default function TopNav() {
       </div>
 
       {/* Mobiele header balk */}
-      <div className="md:hidden flex items-center justify-between px-4 py-2">
-        <span />
+      <div className="md:hidden flex items-center justify-end px-4 py-2">
         {!mobileOpen && (
           <button
             onClick={() => setMobileOpen(true)}
@@ -139,6 +158,7 @@ export default function TopNav() {
           {/* Sluitknop */}
           <button
             onClick={() => setMobileOpen(false)}
+            aria-label="Menu sluiten"
             className="flex items-center gap-2 px-4 py-3 text-white font-medium w-full text-left border-b border-white/20"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -154,6 +174,7 @@ export default function TopNav() {
                 <div key={item.label}>
                   <button
                     onClick={() => setMobileAccordion(expanded ? null : item.label)}
+                    aria-expanded={expanded}
                     className="flex items-center justify-between w-full px-4 py-3 border-b border-white/10 text-sm font-medium"
                   >
                     {item.label}
