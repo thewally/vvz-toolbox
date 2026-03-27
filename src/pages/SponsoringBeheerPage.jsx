@@ -3,7 +3,7 @@ import { getAllSponsors, createSponsor, updateSponsor, deleteSponsor, generateSl
 
 const LEEG = {
   naam: '', categorie: 'goud', logo_url: '', website_url: '',
-  beschrijving: '', volgorde: 0, actief: true,
+  beschrijving: '', volgorde: 0, actief: true, logo_achtergrond: '',
 }
 
 export default function SponsoringBeheerPage() {
@@ -140,6 +140,28 @@ export default function SponsoringBeheerPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
                 <input type="url" value={form.logo_url} onChange={e => setForm(f => ({ ...f, logo_url: e.target.value }))}
                   placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Logo achtergrondkleur</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={form.logo_achtergrond || '#ffffff'}
+                    onChange={e => setForm(f => ({ ...f, logo_achtergrond: e.target.value }))}
+                    className="h-9 w-14 rounded border border-gray-300 cursor-pointer p-0.5"
+                  />
+                  <span className="text-xs text-gray-400">Laat leeg voor transparant</span>
+                  {form.logo_achtergrond && (
+                    <button type="button" onClick={() => setForm(f => ({ ...f, logo_achtergrond: '' }))}
+                      className="text-xs text-gray-400 hover:text-red-500 transition-colors">Wissen</button>
+                  )}
+                </div>
+                {form.logo_url && (
+                  <div className="mt-2 inline-flex items-center justify-center rounded-lg p-2 border border-gray-200"
+                    style={{ backgroundColor: form.logo_achtergrond || 'transparent' }}>
+                    <img src={form.logo_url} alt="preview" className="h-10 object-contain" />
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
