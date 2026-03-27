@@ -48,7 +48,7 @@ export default function TopNav() {
       <div className={`fixed inset-0 z-50 bg-vvz-green text-white flex flex-col transition-transform duration-300 ease-in-out ${menuOpen ? 'translate-y-0 pointer-events-auto' : '-translate-y-full pointer-events-none'}`}>
 
         {/* Topbalk: logo links, sluiten rechts */}
-        <div className="flex items-center justify-between px-6 py-4 shrink-0">
+        <div className="flex items-start justify-between px-6 py-4 shrink-0">
           <Link to="/" aria-label="Home" onClick={() => setMenuOpen(false)}>
             <img
               src={`${import.meta.env.BASE_URL}logo-vvz.png`}
@@ -79,7 +79,7 @@ export default function TopNav() {
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `text-4xl font-light ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
+                    `text-2xl font-light ${isActive ? 'text-white' : 'text-white/70 hover:text-white'} transition-colors`
                   }
                 >
                   {item.label}
