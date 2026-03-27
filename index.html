@@ -9,17 +9,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
     <title>Website van VVZ'49</title>
     <script>
-      // GitHub Pages SPA: recover path from 404-redirect query string
+      // GitHub Pages SPA: recover path from 404-redirect query string (?p=/path&q=query)
       (function(l) {
-        if (l.search[1] === '/') {
-          var decoded = l.search.slice(1).split('&').map(function(s) {
-            return s.replace(/~and~/g, '&')
-          });
+        var params = new URLSearchParams(l.search);
+        var p = params.get('p');
+        if (p) {
+          var q = params.get('q');
           window.history.replaceState(
             null, null,
-            l.pathname.slice(0, -1) +
-            (decoded[0] ? decoded[0] : '/') +
-            (decoded[1] ? '?' + decoded[1] : '') +
+            '/vvz-toolbox' + p.replace(/~and~/g, '&') +
+            (q ? '?' + q.replace(/~and~/g, '&') : '') +
             l.hash
           );
         }
