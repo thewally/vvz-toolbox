@@ -14,7 +14,7 @@ async function apiFetch(path) {
 }
 
 export function fetchProgramma() {
-  return apiFetch(`/programma?${COMMON_PARAMS}&client_id=${CLIENT_ID}`)
+  return apiFetch(`/programma?${COMMON_PARAMS}&aantaldagen=365&client_id=${CLIENT_ID}`)
 }
 
 export function fetchUitslagen() {
