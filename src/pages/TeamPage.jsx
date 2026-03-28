@@ -317,18 +317,66 @@ export default function TeamPage() {
               <p className="text-sm font-medium capitalize">{formatDagLabel(eerstvolgende.wedstrijddatum)}</p>
               <ThuisUitBadge wedstrijd={eerstvolgende} />
             </div>
-            <div className="p-5 flex flex-col items-center text-center">
-              {/* Team logos + namen — gecentreerd */}
+            {/* Mobiel: drie-kolommen layout met logo's links en rechts */}
+            <div className="sm:hidden p-5 flex items-start gap-3">
+              <div className="shrink-0 w-14 flex justify-center pt-1">
+                {eerstvolgende.thuisteamlogo && (
+                  <img src={eerstvolgende.thuisteamlogo} alt={eerstvolgende.thuisteam} className="w-14 h-14 object-contain" />
+                )}
+              </div>
+              <div className="flex-1 flex flex-col items-center text-center">
+                <p className={`text-lg font-bold ${isThuis(eerstvolgende) ? 'text-vvz-green' : 'text-gray-800'}`}>{eerstvolgende.thuisteam}</p>
+                <p className="text-gray-400 text-sm my-1">vs</p>
+                <p className={`text-lg font-bold ${!isThuis(eerstvolgende) ? 'text-vvz-green' : 'text-gray-800'}`}>{eerstvolgende.uitteam}</p>
+                <p className="text-2xl font-bold text-gray-800 mt-2">{eerstvolgende.aanvangstijd || '--:--'}</p>
+
+                {(eerstvolgende.verzameltijd || eerstvolgende.vertrektijd) && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {eerstvolgende.verzameltijd && <span>Verzamelen {eerstvolgende.verzameltijd}</span>}
+                    {eerstvolgende.verzameltijd && eerstvolgende.vertrektijd && <span> · </span>}
+                    {eerstvolgende.vertrektijd && <span>Vertrek {eerstvolgende.vertrektijd}</span>}
+                  </p>
+                )}
+
+                {eerstvolgende.accommodatie && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    📍 {eerstvolgende.accommodatie}{eerstvolgende.plaats ? `, ${eerstvolgende.plaats}` : ''}
+                  </p>
+                )}
+
+                {eerstvolgende.kleedkamerthuisteam && (
+                  <p className="text-sm text-gray-500 mt-1">Kleedkamer: {eerstvolgende.kleedkamerthuisteam}</p>
+                )}
+
+                <button
+                  onClick={() => shareWedstrijdCard(eerstvolgende, teamnaam, teamcode)}
+                  className="mt-3 inline-flex items-center gap-2 bg-vvz-green hover:bg-vvz-green/90 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  </svg>
+                  Delen
+                </button>
+              </div>
+              <div className="shrink-0 w-14 flex justify-center pt-1">
+                {eerstvolgende.uitteamlogo && (
+                  <img src={eerstvolgende.uitteamlogo} alt={eerstvolgende.uitteam} className="w-14 h-14 object-contain" />
+                )}
+              </div>
+            </div>
+
+            {/* Desktop: horizontale layout met logo's */}
+            <div className="hidden sm:flex flex-col items-center text-center p-5">
               <div className="flex items-center justify-center gap-4 mb-2">
                 {eerstvolgende.thuisteamlogo
                   ? <img src={eerstvolgende.thuisteamlogo} alt={eerstvolgende.thuisteam} className="w-14 h-14 object-contain" />
                   : <div className="w-14 h-14" />
                 }
                 <div>
-                  <p className="text-xl font-bold text-gray-800 leading-tight">
-                    {eerstvolgende.thuisteam}
+                  <p className="text-xl font-bold leading-tight">
+                    <span className={isThuis(eerstvolgende) ? 'text-vvz-green' : 'text-gray-800'}>{eerstvolgende.thuisteam}</span>
                     <span className="text-gray-400 font-normal mx-2">vs</span>
-                    {eerstvolgende.uitteam}
+                    <span className={!isThuis(eerstvolgende) ? 'text-vvz-green' : 'text-gray-800'}>{eerstvolgende.uitteam}</span>
                   </p>
                   <p className="text-2xl font-bold text-gray-800 mt-1">{eerstvolgende.aanvangstijd || '--:--'}</p>
                 </div>
@@ -379,45 +427,41 @@ export default function TeamPage() {
           <div className="flex flex-col gap-3">
             {toekomstig.map((w, i) => (
               <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 hover:shadow-md transition-shadow">
-                <div className="flex items-center gap-3">
-                  {/* Tijd + badge */}
-                  <div className="shrink-0 w-14 text-center">
-                    <span className="block text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
-                    <span className="block mt-1"><ThuisUitBadge wedstrijd={w} /></span>
+                {/* Mobiel: drie-kolommen layout */}
+                <div className="sm:hidden flex items-center gap-3">
+                  <div className="flex flex-col items-center justify-center shrink-0">
+                    <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis(w) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                      {isThuis(w) ? 'THUIS' : 'UIT'}
+                    </span>
                   </div>
-                  {/* Thuisteam rechts */}
-                  <div className="flex-1 min-w-0 text-right">
-                    <span className={`font-semibold text-sm truncate block ${isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                  <div className="flex-1 flex flex-col items-center justify-center text-center gap-0.5">
+                    <span className={`font-semibold text-sm ${isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                    <span className="text-gray-400 text-xs">vs</span>
+                    <span className={`font-semibold text-sm ${!isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                    <span className="text-xs text-gray-400 capitalize">{formatDagLabel(w.wedstrijddatum)}</span>
+                    {w.accommodatie && <p className="text-xs text-gray-400">{w.accommodatie}</p>}
+                    {(w.verzameltijd || w.vertrektijd) && (
+                      <p className="text-xs text-gray-400">
+                        {w.verzameltijd ? `Verzamelen ${w.verzameltijd}` : ''}
+                        {w.verzameltijd && w.vertrektijd ? ' · ' : ''}
+                        {w.vertrektijd ? `Vertrek ${w.vertrektijd}` : ''}
+                      </p>
+                    )}
                   </div>
-                  {/* vs center */}
-                  <div className="shrink-0 w-16 text-center">
-                    <span className="text-gray-400 text-sm">vs</span>
-                  </div>
-                  {/* Uitteam links */}
-                  <div className="flex-1 min-w-0">
-                    <span className={`font-semibold text-sm truncate block ${!isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
-                  </div>
-                  {/* Datum rechts */}
-                  <div className="shrink-0 text-right text-xs text-gray-400 capitalize whitespace-nowrap">
-                    {formatDagLabel(w.wedstrijddatum)}
-                  </div>
+                  <div className="shrink-0 w-14" />
                 </div>
-                {(w.accommodatie || w.verzameltijd || w.vertrektijd) && (
-                  <div className="flex gap-3 -mt-2">
-                    <div className="shrink-0 w-14" />
-                    <div className="flex-1 text-center">
-                      {w.accommodatie && <p className="text-xs text-gray-400">{w.accommodatie}</p>}
-                      {(w.verzameltijd || w.vertrektijd) && (
-                        <p className="text-xs text-gray-400">
-                          {w.verzameltijd ? `Verzamelen ${w.verzameltijd}` : ''}
-                          {w.verzameltijd && w.vertrektijd ? ' · ' : ''}
-                          {w.vertrektijd ? `Vertrek ${w.vertrektijd}` : ''}
-                        </p>
-                      )}
-                    </div>
-                    <div className="shrink-0 whitespace-nowrap invisible text-xs">{formatDagLabel(w.wedstrijddatum)}</div>
+                {/* Desktop: horizontale layout */}
+                <div className="hidden sm:flex items-center gap-2">
+                  <div className="shrink-0 flex items-center gap-2">
+                    <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
+                    <ThuisUitBadge wedstrijd={w} />
                   </div>
-                )}
+                  <span className={`flex-1 text-right font-semibold text-sm truncate ${isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                  <span className="shrink-0 w-16 text-center text-gray-400 text-xs">vs</span>
+                  <span className={`flex-1 font-semibold text-sm truncate ${!isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                  <span className="shrink-0 text-xs text-gray-400 capitalize">{formatDagLabel(w.wedstrijddatum)}</span>
+                </div>
               </div>
             ))}
           </div>
@@ -439,24 +483,33 @@ export default function TeamPage() {
                 const uitScore = scores?.[1] ?? '-'
                 const thuis = isThuis(w)
                 return (
-                  <div key={i} className="flex items-center bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 gap-3 hover:shadow-md transition-shadow">
-                    <div className="shrink-0 w-14 text-center">
-                      <ThuisUitBadge wedstrijd={w} />
+                  <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 hover:shadow-md transition-shadow">
+                    {/* Mobiel: drie-kolommen layout */}
+                    <div className="sm:hidden flex items-center gap-3">
+                      <div className="flex flex-col items-center justify-center shrink-0">
+                        <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${thuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {thuis ? 'THUIS' : 'UIT'}
+                        </span>
+                      </div>
+                      <div className="flex-1 flex flex-col items-center justify-center text-center gap-0.5">
+                        <span className={`font-semibold text-sm ${thuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                        <span className="text-lg font-bold text-gray-800 tabular-nums">{thuisScore} – {uitScore}</span>
+                        <span className={`font-semibold text-sm ${!thuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                        <span className="text-xs text-gray-400 capitalize">{formatDagLabel(w.wedstrijddatum)}</span>
+                      </div>
+                      <div className="shrink-0 w-14" />
                     </div>
-                    <div className="flex-1 min-w-0 text-right">
-                      <span className={`font-semibold text-sm truncate block ${thuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
-                    </div>
-                    <div className="shrink-0 flex items-center w-16 justify-center gap-0.5">
-                      <span className="text-sm font-semibold text-gray-800 tabular-nums">{thuisScore}</span>
-                      <span className="text-gray-400 text-sm mx-1">–</span>
-                      <span className="text-sm font-semibold text-gray-800 tabular-nums">{uitScore}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className={`font-semibold text-sm truncate block ${!thuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
-                    </div>
-                    {/* Datum rechts */}
-                    <div className="shrink-0 text-right text-xs text-gray-400 capitalize max-w-[5.5rem] leading-tight">
-                      {formatDagLabel(w.wedstrijddatum)}
+                    {/* Desktop: horizontale layout */}
+                    <div className="hidden sm:flex items-center gap-2">
+                      <div className="shrink-0 flex items-center gap-2">
+                        <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
+                        <ThuisUitBadge wedstrijd={w} />
+                      </div>
+                      <span className={`flex-1 text-right font-semibold text-sm truncate ${thuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                      <span className="shrink-0 w-16 text-center text-lg font-bold text-gray-800 tabular-nums">{thuisScore} – {uitScore}</span>
+                      <span className={`flex-1 font-semibold text-sm truncate ${!thuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                      <span className="shrink-0 text-xs text-gray-400 capitalize">{formatDagLabel(w.wedstrijddatum)}</span>
                     </div>
                   </div>
                 )
