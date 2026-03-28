@@ -99,7 +99,7 @@ export default function HomePage() {
               src={`${import.meta.env.BASE_URL}voetbal.png`}
               alt="Programma"
               className="w-16 h-16 group-hover:scale-110 transition-transform duration-200"
-              style={{ filter: 'brightness(0) saturate(100%) invert(37%) sepia(57%) saturate(400%) hue-rotate(88deg) brightness(90%) contrast(90%)' }}
+              style={{ filter: 'brightness(0) saturate(100%) invert(34%) sepia(100%) saturate(350%) hue-rotate(86deg) brightness(97%) contrast(87%)' }}
             />
           </div>
           <div className="p-5">
