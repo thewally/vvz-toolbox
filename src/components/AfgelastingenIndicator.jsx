@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { getAfgelastingen, getProgramma } from '../services/wedstrijden'
 import { getAfgelastingenNiveau } from '../services/wedstrijdenHelpers'
 
@@ -29,10 +30,16 @@ export default function AfgelastingenIndicator() {
 
   const config = NIVEAU_CONFIG[niveau]
 
-  return (
-    <div className="flex items-center gap-2 mb-4">
-      <span className={`rounded-full w-3 h-3 ${config.kleur}`} />
+  const inner = (
+    <>
+      <span className={`rounded-full w-3 h-3 shrink-0 ${config.kleur}`} />
       <span className="text-sm text-gray-600">{config.label}</span>
-    </div>
+    </>
+  )
+
+  return (
+    <Link to="/wedstrijden/afgelastingen" className="flex items-center gap-2 mb-4 hover:underline">
+      {inner}
+    </Link>
   )
 }

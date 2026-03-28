@@ -40,3 +40,7 @@ export function fetchPoulestand(poulecode) {
 export function fetchAfgelastingen() {
   return apiFetch(`/afgelastingen?client_id=${CLIENT_ID}`)
 }
+
+export function fetchClubGegevens() {
+  return apiFetch(`/clubgegevens?client_id=${CLIENT_ID}`)
+}

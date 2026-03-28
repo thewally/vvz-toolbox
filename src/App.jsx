@@ -15,9 +15,13 @@ import WedstrijdenLayout from './components/WedstrijdenLayout'
 import WedstrijdenProgrammaPage from './pages/WedstrijdenProgrammaPage'
 import WedstrijdenUitslagenPage from './pages/WedstrijdenUitslagenPage'
 import WedstrijdenTeamsCatPage from './pages/WedstrijdenTeamsCatPage'
+import WedstrijdenAfgelastingenPage from './pages/WedstrijdenAfgelastingenPage'
 import TeamPage from './pages/TeamPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import PlaceholderPage from './pages/PlaceholderPage'
+import ContactgegevensPage from './pages/ContactgegevensPage'
+import ReglemenenPage from './pages/ReglemenenPage'
+import LocatieRoutebeschrijvingPage from './pages/LocatieRoutebeschrijvingPage'
 import SponsorsPage from './pages/SponsorsPage'
 import SponsorDetailPage from './pages/SponsorDetailPage'
 import SponsorWordenPage from './pages/SponsorWordenPage'
@@ -49,7 +53,7 @@ export default function App() {
           <Route index element={<Navigate to="programma" replace />} />
           <Route path="programma" element={<WedstrijdenProgrammaPage />} />
           <Route path="uitslagen" element={<WedstrijdenUitslagenPage />} />
-          <Route path="afgelastingen" element={<PlaceholderPage title="Afgelastingen" />} />
+          <Route path="afgelastingen" element={<WedstrijdenAfgelastingenPage />} />
           <Route path="verslagen" element={<PlaceholderPage title="Wedstrijdverslagen" />} />
           <Route path="topscorers" element={<PlaceholderPage title="Topscorers & Keeperstrofee" />} />
         </Route>
@@ -71,16 +75,16 @@ export default function App() {
         <Route path="club">
           <Route path="historie" element={<PlaceholderPage title="Historie" />} />
           <Route path="ereleden" element={<PlaceholderPage title="Ereleden" />} />
-          <Route path="reglementen" element={<PlaceholderPage title="Reglementen" />} />
+          <Route path="reglementen" element={<ReglemenenPage />} />
         </Route>
         <Route path="lidmaatschap">
           <Route path="contributie" element={<PlaceholderPage title="Contributie" />} />
         </Route>
         <Route path="contact">
           <Route index element={<PlaceholderPage title="Contact" />} />
-          <Route path="gegevens" element={<PlaceholderPage title="Contactgegevens" />} />
+          <Route path="gegevens" element={<ContactgegevensPage />} />
           <Route path="wie-doet-wat" element={<PlaceholderPage title="Wie doet wat?" />} />
-          <Route path="locatie" element={<PlaceholderPage title="Locatie & Routebeschrijving" />} />
+          <Route path="locatie" element={<LocatieRoutebeschrijvingPage />} />
         </Route>
         <Route path="teams/senioren" element={<WedstrijdenTeamsCatPage />} />
         <Route path="teams/veteranen" element={<WedstrijdenTeamsCatPage />} />
