@@ -35,6 +35,8 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SPORTLINK_CLIENT_ID: ${{ secrets.VITE_SPORTLINK_CLIENT_ID }}
+          VITE_SPORTLINK_CLUB_RELATIECODE: ${{ secrets.VITE_SPORTLINK_CLUB_RELATIECODE }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v4
