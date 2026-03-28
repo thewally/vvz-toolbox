@@ -95,11 +95,18 @@ export default function HomePage() {
           className="group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 hover:-translate-y-1 border border-gray-100 overflow-hidden"
         >
           <div className="bg-vvz-green/10 p-6 flex items-center justify-center">
-            <img
-              src={`${import.meta.env.BASE_URL}voetbal.png`}
-              alt="Programma"
-              className="w-16 h-16 group-hover:scale-110 transition-transform duration-200"
-              style={{ filter: 'brightness(0) saturate(100%) invert(34%) sepia(100%) saturate(350%) hue-rotate(86deg) brightness(97%) contrast(87%)' }}
+            <div
+              className="w-16 h-16 bg-vvz-green group-hover:scale-110 transition-transform duration-200"
+              style={{
+                maskImage: `url(${import.meta.env.BASE_URL}voetbal.png)`,
+                maskSize: 'contain',
+                maskRepeat: 'no-repeat',
+                maskPosition: 'center',
+                WebkitMaskImage: `url(${import.meta.env.BASE_URL}voetbal.png)`,
+                WebkitMaskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+              }}
             />
           </div>
           <div className="p-5">
