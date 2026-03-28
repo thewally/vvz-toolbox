@@ -95,9 +95,12 @@ export default function HomePage() {
           className="group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 hover:-translate-y-1 border border-gray-100 overflow-hidden"
         >
           <div className="bg-vvz-green/10 p-6 flex items-center justify-center">
-            <svg className="w-16 h-16 text-vvz-green group-hover:scale-110 transition-transform duration-200" fill="currentColor" viewBox="0 0 100 100">
-              <path d="M50 5a45 45 0 1 0 0 90A45 45 0 0 0 50 5zm0 4a41 41 0 0 1 21.3 5.9l-4.5 7.4-8.5-1.5-8.3 6.1-8.3-6.1-8.5 1.5-4.5-7.4A41 41 0 0 1 50 9zM17.5 22.4l3.8 6.3-5.3 9.2-7.5.7A41.2 41.2 0 0 1 17.5 22.4zm65 0a41.2 41.2 0 0 1 9 16.2l-7.5-.7-5.3-9.2 3.8-6.3zM9.1 42.5l6.6-.6 4.4 12.5-4.9 6.9A41.1 41.1 0 0 1 9.1 42.5zm75.8 0a41.1 41.1 0 0 1-6.1 18.8l-4.9-6.9 4.4-12.5 6.6.6zM21.7 57.8l5-7.1h10l5 7.1-3.7 9.7h-12.6l-3.7-9.7zm22 .3 8.3-6.1 8.3 6.1-3.1 9.9h-10.4l-3.1-9.9zm20.2-.3 5-7.1h10l5 7.1-3.7 9.7h-12.6l-3.7-9.7zm-15-29.1 7.6 5.6-2.7 8.7h-9.8l-2.7-8.7 7.6-5.6zM18.5 70l3.3-8.5 12 3.9 3.5 9.3A41.3 41.3 0 0 1 18.5 70zm26.9 5.8-3.8-10 9.4-3 9.4 3-3.8 10a41 41 0 0 1-11.2 0zm17.8-1.1 3.5-9.3 12-3.9 3.3 8.5a41.3 41.3 0 0 1-18.8 4.7z"/>
-            </svg>
+            <img
+              src={`${import.meta.env.BASE_URL}voetbal.png`}
+              alt="Programma"
+              className="w-16 h-16 group-hover:scale-110 transition-transform duration-200"
+              style={{ filter: 'brightness(0) saturate(100%) invert(37%) sepia(57%) saturate(400%) hue-rotate(88deg) brightness(90%) contrast(90%)' }}
+            />
           </div>
           <div className="p-5">
             <h3 className="text-lg font-semibold text-gray-800 group-hover:text-vvz-green transition-colors">
