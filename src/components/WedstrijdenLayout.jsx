@@ -32,18 +32,6 @@ export default function WedstrijdenLayout() {
             Uitslagen
           </NavLink>
 
-          <NavLink
-            to="/wedstrijden/teams"
-            className={({ isActive }) =>
-              `px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-vvz-green/10 text-vvz-green'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-              }`
-            }
-          >
-            Teams
-          </NavLink>
         </div>
       </nav>
 

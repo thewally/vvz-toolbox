@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getUitslagen } from '../services/wedstrijden'
-import { filterVorigeSpeelweek, groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
+import { groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
 
 export default function WedstrijdenUitslagenPage() {
   const [wedstrijden, setWedstrijden] = useState([])
@@ -42,13 +42,17 @@ export default function WedstrijdenUitslagenPage() {
     )
   }
 
-  const speelweek = filterVorigeSpeelweek(wedstrijden)
-  const perDag = groepeerPerDag(speelweek)
+  const vandaag = new Date().toISOString().slice(0, 10)
+  const verleden = wedstrijden.filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) < vandaag && w.uitslag)
+  const perDagUnsorted = groepeerPerDag(verleden)
+  // Meest recent eerst
+  const perDag = new Map([...perDagUnsorted.entries()].reverse())
 
-  if (speelweek.length === 0) {
+  if (verleden.length === 0) {
     return (
       <div className="max-w-3xl mx-auto p-4 pt-8 text-center">
         <p className="text-gray-500">Geen uitslagen gevonden.</p>
+
       </div>
     )
   }

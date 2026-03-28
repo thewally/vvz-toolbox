@@ -14,7 +14,7 @@ import AgendaBeheerPage from './pages/AgendaBeheerPage'
 import WedstrijdenLayout from './components/WedstrijdenLayout'
 import WedstrijdenProgrammaPage from './pages/WedstrijdenProgrammaPage'
 import WedstrijdenUitslagenPage from './pages/WedstrijdenUitslagenPage'
-import WedstrijdenTeamsPage from './pages/WedstrijdenTeamsPage'
+import WedstrijdenTeamsCatPage from './pages/WedstrijdenTeamsCatPage'
 import TeamPage from './pages/TeamPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import PlaceholderPage from './pages/PlaceholderPage'
@@ -49,7 +49,10 @@ export default function App() {
           <Route index element={<Navigate to="programma" replace />} />
           <Route path="programma" element={<WedstrijdenProgrammaPage />} />
           <Route path="uitslagen" element={<WedstrijdenUitslagenPage />} />
-          <Route path="teams" element={<WedstrijdenTeamsPage />} />
+          <Route path="teams/senioren" element={<WedstrijdenTeamsCatPage />} />
+          <Route path="teams/veteranen" element={<WedstrijdenTeamsCatPage />} />
+          <Route path="teams/junioren" element={<WedstrijdenTeamsCatPage />} />
+          <Route path="teams/pupillen" element={<WedstrijdenTeamsCatPage />} />
           <Route path="teams/:teamcode" element={<TeamPage />} />
           <Route path="afgelastingen" element={<PlaceholderPage title="Afgelastingen" />} />
           <Route path="verslagen" element={<PlaceholderPage title="Wedstrijdverslagen" />} />
