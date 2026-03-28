@@ -22,7 +22,7 @@ export function fetchUitslagen() {
 }
 
 export function fetchTeamProgramma(teamcode) {
-  return apiFetch(`/programma?${COMMON_PARAMS}&teamcode=${teamcode}&client_id=${CLIENT_ID}`)
+  return apiFetch(`/programma?${COMMON_PARAMS}&teamcode=${teamcode}&aantaldagen=365&client_id=${CLIENT_ID}`)
 }
 
 export function fetchTeamUitslagen(teamcode) {
