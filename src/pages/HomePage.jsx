@@ -95,12 +95,11 @@ export default function HomePage() {
           className="group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 hover:-translate-y-1 border border-gray-100 overflow-hidden"
         >
           <div className="bg-vvz-green/10 p-6 flex items-center justify-center">
-            <img
-              src={`${import.meta.env.BASE_URL}voetbal.png`}
-              alt="Wedstrijden"
-              className="w-16 h-16 group-hover:scale-110 transition-transform duration-200"
-              style={{ filter: 'brightness(0) saturate(100%) invert(26%) sepia(56%) saturate(659%) hue-rotate(86deg) brightness(98%) contrast(88%)' }}
-            />
+            <svg className="w-16 h-16 text-vvz-green group-hover:scale-110 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <circle cx="12" cy="12" r="9.25" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 7.5l2.25 1.5.75 2.5-1.5 2h-3l-1.5-2 .75-2.5L12 7.5z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 7.5V3.75M14.25 9l3.5-2.25M9.75 9l-3.5-2.25M15 13.5l3 2.25M9 13.5l-3 2.25M10.5 15.5l-.75 4.75M13.5 15.5l.75 4.75" />
+            </svg>
           </div>
           <div className="p-5">
             <h3 className="text-lg font-semibold text-gray-800 group-hover:text-vvz-green transition-colors">
