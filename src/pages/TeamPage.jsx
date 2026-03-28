@@ -109,7 +109,7 @@ export default function TeamPage() {
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6">
       <div className="mb-4">
-        <Link to="/wedstrijden/teams" className="text-sm text-vvz-green hover:underline">&larr; Alle teams</Link>
+        <Link to="/teams/senioren" className="text-sm text-vvz-green hover:underline">&larr; Teams</Link>
       </div>
 
       <div className="flex items-center justify-between mb-6 gap-4">

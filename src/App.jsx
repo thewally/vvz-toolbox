@@ -49,11 +49,6 @@ export default function App() {
           <Route index element={<Navigate to="programma" replace />} />
           <Route path="programma" element={<WedstrijdenProgrammaPage />} />
           <Route path="uitslagen" element={<WedstrijdenUitslagenPage />} />
-          <Route path="teams/senioren" element={<WedstrijdenTeamsCatPage />} />
-          <Route path="teams/veteranen" element={<WedstrijdenTeamsCatPage />} />
-          <Route path="teams/junioren" element={<WedstrijdenTeamsCatPage />} />
-          <Route path="teams/pupillen" element={<WedstrijdenTeamsCatPage />} />
-          <Route path="teams/:teamcode" element={<TeamPage />} />
           <Route path="afgelastingen" element={<PlaceholderPage title="Afgelastingen" />} />
           <Route path="verslagen" element={<PlaceholderPage title="Wedstrijdverslagen" />} />
           <Route path="topscorers" element={<PlaceholderPage title="Topscorers & Keeperstrofee" />} />
@@ -87,6 +82,11 @@ export default function App() {
           <Route path="wie-doet-wat" element={<PlaceholderPage title="Wie doet wat?" />} />
           <Route path="locatie" element={<PlaceholderPage title="Locatie & Routebeschrijving" />} />
         </Route>
+        <Route path="teams/senioren" element={<WedstrijdenTeamsCatPage />} />
+        <Route path="teams/veteranen" element={<WedstrijdenTeamsCatPage />} />
+        <Route path="teams/junioren" element={<WedstrijdenTeamsCatPage />} />
+        <Route path="teams/pupillen" element={<WedstrijdenTeamsCatPage />} />
+        <Route path="teams/:teamcode" element={<TeamPage />} />
         <Route path="plattegrond" element={<PlattegrondPage />} />
         <Route path="huistijl" element={<HuistijlPage />} />
         <Route path="login" element={<LoginPage />} />

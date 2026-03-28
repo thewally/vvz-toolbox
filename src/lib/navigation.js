@@ -21,10 +21,10 @@ export const NAV_SECTIONS = [
   {
     label: 'TEAMS',
     children: [
-      { label: 'Senioren', to: '/wedstrijden/teams/senioren' },
-      { label: 'Veteranen', to: '/wedstrijden/teams/veteranen' },
-      { label: 'Junioren', to: '/wedstrijden/teams/junioren' },
-      { label: 'Pupillen', to: '/wedstrijden/teams/pupillen' },
+      { label: 'Senioren', to: '/teams/senioren' },
+      { label: 'Veteranen', to: '/teams/veteranen' },
+      { label: 'Junioren', to: '/teams/junioren' },
+      { label: 'Pupillen', to: '/teams/pupillen' },
     ],
   },
   {

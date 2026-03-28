@@ -117,7 +117,7 @@ export default function WedstrijdenTeamsCatPage() {
               {gesorteerd.map(team => (
                 <Link
                   key={team.teamcode}
-                  to={`/wedstrijden/teams/${team.teamcode}`}
+                  to={`/teams/${team.teamcode}`}
                   className="flex items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md hover:border-vvz-green/30 transition-all text-center"
                 >
                   <span className="font-semibold text-gray-800">{team.teamnaam}</span>
