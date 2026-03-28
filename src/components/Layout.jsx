@@ -21,8 +21,18 @@ export default function Layout() {
           />
         </Link>
       </header>
-      <main className="pt-60">
-        <Outlet />
+      <main className="pt-60 relative">
+        {/* Banner achter het logo */}
+        <div className="absolute top-0 left-0 right-0 h-40 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
+          <img
+            src={`${import.meta.env.BASE_URL}banner-gras.jpg`}
+            alt=""
+            className="w-full h-full object-cover object-center"
+          />
+        </div>
+        <div className="relative" style={{ zIndex: 1 }}>
+          <Outlet />
+        </div>
       </main>
       <div className="mt-12 pb-28 no-print" />
 
