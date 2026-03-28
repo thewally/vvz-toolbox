@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getProgramma } from '../services/wedstrijden'
-import { filterHuidigeSpeelweek, groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
+import { groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
 import AfgelastingenIndicator from '../components/AfgelastingenIndicator'
 
 export default function WedstrijdenProgrammaPage() {
@@ -43,10 +43,11 @@ export default function WedstrijdenProgrammaPage() {
     )
   }
 
-  const speelweek = filterHuidigeSpeelweek(wedstrijden)
-  const perDag = groepeerPerDag(speelweek)
+  const vandaag = new Date().toISOString().slice(0, 10)
+  const toekomst = wedstrijden.filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) >= vandaag)
+  const perDag = groepeerPerDag(toekomst)
 
-  if (speelweek.length === 0) {
+  if (toekomst.length === 0) {
     return (
       <div className="max-w-3xl mx-auto p-4 pt-8 text-center">
         <p className="text-gray-500">Geen wedstrijden gevonden.</p>
