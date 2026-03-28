@@ -32,8 +32,8 @@ export default function AfgelastingenIndicator() {
 
   const inner = (
     <>
-      <span className={`rounded-full w-3 h-3 shrink-0 ${config.kleur}`} />
-      <span className="text-sm text-gray-600">{config.label}</span>
+      <span className={`rounded-full w-3 h-3 shrink-0 animate-pulse ${config.kleur}`} />
+      <span className="text-sm font-semibold text-gray-700">{config.label}</span>
     </>
   )
 
