@@ -15,6 +15,7 @@ import WedstrijdenLayout from './components/WedstrijdenLayout'
 import WedstrijdenProgrammaPage from './pages/WedstrijdenProgrammaPage'
 import WedstrijdenUitslagenPage from './pages/WedstrijdenUitslagenPage'
 import WedstrijdenTeamsCatPage from './pages/WedstrijdenTeamsCatPage'
+import WedstrijdenTeamsZaalPage from './pages/WedstrijdenTeamsZaalPage'
 import WedstrijdenAfgelastingenPage from './pages/WedstrijdenAfgelastingenPage'
 import TeamPage from './pages/TeamPage'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -90,6 +91,7 @@ export default function App() {
         <Route path="teams/veteranen" element={<WedstrijdenTeamsCatPage />} />
         <Route path="teams/junioren" element={<WedstrijdenTeamsCatPage />} />
         <Route path="teams/pupillen" element={<WedstrijdenTeamsCatPage />} />
+        <Route path="teams/zaalvoetbal" element={<WedstrijdenTeamsZaalPage />} />
         <Route path="teams/:teamcode" element={<TeamPage />} />
         <Route path="plattegrond" element={<PlattegrondPage />} />
         <Route path="huistijl" element={<HuistijlPage />} />

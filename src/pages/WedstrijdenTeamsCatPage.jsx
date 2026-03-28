@@ -85,11 +85,18 @@ export default function WedstrijdenTeamsCatPage() {
   for (const t of teams) {
     if (!uniek.has(t.teamcode)) uniek.set(t.teamcode, t)
   }
-  const gefilterd = [...uniek.values()].filter(t => getCategorie(t) === categorie)
+  const gefilterd = [...uniek.values()].filter(t => getCategorie(t) === categorie && !(t.teamnaam || '').toLowerCase().includes('champions league'))
 
-  // Groepeer per speeldag
+  const isO23 = t => (t.teamnaam || '').toLowerCase().includes('o23')
+  const isRegulier = t => SPEELDAG_VOLGORDE.includes(t.speeldag)
+
+  // Groepeer per speeldag (alleen reguliere senioren; zaal heeft eigen pagina)
+  const regulier = categorie === 'senioren' ? gefilterd.filter(t => isRegulier(t) && !isO23(t)) : gefilterd
+  const o23Teams = categorie === 'senioren' ? gefilterd.filter(t => isO23(t)) : []
+  const zaalvoetbal = []
+
   const dagMap = new Map()
-  for (const t of gefilterd) {
+  for (const t of regulier) {
     const dag = t.speeldag || 'Overig'
     if (!dagMap.has(dag)) dagMap.set(dag, [])
     dagMap.get(dag).push(t)
@@ -102,31 +109,45 @@ export default function WedstrijdenTeamsCatPage() {
 
   const label = CAT_LABELS[categorie] ?? categorie
 
+  function TeamGrid({ teams }) {
+    const gesorteerd = [...teams].sort((a, b) => {
+      const aO23 = isO23(a), bO23 = isO23(b)
+      if (aO23 !== bO23) return aO23 ? 1 : -1
+      return getSorteerSleutel(a) - getSorteerSleutel(b)
+    })
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {gesorteerd.map(team => (
+          <Link
+            key={team.teamcode}
+            to={`/teams/${team.teamcode}`}
+            className="flex items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md hover:border-vvz-green/30 transition-all text-center"
+          >
+            <span className="font-semibold text-gray-800">{team.teamnaam}</span>
+          </Link>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6 space-y-8">
       <h2 className="text-lg font-bold text-gray-800">{label}</h2>
       {gefilterd.length === 0 && (
         <p className="text-gray-500 text-center py-8">Geen teams gevonden.</p>
       )}
-      {speeldagen.map(([speeldag, teamLijst]) => {
-        const gesorteerd = [...teamLijst].sort((a, b) => getSorteerSleutel(a) - getSorteerSleutel(b))
-        return (
-          <div key={speeldag}>
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{speeldag}</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {gesorteerd.map(team => (
-                <Link
-                  key={team.teamcode}
-                  to={`/teams/${team.teamcode}`}
-                  className="flex items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md hover:border-vvz-green/30 transition-all text-center"
-                >
-                  <span className="font-semibold text-gray-800">{team.teamnaam}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )
-      })}
+      {speeldagen.map(([speeldag, teamLijst]) => (
+        <div key={speeldag}>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{speeldag}</h3>
+          <TeamGrid teams={[...teamLijst, ...(speeldag === speeldagen.at(-1)?.[0] ? o23Teams : [])]} />
+        </div>
+      ))}
+      {zaalvoetbal.length > 0 && (
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Zaalvoetbal</h3>
+          <TeamGrid teams={zaalvoetbal} />
+        </div>
+      )}
     </div>
   )
 }

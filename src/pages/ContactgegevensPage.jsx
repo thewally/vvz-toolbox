@@ -12,7 +12,7 @@ export default function ContactgegevensPage() {
       if (error) {
         setError(error.message)
       } else {
-        setGegevens(data?.gegevens ?? null)
+        setGegevens(data ?? null)
       }
       setLoading(false)
     }
@@ -27,7 +27,7 @@ export default function ContactgegevensPage() {
     )
   }
 
-  if (error || !gegevens) {
+  if (error || !gegevens?.gegevens) {
     return (
       <div className="max-w-3xl mx-auto p-4">
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-lg">
@@ -37,70 +37,75 @@ export default function ContactgegevensPage() {
     )
   }
 
-  const adres = [gegevens.straatnaam, gegevens.huisnummer, gegevens.nummertoevoeging].filter(Boolean).join(' ')
-  const plaatsRegel = [gegevens.postcode, gegevens.plaats].filter(Boolean).join(' ')
+  const g = gegevens.gegevens
+  const b = gegevens.bezoekadres
+  const postAdres = [g.straatnaam, g.huisnummer, g.nummertoevoeging].filter(Boolean).join(' ')
+  const postPlaats = [g.postcode, g.plaats].filter(Boolean).join(' ')
+  const bezAdres = b ? [b.straatnaam, b.huisnummer, b.nummertoevoeging].filter(Boolean).join(' ') : null
+  const bezPlaats = b ? [b.postcode, b.plaats].filter(Boolean).join(' ') : null
 
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6 space-y-6">
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
-        <h2 className="text-lg font-bold text-gray-800">{gegevens.clubnaam}</h2>
+        <h2 className="text-lg font-bold text-gray-800">{g.clubnaam}</h2>
 
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
-          {(adres || plaatsRegel) && (
+          {(bezAdres || bezPlaats) && (
             <div>
-              <dt className="font-medium text-gray-500">Adres</dt>
+              <dt className="font-medium text-gray-500">Bezoekadres</dt>
               <dd className="mt-1 text-gray-800">
-                {adres && <span className="block">{adres}</span>}
-                {plaatsRegel && <span className="block">{plaatsRegel}</span>}
+                {b.naam && <span className="block">{b.naam}</span>}
+                {bezAdres && <span className="block">{bezAdres}</span>}
+                {bezPlaats && <span className="block">{bezPlaats}</span>}
               </dd>
             </div>
           )}
-          {gegevens.telefoonnummer && (
+          {g.telefoonnummer && (
             <div>
               <dt className="font-medium text-gray-500">Telefoon</dt>
               <dd className="mt-1 text-gray-800">
-                <a href={`tel:${gegevens.telefoonnummer}`} className="text-vvz-green hover:underline">{gegevens.telefoonnummer}</a>
+                <a href={`tel:${g.telefoonnummer}`} className="text-vvz-green hover:underline">{g.telefoonnummer}</a>
               </dd>
             </div>
           )}
-          {gegevens.email && (
+          {g.email && (
             <div>
               <dt className="font-medium text-gray-500">E-mail</dt>
               <dd className="mt-1 text-gray-800">
-                <a href={`mailto:${gegevens.email}`} className="text-vvz-green hover:underline">{gegevens.email}</a>
+                <a href={`mailto:${g.email}`} className="text-vvz-green hover:underline">{g.email}</a>
               </dd>
             </div>
           )}
-          {gegevens.website && (
+          {g.website && (
             <div>
               <dt className="font-medium text-gray-500">Website</dt>
               <dd className="mt-1 text-gray-800">
-                <a href={gegevens.website.startsWith('http') ? gegevens.website : `https://${gegevens.website}`} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">{gegevens.website}</a>
+                <a href={g.website.startsWith('http') ? g.website : `https://${g.website}`} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">{g.website}</a>
               </dd>
             </div>
           )}
-          {gegevens.naamsecretaris && (
+          {g.naamsecretaris && (
             <div>
               <dt className="font-medium text-gray-500">Secretaris</dt>
-              <dd className="mt-1 text-gray-800">{gegevens.naamsecretaris}</dd>
+              <dd className="mt-1 text-gray-800">{g.naamsecretaris}</dd>
             </div>
           )}
-          {gegevens.kvknummer && (
+          {g.kvknummer && (
             <div>
               <dt className="font-medium text-gray-500">KVK</dt>
-              <dd className="mt-1 text-gray-800">{gegevens.kvknummer}</dd>
+              <dd className="mt-1 text-gray-800">{g.kvknummer}</dd>
             </div>
           )}
         </dl>
 
-        {(gegevens.facebook || gegevens.instagram || gegevens.twitter || gegevens.youtube) && (
+        {(g.facebook || g.instagram || g.twitter || g.youtube) && (
           <div className="pt-2 border-t border-gray-100">
             <dt className="text-sm font-medium text-gray-500 mb-2">Social media</dt>
             <div className="flex gap-4 flex-wrap text-sm">
-              {gegevens.facebook && <a href={gegevens.facebook} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">Facebook</a>}
-              {gegevens.instagram && <a href={gegevens.instagram} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">Instagram</a>}
-              {gegevens.twitter && <a href={`https://twitter.com/${gegevens.twitter.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">{gegevens.twitter}</a>}
-              {gegevens.youtube && <a href={gegevens.youtube} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">YouTube</a>}
+              {g.facebook && <a href={g.facebook} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">Facebook</a>}
+              {g.instagram && <a href={g.instagram} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">Instagram</a>}
+              {g.twitter && <a href={`https://twitter.com/${g.twitter.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">{g.twitter}</a>}
+              {g.youtube && <a href={g.youtube} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">YouTube</a>}
             </div>
           </div>
         )}

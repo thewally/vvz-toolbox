@@ -25,6 +25,7 @@ export const NAV_SECTIONS = [
       { label: 'Veteranen', to: '/teams/veteranen' },
       { label: 'Junioren', to: '/teams/junioren' },
       { label: 'Pupillen', to: '/teams/pupillen' },
+      { label: 'Zaalvoetbal', to: '/teams/zaalvoetbal' },
     ],
   },
   {
