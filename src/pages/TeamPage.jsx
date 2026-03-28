@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { getTeamProgramma, getTeamUitslagen, getTeams, getPoulestand } from '../services/wedstrijden'
 import { groepeerPerDag, formatDagLabel, formatDatumKort, datumSleutel, parseWedstrijdDatum } from '../services/wedstrijdenHelpers'
 
-const CLUB_RELATIECODE = 'FZSZ66G'
+const CLUB_RELATIECODE = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
 function getTeamCategorie(team) {
   if (!team) return 'senioren'

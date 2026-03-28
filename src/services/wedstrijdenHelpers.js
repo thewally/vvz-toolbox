@@ -100,8 +100,8 @@ export function getAfgelastingenNiveau(afgelastingen, programma) {
   if (!afgelastingen || afgelastingen.length === 0) return 'groen'
 
   const afgelastCodes = new Set(afgelastingen.map(a => a.wedstrijdcode))
-  const thuiswedstrijden = programma.filter(w => w.thuisteamclubrelatiecode === 'FZSZ66G')
-  const uitwedstrijden = programma.filter(w => w.uitteamclubrelatiecode === 'FZSZ66G')
+  const thuiswedstrijden = programma.filter(w => w.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE)
+  const uitwedstrijden = programma.filter(w => w.uitteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE)
 
   const allesThuisAfgelast = thuiswedstrijden.length > 0 && thuiswedstrijden.every(w => afgelastCodes.has(w.wedstrijdcode))
   const allesUitAfgelast = uitwedstrijden.length > 0 && uitwedstrijden.every(w => afgelastCodes.has(w.wedstrijdcode))

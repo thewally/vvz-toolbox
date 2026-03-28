@@ -43,7 +43,7 @@ export default function WedstrijdenUitslagenPage() {
   }
 
   const vandaag = new Date().toISOString().slice(0, 10)
-  const verleden = wedstrijden.filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) < vandaag && w.uitslag)
+  const verleden = wedstrijden.filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) <= vandaag && w.uitslag)
   const perDagUnsorted = groepeerPerDag(verleden)
   // Meest recent eerst
   const perDag = new Map([...perDagUnsorted.entries()].reverse())
@@ -73,20 +73,11 @@ export default function WedstrijdenUitslagenPage() {
               const scores = w.uitslag ? w.uitslag.split('-').map(s => s.trim()) : null
               const thuisScore = scores?.[0] ?? '-'
               const uitScore = scores?.[1] ?? '-'
-              const isThuis = w.thuisteamclubrelatiecode === 'FZSZ66G'
+              const isThuis = w.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
-              let resultLabel = null
-              if (isEigenTeam && scores && scores.length === 2) {
-                const t = parseInt(scores[0], 10)
-                const u = parseInt(scores[1], 10)
-                const eigenScore = isThuis ? t : u
-                const tegenScore = isThuis ? u : t
-                if (!isNaN(eigenScore) && !isNaN(tegenScore)) {
-                  if (eigenScore > tegenScore) resultLabel = <span className="text-xs font-bold text-green-600 shrink-0 w-16 text-right">Gewonnen</span>
-                  else if (eigenScore < tegenScore) resultLabel = <span className="text-xs font-bold text-red-500 shrink-0 w-16 text-right">Verloren</span>
-                  else resultLabel = <span className="text-xs font-bold text-orange-400 shrink-0 w-16 text-right">Gelijk</span>
-                }
-              }
+              const sportOmschrijving = (w.sportomschrijving || '').toLowerCase()
+              const isZaal = sportOmschrijving.includes('zaal') || sportOmschrijving.includes('futsal')
+              const locatieLabel = w.sportomschrijving ? (isZaal ? 'FUTSAL' : 'VELD') : null
 
               return (
                 <div key={i} className="flex items-center bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 gap-3 hover:shadow-md transition-shadow cursor-default">
@@ -111,8 +102,14 @@ export default function WedstrijdenUitslagenPage() {
                   <div className="flex-1 min-w-0">
                     <span className={`font-semibold text-sm truncate block ${!isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
                   </div>
-                  {/* Resultaat */}
-                  {resultLabel ?? <span className="shrink-0 w-16" />}
+                  {/* Locatie */}
+                  {locatieLabel && (
+                    <div className="shrink-0 text-right">
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isZaal ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>
+                        {locatieLabel}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )
             })}

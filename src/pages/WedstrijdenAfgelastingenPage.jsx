@@ -82,7 +82,7 @@ export default function WedstrijdenAfgelastingenPage() {
           </div>
           <div className="flex flex-col gap-3">
             {items.map((w, i) => {
-              const isThuis = w.thuisteamclubrelatiecode === 'FZSZ66G'
+              const isThuis = w.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
               return (
                 <div key={i} className="bg-white rounded-xl border border-orange-200 shadow-sm px-4 py-3 opacity-75">
                   <div className="flex items-center gap-3">

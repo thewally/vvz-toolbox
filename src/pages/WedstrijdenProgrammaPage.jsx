@@ -68,7 +68,8 @@ export default function WedstrijdenProgrammaPage() {
           </div>
           <div className="flex flex-col gap-3">
             {items.map((w, i) => {
-              const isThuis = w.thuisteamclubrelatiecode === 'FZSZ66G'
+              const isThuis = w.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
+              const locatieLabel = (w.locatie || '').toUpperCase() || null
               return (
                 <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 hover:shadow-md transition-shadow cursor-default">
                   <div className="flex items-center gap-3">
@@ -91,6 +92,12 @@ export default function WedstrijdenProgrammaPage() {
                     <div className="flex-1 min-w-0">
                       <span className={`font-semibold text-sm truncate block ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
                     </div>
+                    {/* Locatie rechts */}
+                    {locatieLabel && (
+                      <div className="shrink-0 text-right">
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${locatieLabel.includes('ZAAL') || locatieLabel.includes('FUTSAL') ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>{locatieLabel}</span>
+                      </div>
+                    )}
                   </div>
                   {w.accommodatie && (
                     <div className="flex gap-3 -mt-2">
