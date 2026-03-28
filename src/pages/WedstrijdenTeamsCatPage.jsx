@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { getTeams } from '../services/wedstrijden'
 
 const CAT_LABELS = {
@@ -39,7 +39,8 @@ function getSorteerSleutel(team) {
 const SPEELDAG_VOLGORDE = ['Zondag', 'Zaterdag']
 
 export default function WedstrijdenTeamsCatPage() {
-  const { categorie } = useParams()
+  const { pathname } = useLocation()
+  const categorie = pathname.split('/').at(-1)
   const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
