@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Navigate, Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import TrainingschemaLayout from './components/TrainingschemaLayout'
 import HomePage from './pages/HomePage'
@@ -17,6 +17,11 @@ import WedstrijdenUitslagenPage from './pages/WedstrijdenUitslagenPage'
 import WedstrijdenTeamsPage from './pages/WedstrijdenTeamsPage'
 import TeamPage from './pages/TeamPage'
 import ProtectedRoute from './components/ProtectedRoute'
+import PlaceholderPage from './pages/PlaceholderPage'
+import SponsorsPage from './pages/SponsorsPage'
+import SponsorDetailPage from './pages/SponsorDetailPage'
+import SponsorWordenPage from './pages/SponsorWordenPage'
+import SponsoringBeheerPage from './pages/SponsoringBeheerPage'
 
 export default function App() {
   return (
@@ -41,10 +46,43 @@ export default function App() {
           } />
         </Route>
         <Route path="wedstrijden" element={<WedstrijdenLayout />}>
-          <Route index element={<WedstrijdenProgrammaPage />} />
+          <Route index element={<Navigate to="programma" replace />} />
+          <Route path="programma" element={<WedstrijdenProgrammaPage />} />
           <Route path="uitslagen" element={<WedstrijdenUitslagenPage />} />
           <Route path="teams" element={<WedstrijdenTeamsPage />} />
           <Route path="teams/:teamcode" element={<TeamPage />} />
+          <Route path="afgelastingen" element={<PlaceholderPage title="Afgelastingen" />} />
+          <Route path="verslagen" element={<PlaceholderPage title="Wedstrijdverslagen" />} />
+          <Route path="topscorers" element={<PlaceholderPage title="Topscorers & Keeperstrofee" />} />
+        </Route>
+        <Route path="nieuws" element={<PlaceholderPage title="Nieuws" />} />
+        <Route path="vrijwilliger" element={<PlaceholderPage title="Vrijwilliger worden?" />} />
+        <Route path="techniektrainingen" element={<PlaceholderPage title="Techniektrainingen" />} />
+        <Route path="sponsors" element={<SponsorsPage />} />
+        <Route path="sponsors/:slug" element={<SponsorDetailPage />} />
+        <Route path="lid-worden" element={<PlaceholderPage title="Lid worden?" />} />
+        <Route path="sponsoring">
+          <Route path="sponsor-worden" element={<SponsorWordenPage />} />
+          <Route path="acties" element={<PlaceholderPage title="Sponsor Acties" />} />
+          <Route path="beheer" element={
+            <ProtectedRoute>
+              <SponsoringBeheerPage />
+            </ProtectedRoute>
+          } />
+        </Route>
+        <Route path="club">
+          <Route path="historie" element={<PlaceholderPage title="Historie" />} />
+          <Route path="ereleden" element={<PlaceholderPage title="Ereleden" />} />
+          <Route path="reglementen" element={<PlaceholderPage title="Reglementen" />} />
+        </Route>
+        <Route path="lidmaatschap">
+          <Route path="contributie" element={<PlaceholderPage title="Contributie" />} />
+        </Route>
+        <Route path="contact">
+          <Route index element={<PlaceholderPage title="Contact" />} />
+          <Route path="gegevens" element={<PlaceholderPage title="Contactgegevens" />} />
+          <Route path="wie-doet-wat" element={<PlaceholderPage title="Wie doet wat?" />} />
+          <Route path="locatie" element={<PlaceholderPage title="Locatie & Routebeschrijving" />} />
         </Route>
         <Route path="plattegrond" element={<PlattegrondPage />} />
         <Route path="huistijl" element={<HuistijlPage />} />
