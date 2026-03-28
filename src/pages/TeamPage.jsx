@@ -35,13 +35,184 @@ function ThuisUitBadge({ wedstrijd }) {
   )
 }
 
-function buildWhatsAppUrl(w, teamnaam) {
+function fitText(ctx, text, maxWidth, startSize) {
+  let size = startSize
+  while (size > 16) {
+    ctx.font = `bold ${size}px system-ui, sans-serif`
+    if (ctx.measureText(text).width <= maxWidth) return size
+    size -= 2
+  }
+  // Truncate with ellipsis at minimum size
+  ctx.font = `bold ${size}px system-ui, sans-serif`
+  while (ctx.measureText(text + '...').width > maxWidth && text.length > 1) {
+    text = text.slice(0, -1)
+  }
+  return size
+}
+
+
+
+function drawBadge(ctx, text, cx, cy, bgColor, textColor) {
+  ctx.font = 'bold 22px system-ui, sans-serif'
+  const tw = ctx.measureText(text).width
+  const bw = tw + 32
+  const bh = 38
+  const r = bh / 2
+  ctx.fillStyle = bgColor
+  ctx.beginPath()
+  ctx.roundRect(cx - bw / 2, cy - bh / 2, bw, bh, r)
+  ctx.fill()
+  ctx.fillStyle = textColor
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(text, cx, cy)
+}
+
+async function shareWedstrijdCard(w, teamnaam, teamcode) {
+  const VVZ_GREEN = '#2E7D32'
+  const WIDTH = 1200
+  const HEIGHT = 630
+  const thuis = isThuis(w)
+
+  const canvas = document.createElement('canvas')
+  canvas.width = WIDTH
+  canvas.height = HEIGHT
+  const ctx = canvas.getContext('2d')
+  ctx.textBaseline = 'alphabetic'
+
+  // Light gray background
+  ctx.fillStyle = '#f3f4f6'
+  ctx.fillRect(0, 0, WIDTH, HEIGHT)
+
+  // White card
+  const cardX = 60, cardY = 50, cardW = WIDTH - 120, cardH = HEIGHT - 100
+  ctx.fillStyle = '#ffffff'
+  ctx.beginPath()
+  ctx.roundRect(cardX, cardY, cardW, cardH, 24)
+  ctx.fill()
+
+  // Green top bar on card
+  const barH = 90
+  ctx.save()
+  ctx.beginPath()
+  ctx.roundRect(cardX, cardY, cardW, barH, [24, 24, 0, 0])
+  ctx.clip()
+  ctx.fillStyle = VVZ_GREEN
+  ctx.fillRect(cardX, cardY, cardW, barH)
+  ctx.restore()
+
+  // VVZ'49 label + teamnaam in bar
+  ctx.fillStyle = '#ffffff'
+  ctx.textBaseline = 'middle'
+  ctx.textAlign = 'left'
+  ctx.font = 'bold 32px system-ui, sans-serif'
+  ctx.fillText("VVZ'49", cardX + 36, cardY + barH / 2 - 12)
+  ctx.font = '22px system-ui, sans-serif'
+  ctx.fillText(teamnaam, cardX + 36, cardY + barH / 2 + 16)
+
+  // Date + time right side of bar
+  const dagLabel = formatDagLabel(w.wedstrijddatum)
+  ctx.textAlign = 'right'
+  ctx.font = '22px system-ui, sans-serif'
+  ctx.fillText(dagLabel.charAt(0).toUpperCase() + dagLabel.slice(1), cardX + cardW - 36, cardY + barH / 2 - 12)
+  ctx.font = 'bold 28px system-ui, sans-serif'
+  ctx.fillText(w.aanvangstijd || '--:--', cardX + cardW - 36, cardY + barH / 2 + 18)
+
+  // Team names
+  const teamY = cardY + barH + 110
+  ctx.textBaseline = 'alphabetic'
+
+  const thuisSize = fitText(ctx, w.thuisteam, cardW * 0.38, 44)
+  ctx.font = `bold ${thuisSize}px system-ui, sans-serif`
+  ctx.fillStyle = thuis ? VVZ_GREEN : '#1f2937'
+  ctx.textAlign = 'center'
+  ctx.fillText(w.thuisteam, cardX + cardW * 0.28, teamY)
+
+  // vs
+  ctx.fillStyle = '#9ca3af'
+  ctx.font = 'bold 36px system-ui, sans-serif'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('vs', WIDTH / 2, teamY - 16)
+  ctx.textBaseline = 'alphabetic'
+
+  const uitSize = fitText(ctx, w.uitteam, cardW * 0.38, 44)
+  ctx.font = `bold ${uitSize}px system-ui, sans-serif`
+  ctx.fillStyle = !thuis ? VVZ_GREEN : '#1f2937'
+  ctx.textAlign = 'center'
+  ctx.fillText(w.uitteam, cardX + cardW * 0.72, teamY)
+
+  // Badges
+  const badgeY = teamY + 70
+  const isZaal = (w.locatie || '').toLowerCase().includes('zaal') || (w.locatie || '').toLowerCase().includes('futsal')
+  drawBadge(ctx, thuis ? 'THUIS' : 'UIT',
+    WIDTH / 2 - 80, badgeY,
+    thuis ? '#dcfce7' : '#f3f4f6',
+    thuis ? '#15803d' : '#6b7280')
+  drawBadge(ctx, isZaal ? 'ZAAL' : 'VELD',
+    WIDTH / 2 + 80, badgeY,
+    isZaal ? '#f3f4f6' : '#d1fae5',
+    isZaal ? '#6b7280' : '#065f46')
+
+  // Accommodatie
+  if (w.accommodatie) {
+    ctx.fillStyle = '#6b7280'
+    ctx.font = '20px system-ui, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'alphabetic'
+    const loc = '📍 ' + w.accommodatie + (w.plaats ? `, ${w.plaats}` : '')
+    ctx.fillText(loc, WIDTH / 2, badgeY + 52)
+  }
+  if (w.verzameltijd) {
+    ctx.fillStyle = '#6b7280'
+    ctx.font = '20px system-ui, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(`🕐 Verzamelen om ${w.verzameltijd}`, WIDTH / 2, badgeY + 80)
+  }
+
+  // Convert to blob and share
+  let blob
+  try {
+    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+  } catch {
+    blob = null
+  }
+
+  if (blob) {
+    const file = new File([blob], 'wedstrijd-vvz49.png', { type: 'image/png' })
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        const mapsQ = w.accommodatie ? encodeURIComponent(`${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}`) : null
+        const shareText = [
+          `📅 ${formatDagLabel(w.wedstrijddatum)} om ${w.aanvangstijd || '?'}`,
+          mapsQ ? `Locatie: https://maps.google.com/?q=${mapsQ}` : null,
+          w.verzameltijd ? `🕐 Verzamelen om ${w.verzameltijd}` : null,
+        ].filter(Boolean).join('\n')
+        await navigator.share({
+          files: [file],
+          title: `${w.thuisteam} vs ${w.uitteam}`,
+          text: shareText,
+        })
+        return
+      } catch (e) {
+        if (e.name === 'AbortError') return
+      }
+    }
+  }
+  window.open(buildWhatsAppUrl(w, teamnaam, teamcode))
+}
+
+function buildWhatsAppUrl(w, teamnaam, teamcode) {
   const thuisUit = isThuis(w) ? 'thuis' : 'uit'
+  const pageUrl = `https://thewally.github.io/vvz-toolbox/#/teams/${teamcode}`
+  const mapsQuery = w.accommodatie ? encodeURIComponent(`${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}`) : null
+  const mapsUrl = mapsQuery ? `https://maps.google.com/?q=${mapsQuery}` : null
   const tekst = [
-    `⚽ ${teamnaam} speelt ${thuisUit} tegen ${getTegenstander(w)}`,
     `📅 ${formatDagLabel(w.wedstrijddatum)} om ${w.aanvangstijd || '?'}`,
     w.accommodatie ? `📍 ${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}` : null,
+    mapsUrl ? `Locatie: ${mapsUrl}` : null,
     w.verzameltijd ? `🕐 Verzamelen om ${w.verzameltijd}` : null,
+    `\n${pageUrl}`,
   ].filter(Boolean).join('\n')
   return `https://wa.me/?text=${encodeURIComponent(tekst)}`
 }
@@ -185,18 +356,15 @@ export default function TeamPage() {
                 <p className="text-sm text-gray-500 mb-3">Kleedkamer: {eerstvolgende.kleedkamerthuisteam}</p>
               )}
 
-              <a
-                href={buildWhatsAppUrl(eerstvolgende, teamnaam)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              <button
+                onClick={() => shareWedstrijdCard(eerstvolgende, teamnaam, teamcode)}
+                className="mt-2 inline-flex items-center gap-2 bg-vvz-green hover:bg-vvz-green/90 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-                  <path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.611.611l4.458-1.495A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.37 0-4.567-.696-6.418-1.888l-.448-.291-2.647.887.887-2.647-.291-.448A9.955 9.955 0 012 12C2 6.486 6.486 2 12 2s10 4.486 10 10-4.486 10-10 10z"/>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                 </svg>
-                Delen via WhatsApp
-              </a>
+                Delen
+              </button>
             </div>
           </div>
         </section>
