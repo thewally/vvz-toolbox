@@ -5,6 +5,8 @@ import { groepeerPerDag, formatDagLabel, formatDatumKort, datumSleutel, parseWed
 
 const CLUB_RELATIECODE = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
+const SPEELDAG_REGULIER = ['Zondag', 'Zaterdag']
+
 function getTeamCategorie(team) {
   if (!team) return 'senioren'
   const naam = (team.teamnaam || '').toLowerCase()
@@ -14,7 +16,19 @@ function getTeamCategorie(team) {
   if (joMatch) return parseInt(joMatch[1], 10) <= 12 ? 'pupillen' : 'junioren'
   if (cat.includes('pupil')) return 'pupillen'
   if (cat.includes('junior')) return 'junioren'
+  // Zaalvoetbal: niet-jeugd, niet-veteraan, niet-O23, geen reguliere speeldag
+  const isO23 = naam.includes('o23')
+  const isRegulier = SPEELDAG_REGULIER.includes(team.speeldag || '')
+  if (!isO23 && !isRegulier) return 'zaalvoetbal'
   return 'senioren'
+}
+
+const CAT_LABELS = {
+  senioren: 'Senioren',
+  veteranen: 'Veteranen',
+  junioren: 'Junioren',
+  pupillen: 'Pupillen',
+  zaalvoetbal: 'Zaalvoetbal',
 }
 const WEBCAL_BASE = 'webcal://thewally.github.io/vvz-toolbox/wedstrijden/ical'
 
@@ -295,7 +309,7 @@ export default function TeamPage() {
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6">
       <div className="mb-4">
-        <Link to={`/teams/${getTeamCategorie(teamInfo)}`} className="text-sm text-vvz-green hover:underline">&larr; Teams</Link>
+        <Link to={`/teams/${getTeamCategorie(teamInfo)}`} className="text-sm text-vvz-green hover:underline">&larr; {CAT_LABELS[getTeamCategorie(teamInfo)] || 'Teams'}</Link>
       </div>
 
       <div className="flex items-center justify-between mb-4 gap-4">
