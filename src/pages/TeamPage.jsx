@@ -29,7 +29,7 @@ function getTegenstander(w) {
 function ThuisUitBadge({ wedstrijd }) {
   const thuis = isThuis(wedstrijd)
   return (
-    <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${thuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+    <span className={`inline-block w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${thuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
       {thuis ? 'Thuis' : 'Uit'}
     </span>
   )
@@ -431,7 +431,7 @@ export default function TeamPage() {
                 <div className="sm:hidden flex items-center gap-3">
                   <div className="flex flex-col items-center justify-center shrink-0">
                     <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis(w) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                    <span className={`w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis(w) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                       {isThuis(w) ? 'THUIS' : 'UIT'}
                     </span>
                   </div>
@@ -488,7 +488,7 @@ export default function TeamPage() {
                     <div className="sm:hidden flex items-center gap-3">
                       <div className="flex flex-col items-center justify-center shrink-0">
                         <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${thuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        <span className={`w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${thuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                           {thuis ? 'THUIS' : 'UIT'}
                         </span>
                       </div>

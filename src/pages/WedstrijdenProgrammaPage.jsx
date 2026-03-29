@@ -76,7 +76,7 @@ export default function WedstrijdenProgrammaPage() {
                   <div className="sm:hidden flex items-center gap-3">
                     <div className="flex flex-col items-center justify-center shrink-0">
                       <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                      <span className={`w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                         {isThuis ? 'THUIS' : 'UIT'}
                       </span>
                     </div>
@@ -98,7 +98,7 @@ export default function WedstrijdenProgrammaPage() {
                   <div className="hidden sm:flex items-center gap-2">
                     <div className="shrink-0 flex items-center gap-2">
                       <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                      <span className={`w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                         {isThuis ? 'THUIS' : 'UIT'}
                       </span>
                     </div>
