@@ -360,7 +360,8 @@ Deze feature vereist geen nieuwe Supabase-tabellen, RLS-policies of service-func
 | 8 | Verwijder `/agenda/beheer` route, voeg redirect toe naar `/agenda` | S | 7 |
 | 9 | Update `AgendaLayout` — verwijder "Beheer" tab (of verwijder AgendaLayout geheel) | S | 8 |
 | 10 | Maak trainingsrooster inline bewerkbaar in `SchedulePage` (als ingelogd) | L | - |
-| 11 | Test: beheer-knop zichtbaarheid, login flow, inline agenda-beheer, tegels dashboard | M | alle |
+| 11 | Verwijder "Beheer"-knop uit `SponsorsPage.jsx` (auth-import en user-check kunnen ook weg) | S | - |
+| 12 | Test: beheer-knop zichtbaarheid, login flow, inline agenda-beheer, tegels dashboard | M | alle |
 
 ## 9. Out of Scope
 

@@ -10,7 +10,7 @@ export default function LoginPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location.state?.from?.pathname ?? '/'
+  const from = location.state?.from?.pathname ?? '/beheer'
 
   async function handleSubmit(e) {
     e.preventDefault()

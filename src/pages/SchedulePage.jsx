@@ -24,9 +24,9 @@ function minutesToTime(mins) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
-export default function SchedulePage() {
+export default function SchedulePage({ isAdmin: isAdminProp }) {
   const { user } = useAuth()
-  const isAdmin = !!user
+  const isAdmin = isAdminProp !== undefined ? isAdminProp : !!user
 
   const [activeSchedules, setActiveSchedules] = useState([])
   const [allSchedules, setAllSchedules] = useState([])

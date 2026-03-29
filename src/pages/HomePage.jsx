@@ -11,7 +11,7 @@ export default function HomePage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Agenda kaartje */}
         <Link
-          to="/agenda"
+          to="/activiteiten"
           className="group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 hover:-translate-y-1 border border-gray-100 overflow-hidden"
         >
           <div className="bg-vvz-green/10 p-6 flex items-center justify-center">
@@ -27,7 +27,7 @@ export default function HomePage() {
             </svg>
           </div>
           <div className="p-5">
-            <h3 className="text-lg font-semibold text-gray-800 group-hover:text-vvz-green transition-colors">Agenda</h3>
+            <h3 className="text-lg font-semibold text-gray-800 group-hover:text-vvz-green transition-colors">Activiteiten</h3>
             <p className="text-sm text-gray-500 mt-1">Komende activiteiten en evenementen</p>
           </div>
         </Link>
