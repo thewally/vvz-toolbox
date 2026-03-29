@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { getTeamProgramma, getTeamUitslagen, getTeams, getPoulestand } from '../services/wedstrijden'
+import { getTeamProgramma, getTeamUitslagen, getTeams, getPoulestand, getTeamGegevens } from '../services/wedstrijden'
 import { groepeerPerDag, formatDagLabel, formatDatumKort, datumSleutel, parseWedstrijdDatum } from '../services/wedstrijdenHelpers'
 
 const CLUB_RELATIECODE = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
@@ -223,6 +223,7 @@ export default function TeamPage() {
   const [uitslagen, setUitslagen] = useState([])
   const [teamInfo, setTeamInfo] = useState(null)
   const [stand, setStand] = useState([])
+  const [teamfoto, setTeamfoto] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -231,10 +232,11 @@ export default function TeamPage() {
   async function load() {
     setLoading(true)
     setError(null)
-    const [progRes, uitRes, teamsRes] = await Promise.all([
+    const [progRes, uitRes, teamsRes, gegevensRes] = await Promise.all([
       getTeamProgramma(teamcode),
       getTeamUitslagen(teamcode),
       getTeams(),
+      getTeamGegevens(teamcode),
     ])
     if (progRes.error || uitRes.error) {
       setError((progRes.error || uitRes.error).message)
@@ -243,6 +245,7 @@ export default function TeamPage() {
     }
     setProgramma(progRes.data ?? [])
     setUitslagen(uitRes.data ?? [])
+    setTeamfoto(gegevensRes.data?.team?.teamfoto || null)
 
     // Zoek team info voor poulecode en teamnaam
     const teams = teamsRes.data ?? []
@@ -294,6 +297,14 @@ export default function TeamPage() {
       <div className="mb-4">
         <Link to={`/teams/${getTeamCategorie(teamInfo)}`} className="text-sm text-vvz-green hover:underline">&larr; Teams</Link>
       </div>
+
+      {teamfoto && (
+        <img
+          src={`data:image/jpeg;base64,${teamfoto}`}
+          alt={`Teamfoto ${teamnaam}`}
+          className="w-full rounded-xl mb-4"
+        />
+      )}
 
       <div className="flex items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">{teamnaam}</h1>

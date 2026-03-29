@@ -44,3 +44,7 @@ export function fetchAfgelastingen() {
 export function fetchClubGegevens() {
   return apiFetch(`/clubgegevens?client_id=${CLIENT_ID}`)
 }
+
+export function fetchTeamGegevens(teamcode) {
+  return apiFetch(`/team-gegevens?teamcode=${teamcode}&lokaleteamcode=-1&client_id=${CLIENT_ID}`)
+}
