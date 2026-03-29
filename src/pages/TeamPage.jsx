@@ -298,15 +298,7 @@ export default function TeamPage() {
         <Link to={`/teams/${getTeamCategorie(teamInfo)}`} className="text-sm text-vvz-green hover:underline">&larr; Teams</Link>
       </div>
 
-      {teamfoto && (
-        <img
-          src={`data:image/jpeg;base64,${teamfoto}`}
-          alt={`Teamfoto ${teamnaam}`}
-          className="w-full rounded-xl mb-4"
-        />
-      )}
-
-      <div className="flex items-center justify-between mb-6 gap-4">
+      <div className="flex items-center justify-between mb-4 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">{teamnaam}</h1>
         <a
           href={`${WEBCAL_BASE}/${teamcode}.ics`}
@@ -427,6 +419,14 @@ export default function TeamPage() {
             </div>
           </div>
         </section>
+      )}
+
+      {teamfoto && (
+        <img
+          src={`data:image/jpeg;base64,${teamfoto}`}
+          alt={`Teamfoto ${teamnaam}`}
+          className="w-full rounded-xl mb-6"
+        />
       )}
 
       {/* Programma — alle toekomstige wedstrijden */}
