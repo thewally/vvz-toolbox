@@ -30,13 +30,15 @@ export default function TopNav() {
   return (
     <nav className="bg-vvz-green no-print">
       {/* Hamburgerbalk */}
-      <div className="flex items-center justify-end px-4 py-2">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between px-4 py-2">
+        <div>
           {user && (
             <Link to="/beheer" className="text-white font-medium text-sm hover:text-white/80 transition-colors">
               Beheer
             </Link>
           )}
+        </div>
+        <div className="flex items-center gap-3">
           {user ? (
             <button onClick={signOut} className="text-white/80 font-medium text-sm hover:text-white transition-colors">
               Uitloggen
