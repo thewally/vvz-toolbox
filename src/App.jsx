@@ -30,6 +30,10 @@ import SponsorsPage from './pages/SponsorsPage'
 import SponsorDetailPage from './pages/SponsorDetailPage'
 import SponsorWordenPage from './pages/SponsorWordenPage'
 import SponsoringBeheerPage from './pages/SponsoringBeheerPage'
+import WieDoetWatPage from './pages/WieDoetWatPage'
+import ContactGegevensBeheerPage from './pages/ContactGegevensBeheerPage'
+import ContactLocatieBeheerPage from './pages/ContactLocatieBeheerPage'
+import WieDoetWatBeheerPage from './pages/WieDoetWatBeheerPage'
 
 export default function App() {
   return (
@@ -58,6 +62,11 @@ export default function App() {
             <Route path="instellingen" element={<AdminPage />} />
           </Route>
           <Route path="sponsoring" element={<SponsoringBeheerPage />} />
+          <Route path="contact">
+            <Route path="gegevens" element={<ContactGegevensBeheerPage />} />
+            <Route path="locatie" element={<ContactLocatieBeheerPage />} />
+            <Route path="wie-doet-wat" element={<WieDoetWatBeheerPage />} />
+          </Route>
         </Route>
         <Route path="wedstrijden" element={<WedstrijdenLayout />}>
           <Route index element={<Navigate to="programma" replace />} />
@@ -93,7 +102,7 @@ export default function App() {
         <Route path="contact">
           <Route index element={<PlaceholderPage title="Contact" />} />
           <Route path="gegevens" element={<ContactgegevensPage />} />
-          <Route path="wie-doet-wat" element={<PlaceholderPage title="Wie doet wat?" />} />
+          <Route path="wie-doet-wat" element={<WieDoetWatPage />} />
           <Route path="locatie" element={<LocatieRoutebeschrijvingPage />} />
         </Route>
         <Route path="teams/senioren" element={<WedstrijdenTeamsCatPage />} />
