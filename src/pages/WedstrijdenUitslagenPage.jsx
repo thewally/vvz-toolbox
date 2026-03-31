@@ -121,11 +121,9 @@ export default function WedstrijdenUitslagenPage() {
                         </span>
                       ) : <span className="w-14" />}
                     </div>
-                    {w.accommodatie && <>
-                      <span />
-                      <span />
-                      <span className="text-center text-xs text-gray-400 truncate col-start-3">{w.accommodatie}</span>
-                    </>}
+                    {w.accommodatie && (
+                      <span className="text-center text-xs text-gray-400 col-start-2 col-end-5">{w.accommodatie}</span>
+                    )}
                   </div>
                 </div>
               )

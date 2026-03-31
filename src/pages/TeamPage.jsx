@@ -508,7 +508,7 @@ export default function TeamPage() {
                   {w.accommodatie && <>
                     <span />
                     <span />
-                    <span className="text-center text-xs text-gray-400 truncate col-start-3">{w.accommodatie}</span>
+                    <span className="text-center text-xs text-gray-400 col-start-2 col-end-5">{w.accommodatie}</span>
                   </>}
                 </div>
               </div>
@@ -561,7 +561,7 @@ export default function TeamPage() {
                       {w.accommodatie && <>
                         <span />
                         <span />
-                        <span className="text-center text-xs text-gray-400 truncate col-start-3">{w.accommodatie}</span>
+                        <span className="text-center text-xs text-gray-400 col-start-2 col-end-5">{w.accommodatie}</span>
                       </>}
                     </div>
                   </div>
