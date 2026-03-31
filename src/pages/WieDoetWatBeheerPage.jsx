@@ -28,6 +28,14 @@ export default function WieDoetWatBeheerPage() {
   const [lidForm, setLidForm] = useState(LEEG_LID)
   const [lidOpslaan, setLidOpslaan] = useState(false)
 
+  // Drag state voor commissies
+  const [dragCommittee, setDragCommittee] = useState(null) // index
+  const [dropCommitteeTarget, setDropCommitteeTarget] = useState(null) // index
+
+  // Drag state voor leden
+  const [dragMember, setDragMember] = useState(null) // { committeeId, index }
+  const [dropMemberTarget, setDropMemberTarget] = useState(null) // "committeeId-index"
+
   async function laadData() {
     const { data, error } = await fetchCommittees()
     if (error) {
@@ -128,6 +136,73 @@ export default function WieDoetWatBeheerPage() {
     return () => document.removeEventListener('keydown', handleEscape)
   }, [handleEscape])
 
+  // --- Drag & drop commissies ---
+  function onCommitteeDragStart(e, index) {
+    setDragCommittee(index)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+  function onCommitteeDragOver(e, index) {
+    e.preventDefault()
+    setDropCommitteeTarget(index)
+  }
+  function onCommitteeDragLeave() {
+    setDropCommitteeTarget(null)
+  }
+  async function onCommitteeDrop(e, toIndex) {
+    e.preventDefault()
+    setDropCommitteeTarget(null)
+    if (dragCommittee === null || dragCommittee === toIndex) return
+    const reordered = [...committees]
+    const [moved] = reordered.splice(dragCommittee, 1)
+    reordered.splice(toIndex, 0, moved)
+    setCommittees(reordered)
+    for (let i = 0; i < reordered.length; i++) {
+      await updateCommittee(reordered[i].id, { sort_order: i })
+    }
+    setDragCommittee(null)
+  }
+  function onCommitteeDragEnd() {
+    setDragCommittee(null)
+    setDropCommitteeTarget(null)
+  }
+
+  // --- Drag & drop leden ---
+  function onMemberDragStart(e, committeeId, index) {
+    setDragMember({ committeeId, index })
+    e.dataTransfer.effectAllowed = 'move'
+  }
+  function onMemberDragOver(e, committeeId, index) {
+    e.preventDefault()
+    if (dragMember && dragMember.committeeId === committeeId) {
+      setDropMemberTarget(`${committeeId}-${index}`)
+    }
+  }
+  function onMemberDragLeave() {
+    setDropMemberTarget(null)
+  }
+  async function onMemberDrop(e, committeeId, toIndex) {
+    e.preventDefault()
+    setDropMemberTarget(null)
+    if (!dragMember || dragMember.committeeId !== committeeId || dragMember.index === toIndex) return
+    const committee = committees.find(c => c.id === committeeId)
+    const members = [...(committee.committee_members || [])]
+    const [moved] = members.splice(dragMember.index, 1)
+    members.splice(toIndex, 0, moved)
+    setCommittees(prev => prev.map(c => c.id === committeeId ? { ...c, committee_members: members } : c))
+    for (let i = 0; i < members.length; i++) {
+      await updateCommitteeMember(members[i].id, { sort_order: i })
+    }
+    setDragMember(null)
+  }
+  function onMemberDragEnd() {
+    setDragMember(null)
+    setDropMemberTarget(null)
+  }
+
+  const DragHandle = () => (
+    <svg className="w-4 h-4 text-gray-300 cursor-grab" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" /></svg>
+  )
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -160,14 +235,25 @@ export default function WieDoetWatBeheerPage() {
       )}
 
       <div className="space-y-4">
-        {committees.map(c => (
-          <div key={c.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        {committees.map((c, ci) => (
+          <div
+            key={c.id}
+            draggable
+            onDragStart={e => onCommitteeDragStart(e, ci)}
+            onDragOver={e => onCommitteeDragOver(e, ci)}
+            onDragLeave={onCommitteeDragLeave}
+            onDrop={e => onCommitteeDrop(e, ci)}
+            onDragEnd={onCommitteeDragEnd}
+            className={`bg-white rounded-xl shadow-sm border border-gray-100 p-5 transition-all ${
+              dropCommitteeTarget === ci && dragCommittee !== ci ? 'border-t-2 border-vvz-green' : ''
+            } ${dragCommittee === ci ? 'opacity-40' : ''}`}
+          >
             <div className="flex items-center justify-between mb-3">
-              <div>
+              <div className="flex items-center gap-2 min-w-0">
+                <DragHandle />
                 <h2 className="text-base font-semibold text-gray-800">{c.naam}</h2>
-                <span className="text-xs text-gray-400">Volgorde: {c.sort_order}</span>
               </div>
-              <div className="flex gap-1">
+              <div className="flex gap-1 shrink-0">
                 <button onClick={() => openBewerkCommissie(c)} className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors" title="Bewerken" aria-label={`${c.naam} bewerken`}>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                 </button>
@@ -178,13 +264,35 @@ export default function WieDoetWatBeheerPage() {
             </div>
 
             {/* Leden */}
-            <div className="border-t border-gray-100 pt-3 space-y-2">
-              {(c.committee_members || []).map(m => (
-                <div key={m.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm">
-                  <div className="min-w-0">
-                    <span className="font-medium text-gray-800">{m.naam}</span>
-                    {m.telefoonnummer && <span className="ml-3 text-gray-500">{m.telefoonnummer}</span>}
-                    {m.emailadres && <span className="ml-3 text-gray-500 break-all">{m.emailadres}</span>}
+            <div className="border-t border-gray-100 pt-3 space-y-1">
+              {(c.committee_members || []).map((m, mi) => (
+                <div
+                  key={m.id}
+                  draggable
+                  onDragStart={e => { e.stopPropagation(); onMemberDragStart(e, c.id, mi) }}
+                  onDragOver={e => { e.stopPropagation(); onMemberDragOver(e, c.id, mi) }}
+                  onDragLeave={onMemberDragLeave}
+                  onDrop={e => { e.stopPropagation(); onMemberDrop(e, c.id, mi) }}
+                  onDragEnd={onMemberDragEnd}
+                  className={`flex items-start justify-between gap-2 py-1.5 text-sm rounded transition-all ${
+                    dropMemberTarget === `${c.id}-${mi}` && dragMember?.index !== mi ? 'border-t-2 border-vvz-green' : ''
+                  } ${dragMember?.committeeId === c.id && dragMember?.index === mi ? 'opacity-40' : ''}`}
+                >
+                  <div className="flex items-start gap-2 min-w-0">
+                    <DragHandle />
+                    <div className="min-w-0">
+                      <p className="text-gray-800">
+                        {m.functie && <span className="font-medium">{m.functie}</span>}
+                        {m.functie && <span className="text-gray-400 mx-1">–</span>}
+                        <span className={m.functie ? 'text-gray-700' : 'font-medium'}>{m.naam}</span>
+                      </p>
+                      {(m.telefoonnummer || m.emailadres) && (
+                        <p className="text-gray-400 text-xs">
+                          {[m.telefoonnummer, m.emailadres].filter(Boolean).join(' · ')}
+                        </p>
+                      )}
+                      {m.taken && <p className="text-gray-400 text-xs mt-0.5 whitespace-pre-line">{m.taken}</p>}
+                    </div>
                   </div>
                   <div className="flex gap-1 shrink-0">
                     <button onClick={() => openBewerkLid(m, c.id)} className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors" title="Bewerken" aria-label={`${m.naam} bewerken`}>
@@ -196,10 +304,7 @@ export default function WieDoetWatBeheerPage() {
                   </div>
                 </div>
               ))}
-              <button
-                onClick={() => openNieuwLid(c.id)}
-                className="text-xs text-vvz-green hover:underline mt-1"
-              >
+              <button onClick={() => openNieuwLid(c.id)} className="text-xs text-vvz-green hover:underline mt-1">
                 + Lid toevoegen
               </button>
             </div>
@@ -221,15 +326,6 @@ export default function WieDoetWatBeheerPage() {
                 required
                 value={commissieForm.name}
                 onChange={e => setCommissieForm(f => ({ ...f, name: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green/50 focus:border-vvz-green"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sorteervolgorde</label>
-              <input
-                type="number"
-                value={commissieForm.sort_order}
-                onChange={e => setCommissieForm(f => ({ ...f, sort_order: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green/50 focus:border-vvz-green"
               />
             </div>
@@ -293,15 +389,6 @@ export default function WieDoetWatBeheerPage() {
                 rows={3}
                 value={lidForm.taken}
                 onChange={e => setLidForm(f => ({ ...f, taken: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green/50 focus:border-vvz-green"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sorteervolgorde</label>
-              <input
-                type="number"
-                value={lidForm.sort_order}
-                onChange={e => setLidForm(f => ({ ...f, sort_order: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green/50 focus:border-vvz-green"
               />
             </div>
