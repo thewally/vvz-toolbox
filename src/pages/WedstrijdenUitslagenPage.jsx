@@ -93,6 +93,7 @@ export default function WedstrijdenUitslagenPage() {
                       <span className={`font-semibold text-sm ${isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
                       <span className="text-lg font-bold text-gray-800 tabular-nums">{thuisScore} – {uitScore}</span>
                       <span className={`font-semibold text-sm ${!isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                      {w.accommodatie && <p className="text-xs text-gray-400">{w.accommodatie}</p>}
                     </div>
                     <div className="flex flex-col justify-center items-end shrink-0">
                       {locatieLabel ? (
@@ -103,21 +104,24 @@ export default function WedstrijdenUitslagenPage() {
                     </div>
                   </div>
                   {/* Desktop: horizontale layout */}
-                  <div className="hidden sm:flex items-center gap-2">
-                    <div className="shrink-0 flex items-center gap-2">
-                      <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
-                      <span className={`w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                        {isThuis ? 'THUIS' : 'UIT'}
-                      </span>
+                  <div className="hidden sm:flex flex-col gap-0.5">
+                    <div className="flex items-center gap-2">
+                      <div className="shrink-0 flex items-center gap-2">
+                        <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
+                        <span className={`w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {isThuis ? 'THUIS' : 'UIT'}
+                        </span>
+                      </div>
+                      <span className={`flex-1 text-right font-semibold text-sm truncate ${isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                      <span className="shrink-0 w-16 text-center text-lg font-bold text-gray-800 tabular-nums">{thuisScore} – {uitScore}</span>
+                      <span className={`flex-1 font-semibold text-sm truncate ${!isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                      {locatieLabel ? (
+                        <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${isZaal ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>
+                          {locatieLabel}
+                        </span>
+                      ) : <span className="shrink-0 w-14" />}
                     </div>
-                    <span className={`flex-1 text-right font-semibold text-sm truncate ${isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
-                    <span className="shrink-0 w-16 text-center text-lg font-bold text-gray-800 tabular-nums">{thuisScore} – {uitScore}</span>
-                    <span className={`flex-1 font-semibold text-sm truncate ${!isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
-                    {locatieLabel ? (
-                      <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${isZaal ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>
-                        {locatieLabel}
-                      </span>
-                    ) : <span className="shrink-0 w-14" />}
+                    {w.accommodatie && <p className="text-xs text-gray-400 pl-[4.5rem]">{w.accommodatie}</p>}
                   </div>
                 </div>
               )

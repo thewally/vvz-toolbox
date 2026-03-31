@@ -95,19 +95,22 @@ export default function WedstrijdenProgrammaPage() {
                     </div>
                   </div>
                   {/* Desktop: horizontale layout */}
-                  <div className="hidden sm:flex items-center gap-2">
-                    <div className="shrink-0 flex items-center gap-2">
-                      <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
-                      <span className={`w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                        {isThuis ? 'THUIS' : 'UIT'}
-                      </span>
+                  <div className="hidden sm:flex flex-col gap-0.5">
+                    <div className="flex items-center gap-2">
+                      <div className="shrink-0 flex items-center gap-2">
+                        <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
+                        <span className={`w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {isThuis ? 'THUIS' : 'UIT'}
+                        </span>
+                      </div>
+                      <span className={`flex-1 text-right font-semibold text-sm truncate ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                      <span className="shrink-0 w-16 text-center text-gray-400 text-xs">vs</span>
+                      <span className={`flex-1 font-semibold text-sm truncate ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                      {locatieLabel ? (
+                        <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${locatieLabel.includes('ZAAL') || locatieLabel.includes('FUTSAL') ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>{locatieLabel}</span>
+                      ) : <span className="shrink-0 w-14" />}
                     </div>
-                    <span className={`flex-1 text-right font-semibold text-sm truncate ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
-                    <span className="shrink-0 w-16 text-center text-gray-400 text-xs">vs</span>
-                    <span className={`flex-1 font-semibold text-sm truncate ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
-                    {locatieLabel ? (
-                      <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${locatieLabel.includes('ZAAL') || locatieLabel.includes('FUTSAL') ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>{locatieLabel}</span>
-                    ) : <span className="shrink-0 w-14" />}
+                    {w.accommodatie && <p className="text-xs text-gray-400 pl-[4.5rem]">{w.accommodatie}</p>}
                   </div>
                 </div>
               )
