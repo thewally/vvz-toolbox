@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { fetchClubContactInfo, updateClubContactInfo } from '../services/clubContact'
 
 const CONTACTGEGEVENS_VELDEN = [
@@ -94,6 +95,7 @@ export default function ContactBeheerPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4 pt-6">
+      <Link to="/beheer" className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1 mb-4">&#8249; Terug naar Beheer</Link>
       <h1 className="text-xl font-bold text-gray-800 mb-6">Contact beheren</h1>
 
       {melding && (
