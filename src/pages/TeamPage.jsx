@@ -342,10 +342,10 @@ export default function TeamPage() {
                 )}
               </div>
               <div className="flex-1 flex flex-col items-center text-center">
-                <p className={`text-lg font-bold ${isThuis(eerstvolgende) ? 'text-vvz-green' : 'text-gray-800'}`}>{eerstvolgende.thuisteam}</p>
+                <p className="text-2xl font-bold text-gray-800">{eerstvolgende.aanvangstijd || '--:--'}</p>
+                <p className={`text-lg font-bold mt-2 ${isThuis(eerstvolgende) ? 'text-vvz-green' : 'text-gray-800'}`}>{eerstvolgende.thuisteam}</p>
                 <p className="text-gray-400 text-sm my-1">vs</p>
                 <p className={`text-lg font-bold ${!isThuis(eerstvolgende) ? 'text-vvz-green' : 'text-gray-800'}`}>{eerstvolgende.uitteam}</p>
-                <p className="text-2xl font-bold text-gray-800 mt-2">{eerstvolgende.aanvangstijd || '--:--'}</p>
 
                 {(eerstvolgende.verzameltijd || eerstvolgende.vertrektijd) && (
                   <p className="text-sm text-gray-500 mt-1">
@@ -384,6 +384,7 @@ export default function TeamPage() {
 
             {/* Desktop: horizontale layout met logo's */}
             <div className="hidden sm:flex flex-col items-center text-center p-5">
+              <p className="text-2xl font-bold text-gray-800 mb-2">{eerstvolgende.aanvangstijd || '--:--'}</p>
               <div className="flex items-center justify-center gap-4 mb-2">
                 {eerstvolgende.thuisteamlogo
                   ? <img src={eerstvolgende.thuisteamlogo} alt={eerstvolgende.thuisteam} className="w-14 h-14 object-contain" />
@@ -395,7 +396,6 @@ export default function TeamPage() {
                     <span className="text-gray-400 font-normal mx-2">vs</span>
                     <span className={!isThuis(eerstvolgende) ? 'text-vvz-green' : 'text-gray-800'}>{eerstvolgende.uitteam}</span>
                   </p>
-                  <p className="text-2xl font-bold text-gray-800 mt-1">{eerstvolgende.aanvangstijd || '--:--'}</p>
                 </div>
                 {eerstvolgende.uitteamlogo
                   ? <img src={eerstvolgende.uitteamlogo} alt={eerstvolgende.uitteam} className="w-14 h-14 object-contain" />
@@ -474,7 +474,14 @@ export default function TeamPage() {
                       </p>
                     )}
                   </div>
-                  <div className="shrink-0 w-14" />
+                  <div className="flex flex-col justify-center items-end shrink-0">
+                    {(() => {
+                      const locLabel = (w.locatie || '').toUpperCase() || null
+                      return locLabel ? (
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${locLabel.includes('ZAAL') || locLabel.includes('FUTSAL') ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>{locLabel}</span>
+                      ) : <span className="w-14" />
+                    })()}
+                  </div>
                 </div>
                 {/* Desktop: horizontale layout */}
                 <div className="hidden sm:flex items-center gap-2">
@@ -485,6 +492,12 @@ export default function TeamPage() {
                   <span className={`flex-1 text-right font-semibold text-sm truncate ${isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
                   <span className="shrink-0 w-16 text-center text-gray-400 text-xs">vs</span>
                   <span className={`flex-1 font-semibold text-sm truncate ${!isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                  {(() => {
+                    const locLabel = (w.locatie || '').toUpperCase() || null
+                    return locLabel ? (
+                      <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${locLabel.includes('ZAAL') || locLabel.includes('FUTSAL') ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>{locLabel}</span>
+                    ) : <span className="shrink-0 w-14" />
+                  })()}
                   <span className="shrink-0 text-xs text-gray-400 capitalize">{formatDagLabel(w.wedstrijddatum)}</span>
                 </div>
               </div>
@@ -523,7 +536,16 @@ export default function TeamPage() {
                         <span className={`font-semibold text-sm ${!thuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
                         <span className="text-xs text-gray-400 capitalize">{formatDagLabel(w.wedstrijddatum)}</span>
                       </div>
-                      <div className="shrink-0 w-14" />
+                      <div className="flex flex-col justify-center items-end shrink-0">
+                        {(() => {
+                          const sportOmschrijving = (w.sportomschrijving || '').toLowerCase()
+                          const isZaal = sportOmschrijving.includes('zaal') || sportOmschrijving.includes('futsal')
+                          const locLabel = w.sportomschrijving ? (isZaal ? 'FUTSAL' : 'VELD') : null
+                          return locLabel ? (
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isZaal ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>{locLabel}</span>
+                          ) : <span className="w-14" />
+                        })()}
+                      </div>
                     </div>
                     {/* Desktop: horizontale layout */}
                     <div className="hidden sm:flex items-center gap-2">
@@ -534,6 +556,14 @@ export default function TeamPage() {
                       <span className={`flex-1 text-right font-semibold text-sm truncate ${thuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
                       <span className="shrink-0 w-16 text-center text-lg font-bold text-gray-800 tabular-nums">{thuisScore} – {uitScore}</span>
                       <span className={`flex-1 font-semibold text-sm truncate ${!thuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                      {(() => {
+                        const sportOmschrijving = (w.sportomschrijving || '').toLowerCase()
+                        const isZaal = sportOmschrijving.includes('zaal') || sportOmschrijving.includes('futsal')
+                        const locLabel = w.sportomschrijving ? (isZaal ? 'FUTSAL' : 'VELD') : null
+                        return locLabel ? (
+                          <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${isZaal ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>{locLabel}</span>
+                        ) : <span className="shrink-0 w-14" />
+                      })()}
                       <span className="shrink-0 text-xs text-gray-400 capitalize">{formatDagLabel(w.wedstrijddatum)}</span>
                     </div>
                   </div>
