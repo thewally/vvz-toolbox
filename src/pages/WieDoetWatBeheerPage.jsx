@@ -220,7 +220,7 @@ export default function WieDoetWatBeheerPage() {
           onClick={openNieuweCommissie}
           className="bg-vvz-green text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-vvz-green/90 transition-colors"
         >
-          + Commissie
+          + Commissie toevoegen
         </button>
       </div>
 
