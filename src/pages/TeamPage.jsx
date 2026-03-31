@@ -305,11 +305,11 @@ export default function TeamPage() {
     const locatie = (eersteWedstrijd?.locatie || '').toUpperCase()
     if (locatie) return locatie
     const sport = (eersteWedstrijd?.sportomschrijving || '').toLowerCase()
-    if (sport.includes('zaal') || sport.includes('futsal')) return 'FUTSAL'
+    if (sport.includes('zaal') || sport.includes('futsal')) return 'ZAAL'
     if (sport) return 'VELD'
     return null
   })()
-  const sportBadgeIsZaal = sportBadgeLabel === 'FUTSAL' || (sportBadgeLabel || '').includes('ZAAL')
+  const sportBadgeIsZaal = (sportBadgeLabel || '').includes('ZAAL')
 
   // Toekomstige wedstrijden (alles)
   const vandaagSleutel = new Date().toISOString().slice(0, 10)

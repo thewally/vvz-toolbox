@@ -77,7 +77,7 @@ export default function WedstrijdenUitslagenPage() {
 
               const sportOmschrijving = (w.sportomschrijving || '').toLowerCase()
               const isZaal = sportOmschrijving.includes('zaal') || sportOmschrijving.includes('futsal')
-              const locatieLabel = w.sportomschrijving ? (isZaal ? 'FUTSAL' : 'VELD') : null
+              const locatieLabel = w.sportomschrijving ? (isZaal ? 'ZAAL' : 'VELD') : null
 
               return (
                 <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 hover:shadow-md transition-shadow cursor-default">
