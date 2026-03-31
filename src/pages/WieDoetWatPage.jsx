@@ -51,20 +51,20 @@ export default function WieDoetWatPage() {
     <div className="max-w-3xl mx-auto p-4 pt-6 space-y-6">
       {committees.map(committee => (
         <div key={committee.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">{committee.name}</h2>
+          <h2 className="text-lg font-bold text-gray-800 mb-4">{committee.naam}</h2>
           {(!committee.committee_members || committee.committee_members.length === 0) ? (
             <p className="text-sm text-gray-500">Geen leden</p>
           ) : (
             <div className="space-y-3">
               {committee.committee_members.map(member => (
                 <div key={member.id} className="text-sm">
-                  <p className="font-medium text-gray-800">{member.name}</p>
+                  <p className="font-medium text-gray-800">{member.naam}</p>
                   <div className="flex gap-4 flex-wrap text-gray-600">
-                    {member.phone && (
-                      <a href={`tel:${member.phone}`} className="text-vvz-green hover:underline">{member.phone}</a>
+                    {member.telefoonnummer && (
+                      <a href={`tel:${member.telefoonnummer}`} className="text-vvz-green hover:underline">{member.telefoonnummer}</a>
                     )}
-                    {member.email && (
-                      <a href={`mailto:${member.email}`} className="text-vvz-green hover:underline">{member.email}</a>
+                    {member.emailadres && (
+                      <a href={`mailto:${member.emailadres}`} className="text-vvz-green hover:underline">{member.emailadres}</a>
                     )}
                   </div>
                 </div>

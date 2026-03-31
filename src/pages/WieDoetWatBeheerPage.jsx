@@ -47,7 +47,7 @@ export default function WieDoetWatBeheerPage() {
   }
 
   function openBewerkCommissie(c) {
-    setCommissieForm({ name: c.name, sort_order: c.sort_order })
+    setCommissieForm({ name: c.naam, sort_order: c.sort_order })
     setFout(null)
     setCommissieModal({ mode: 'bewerken', id: c.id })
   }
@@ -81,7 +81,7 @@ export default function WieDoetWatBeheerPage() {
   }
 
   function openBewerkLid(member, committeeId) {
-    setLidForm({ name: member.name, phone: member.phone || '', email: member.email || '', sort_order: member.sort_order })
+    setLidForm({ name: member.naam, phone: member.telefoonnummer || '', email: member.emailadres || '', sort_order: member.sort_order })
     setFout(null)
     setLidModal({ mode: 'bewerken', committee_id: committeeId, id: member.id })
   }
@@ -160,7 +160,7 @@ export default function WieDoetWatBeheerPage() {
           <div key={c.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <h2 className="text-base font-semibold text-gray-800">{c.name}</h2>
+                <h2 className="text-base font-semibold text-gray-800">{c.naam}</h2>
                 <span className="text-xs text-gray-400">Volgorde: {c.sort_order}</span>
               </div>
               <div className="flex gap-2">
@@ -174,9 +174,9 @@ export default function WieDoetWatBeheerPage() {
               {(c.committee_members || []).map(m => (
                 <div key={m.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm">
                   <div className="min-w-0">
-                    <span className="font-medium text-gray-800">{m.name}</span>
-                    {m.phone && <span className="ml-3 text-gray-500">{m.phone}</span>}
-                    {m.email && <span className="ml-3 text-gray-500 break-all">{m.email}</span>}
+                    <span className="font-medium text-gray-800">{m.naam}</span>
+                    {m.telefoonnummer && <span className="ml-3 text-gray-500">{m.telefoonnummer}</span>}
+                    {m.emailadres && <span className="ml-3 text-gray-500 break-all">{m.emailadres}</span>}
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <button onClick={() => openBewerkLid(m, c.id)} className="text-xs text-vvz-green hover:underline">Bewerken</button>
