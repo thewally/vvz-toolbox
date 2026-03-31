@@ -31,8 +31,7 @@ import SponsorDetailPage from './pages/SponsorDetailPage'
 import SponsorWordenPage from './pages/SponsorWordenPage'
 import SponsoringBeheerPage from './pages/SponsoringBeheerPage'
 import WieDoetWatPage from './pages/WieDoetWatPage'
-import ContactGegevensBeheerPage from './pages/ContactGegevensBeheerPage'
-import ContactLocatieBeheerPage from './pages/ContactLocatieBeheerPage'
+import ContactBeheerPage from './pages/ContactBeheerPage'
 import WieDoetWatBeheerPage from './pages/WieDoetWatBeheerPage'
 
 export default function App() {
@@ -63,8 +62,9 @@ export default function App() {
           </Route>
           <Route path="sponsoring" element={<SponsoringBeheerPage />} />
           <Route path="contact">
-            <Route path="gegevens" element={<ContactGegevensBeheerPage />} />
-            <Route path="locatie" element={<ContactLocatieBeheerPage />} />
+            <Route index element={<ContactBeheerPage />} />
+            <Route path="gegevens" element={<Navigate to="/beheer/contact" replace />} />
+            <Route path="locatie" element={<Navigate to="/beheer/contact" replace />} />
             <Route path="wie-doet-wat" element={<WieDoetWatBeheerPage />} />
           </Route>
         </Route>
