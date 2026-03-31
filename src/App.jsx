@@ -42,7 +42,7 @@ export default function App() {
         <Route path="trainingsschema" element={<TrainingschemaLayout />}>
           <Route index element={<SchedulePage isAdmin={false} />} />
           <Route path="veldindeling" element={<VeldindelingPage />} />
-          <Route path="beheer" element={<Navigate to="/beheer/trainingsschema" replace />} />
+          <Route path="beheer" element={<Navigate to="/beheer/trainingsschema/instellingen" replace />} />
         </Route>
         <Route path="agenda" element={<Navigate to="/activiteiten" replace />} />
         <Route path="agenda/beheer" element={<Navigate to="/beheer/activiteiten" replace />} />
@@ -57,7 +57,6 @@ export default function App() {
           <Route index element={<BeheerDashboardPage />} />
           <Route path="activiteiten" element={<ActiviteitenBeheerPage />} />
           <Route path="trainingsschema" element={<TrainingschemaLayout />}>
-            <Route index element={<TrainingschemaBeheerPage />} />
             <Route path=":scheduleId" element={<TrainingschemaBeheerPage />} />
             <Route path="instellingen" element={<AdminPage />} />
           </Route>
