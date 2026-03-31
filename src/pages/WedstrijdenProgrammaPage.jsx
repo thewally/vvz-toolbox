@@ -110,7 +110,18 @@ export default function WedstrijdenProgrammaPage() {
                         <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${locatieLabel.includes('ZAAL') || locatieLabel.includes('FUTSAL') ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>{locatieLabel}</span>
                       ) : <span className="shrink-0 w-14" />}
                     </div>
-                    {w.accommodatie && <p className="text-xs text-gray-400 text-center">{w.accommodatie}</p>}
+                    {w.accommodatie && (
+                      <div className="flex items-center gap-2">
+                        <div className="shrink-0 flex items-center gap-2">
+                          <span className="invisible text-sm">00:00</span>
+                          <span className="invisible w-14 text-xs px-2 py-0.5">X</span>
+                        </div>
+                        <span className="flex-1" />
+                        <span className="shrink-0 w-16 text-center text-xs text-gray-400">{w.accommodatie}</span>
+                        <span className="flex-1" />
+                        <span className="shrink-0 w-14" />
+                      </div>
+                    )}
                   </div>
                 </div>
               )
