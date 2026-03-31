@@ -55,20 +55,25 @@ export default function WieDoetWatPage() {
           {(!committee.committee_members || committee.committee_members.length === 0) ? (
             <p className="text-sm text-gray-500">Geen leden</p>
           ) : (
-            <div className="space-y-3">
+            <div className="divide-y divide-gray-50">
               {committee.committee_members.map(member => (
-                <div key={member.id} className="text-sm">
-                  <p className="font-medium text-gray-800">{member.naam}</p>
-                  {member.functie && <p className="text-gray-600">{member.functie}</p>}
-                  {member.taken && <p className="text-gray-600 text-xs whitespace-pre-line">{member.taken}</p>}
-                  <div className="flex gap-4 flex-wrap text-gray-600">
-                    {member.telefoonnummer && (
-                      <a href={`tel:${member.telefoonnummer}`} className="text-vvz-green hover:underline">{member.telefoonnummer}</a>
-                    )}
-                    {member.emailadres && (
-                      <a href={`mailto:${member.emailadres}`} className="text-vvz-green hover:underline">{member.emailadres}</a>
-                    )}
-                  </div>
+                <div key={member.id} className="py-3 first:pt-0 last:pb-0 text-sm">
+                  <p className="text-gray-800">
+                    {member.functie && <span className="font-medium">{member.functie}</span>}
+                    {member.functie && member.naam && <span className="text-gray-400 mx-1.5">–</span>}
+                    <span className={member.functie ? 'text-gray-700' : 'font-medium text-gray-800'}>{member.naam}</span>
+                  </p>
+                  {(member.telefoonnummer || member.emailadres) && (
+                    <div className="flex gap-4 flex-wrap mt-0.5">
+                      {member.telefoonnummer && (
+                        <a href={`tel:${member.telefoonnummer}`} className="text-vvz-green hover:underline">{member.telefoonnummer}</a>
+                      )}
+                      {member.emailadres && (
+                        <a href={`mailto:${member.emailadres}`} className="text-vvz-green hover:underline">{member.emailadres}</a>
+                      )}
+                    </div>
+                  )}
+                  {member.taken && <p className="text-gray-500 text-xs mt-1 whitespace-pre-line">{member.taken}</p>}
                 </div>
               ))}
             </div>
