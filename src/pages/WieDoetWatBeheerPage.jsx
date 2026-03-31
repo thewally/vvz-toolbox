@@ -10,7 +10,7 @@ import {
 } from '../services/committees'
 
 const LEEG_COMMISSIE = { name: '', sort_order: 0 }
-const LEEG_LID = { name: '', phone: '', email: '', sort_order: 0 }
+const LEEG_LID = { name: '', phone: '', email: '', functie: '', taken: '', sort_order: 0 }
 
 export default function WieDoetWatBeheerPage() {
   const [committees, setCommittees] = useState([])
@@ -81,7 +81,7 @@ export default function WieDoetWatBeheerPage() {
   }
 
   function openBewerkLid(member, committeeId) {
-    setLidForm({ name: member.naam, phone: member.telefoonnummer || '', email: member.emailadres || '', sort_order: member.sort_order })
+    setLidForm({ name: member.naam, phone: member.telefoonnummer || '', email: member.emailadres || '', functie: member.functie || '', taken: member.taken || '', sort_order: member.sort_order })
     setFout(null)
     setLidModal({ mode: 'bewerken', committee_id: committeeId, id: member.id })
   }
@@ -94,6 +94,8 @@ export default function WieDoetWatBeheerPage() {
       name: lidForm.name,
       phone: lidForm.phone || null,
       email: lidForm.email || null,
+      functie: lidForm.functie || null,
+      taken: lidForm.taken || null,
       sort_order: Number(lidForm.sort_order) || 0,
     }
     const { error } = lidModal.mode === 'nieuw'
@@ -263,6 +265,24 @@ export default function WieDoetWatBeheerPage() {
                 type="email"
                 value={lidForm.email}
                 onChange={e => setLidForm(f => ({ ...f, email: e.target.value }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green/50 focus:border-vvz-green"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Functie</label>
+              <input
+                type="text"
+                value={lidForm.functie}
+                onChange={e => setLidForm(f => ({ ...f, functie: e.target.value }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green/50 focus:border-vvz-green"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Taken</label>
+              <textarea
+                rows={3}
+                value={lidForm.taken}
+                onChange={e => setLidForm(f => ({ ...f, taken: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green/50 focus:border-vvz-green"
               />
             </div>

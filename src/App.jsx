@@ -58,6 +58,7 @@ export default function App() {
           <Route path="activiteiten" element={<ActiviteitenBeheerPage />} />
           <Route path="trainingsschema" element={<TrainingschemaLayout />}>
             <Route index element={<TrainingschemaBeheerPage />} />
+            <Route path=":scheduleId" element={<TrainingschemaBeheerPage />} />
             <Route path="instellingen" element={<AdminPage />} />
           </Route>
           <Route path="sponsoring" element={<SponsoringBeheerPage />} />

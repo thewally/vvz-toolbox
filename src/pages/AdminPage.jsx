@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { fetchTeams, createTeam, updateTeam, deleteTeam } from '../services/teams'
 import { fetchFields, createField, updateField, deleteField } from '../services/fields'
 import { fetchSchedules, createSchedule, updateSchedule, deleteSchedule, toggleScheduleActive, copySchedule } from '../services/schedules'
@@ -873,6 +874,16 @@ function SchedulesManager({ schedules, onReload }) {
                     </td>
                     <td className="px-4 py-2.5 text-right">
                       <div className="flex gap-1 justify-end">
+                        <Link
+                          to={`/beheer/trainingsschema/${schedule.id}`}
+                          className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors"
+                          aria-label={`${schedule.name} schema bewerken`}
+                          title="Bewerk schema"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </Link>
                         <button
                           onClick={() => startEdit(schedule)}
                           className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors"

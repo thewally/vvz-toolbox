@@ -59,6 +59,8 @@ export default function WieDoetWatPage() {
               {committee.committee_members.map(member => (
                 <div key={member.id} className="text-sm">
                   <p className="font-medium text-gray-800">{member.naam}</p>
+                  {member.functie && <p className="text-gray-600">{member.functie}</p>}
+                  {member.taken && <p className="text-gray-600 text-xs whitespace-pre-line">{member.taken}</p>}
                   <div className="flex gap-4 flex-wrap text-gray-600">
                     {member.telefoonnummer && (
                       <a href={`tel:${member.telefoonnummer}`} className="text-vvz-green hover:underline">{member.telefoonnummer}</a>

@@ -1,5 +1,7 @@
+import { useParams } from 'react-router-dom'
 import SchedulePage from './SchedulePage'
 
 export default function TrainingschemaBeheerPage() {
-  return <SchedulePage isAdmin />
+  const { scheduleId } = useParams()
+  return <SchedulePage isAdmin scheduleId={scheduleId} />
 }

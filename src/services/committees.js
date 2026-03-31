@@ -36,19 +36,19 @@ export async function deleteCommittee(id) {
   return { error }
 }
 
-export async function createCommitteeMember({ committee_id, name, phone, email, sort_order }) {
+export async function createCommitteeMember({ committee_id, name, phone, email, functie, taken, sort_order }) {
   const { data, error } = await supabase
     .from('committee_members')
-    .insert({ committee_id, naam: name, telefoonnummer: phone, emailadres: email, sort_order })
+    .insert({ committee_id, naam: name, telefoonnummer: phone, emailadres: email, functie, taken, sort_order })
     .select()
     .single()
   return { data, error }
 }
 
-export async function updateCommitteeMember(id, { name, phone, email, sort_order }) {
+export async function updateCommitteeMember(id, { name, phone, email, functie, taken, sort_order }) {
   const { data, error } = await supabase
     .from('committee_members')
-    .update({ naam: name, telefoonnummer: phone, emailadres: email, sort_order })
+    .update({ naam: name, telefoonnummer: phone, emailadres: email, functie, taken, sort_order })
     .eq('id', id)
     .select()
     .single()
