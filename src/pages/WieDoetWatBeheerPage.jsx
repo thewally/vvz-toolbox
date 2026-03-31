@@ -167,9 +167,13 @@ export default function WieDoetWatBeheerPage() {
                 <h2 className="text-base font-semibold text-gray-800">{c.naam}</h2>
                 <span className="text-xs text-gray-400">Volgorde: {c.sort_order}</span>
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => openBewerkCommissie(c)} className="text-xs text-vvz-green hover:underline">Bewerken</button>
-                <button onClick={() => handleCommissieVerwijderen(c.id)} className="text-xs text-red-600 hover:underline">Verwijderen</button>
+              <div className="flex gap-1">
+                <button onClick={() => openBewerkCommissie(c)} className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors" title="Bewerken" aria-label={`${c.naam} bewerken`}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                </button>
+                <button onClick={() => handleCommissieVerwijderen(c.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Verwijderen" aria-label={`${c.naam} verwijderen`}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
               </div>
             </div>
 
@@ -182,9 +186,13 @@ export default function WieDoetWatBeheerPage() {
                     {m.telefoonnummer && <span className="ml-3 text-gray-500">{m.telefoonnummer}</span>}
                     {m.emailadres && <span className="ml-3 text-gray-500 break-all">{m.emailadres}</span>}
                   </div>
-                  <div className="flex gap-2 shrink-0">
-                    <button onClick={() => openBewerkLid(m, c.id)} className="text-xs text-vvz-green hover:underline">Bewerken</button>
-                    <button onClick={() => handleLidVerwijderen(m.id)} className="text-xs text-red-600 hover:underline">Verwijderen</button>
+                  <div className="flex gap-1 shrink-0">
+                    <button onClick={() => openBewerkLid(m, c.id)} className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors" title="Bewerken" aria-label={`${m.naam} bewerken`}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    </button>
+                    <button onClick={() => handleLidVerwijderen(m.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Verwijderen" aria-label={`${m.naam} verwijderen`}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
                   </div>
                 </div>
               ))}
