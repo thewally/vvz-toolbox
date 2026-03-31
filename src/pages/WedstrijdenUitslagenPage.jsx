@@ -104,35 +104,28 @@ export default function WedstrijdenUitslagenPage() {
                     </div>
                   </div>
                   {/* Desktop: horizontale layout */}
-                  <div className="hidden sm:flex flex-col gap-0.5">
+                  <div className="hidden sm:grid gap-x-2 gap-y-0.5" style={{gridTemplateColumns: 'auto 1fr 4rem 1fr auto'}}>
                     <div className="flex items-center gap-2">
-                      <div className="shrink-0 flex items-center gap-2">
-                        <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
-                        <span className={`w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                          {isThuis ? 'THUIS' : 'UIT'}
-                        </span>
-                      </div>
-                      <span className={`flex-1 text-right font-semibold text-sm truncate ${isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
-                      <span className="shrink-0 w-16 text-center text-lg font-bold text-gray-800 tabular-nums">{thuisScore} – {uitScore}</span>
-                      <span className={`flex-1 font-semibold text-sm truncate ${!isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                      <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
+                      <span className={`w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {isThuis ? 'THUIS' : 'UIT'}
+                      </span>
+                    </div>
+                    <span className={`self-center text-right font-semibold text-sm truncate ${isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                    <span className="self-center text-center text-lg font-bold text-gray-800 tabular-nums">{thuisScore} – {uitScore}</span>
+                    <span className={`self-center font-semibold text-sm truncate ${!isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                    <div className="self-center flex items-center">
                       {locatieLabel ? (
-                        <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${isZaal ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isZaal ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>
                           {locatieLabel}
                         </span>
-                      ) : <span className="shrink-0 w-14" />}
+                      ) : <span className="w-14" />}
                     </div>
-                    {w.accommodatie && (
-                      <div className="flex items-center gap-2">
-                        <div className="shrink-0 flex items-center gap-2">
-                          <span className="invisible text-sm">00:00</span>
-                          <span className="invisible w-14 text-xs px-2 py-0.5">X</span>
-                        </div>
-                        <span className="flex-1" />
-                        <span className="shrink-0 w-16 text-center text-xs text-gray-400">{w.accommodatie}</span>
-                        <span className="flex-1" />
-                        <span className="shrink-0 w-14" />
-                      </div>
-                    )}
+                    {w.accommodatie && <>
+                      <span />
+                      <span />
+                      <span className="text-center text-xs text-gray-400 truncate col-start-3">{w.accommodatie}</span>
+                    </>}
                   </div>
                 </div>
               )
