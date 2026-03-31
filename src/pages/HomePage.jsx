@@ -114,6 +114,7 @@ export default function HomePage() {
           { label: 'Teams Veteranen', to: '/teams/veteranen', sub: 'Alle veteranen teams' },
           { label: 'Teams Junioren', to: '/teams/junioren', sub: 'JO13 t/m JO19' },
           { label: 'Teams Pupillen', to: '/teams/pupillen', sub: 'JO7 t/m JO12' },
+          { label: 'Teams Zaalvoetbal', to: '/teams/zaalvoetbal', sub: 'Alle zaalvoetbal teams' },
         ].map(({ label, to, sub }) => (
           <Link
             key={to}
