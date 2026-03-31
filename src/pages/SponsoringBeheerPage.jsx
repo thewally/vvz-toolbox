@@ -81,6 +81,11 @@ export default function SponsoringBeheerPage() {
     window.location.reload()
   }
 
+  async function handleToggleActief(s) {
+    await updateSponsor(s.id, { actief: !s.actief })
+    laadSponsors()
+  }
+
   async function handleDrop(categorie, toIndex) {
     if (!dragInfo || dragInfo.fromIndex === toIndex) {
       setDragInfo(null); setDropIndex(null); return
@@ -156,9 +161,14 @@ export default function SponsoringBeheerPage() {
 
                         <span className="font-medium text-gray-800 flex-1">{s.naam}</span>
 
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${s.actief ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                          {s.actief ? 'Actief' : 'Inactief'}
-                        </span>
+                        <button
+                          onClick={() => handleToggleActief(s)}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none shrink-0 ${s.actief ? 'bg-vvz-green' : 'bg-gray-300'}`}
+                          aria-label={s.actief ? `${s.naam} deactiveren` : `${s.naam} activeren`}
+                          title={s.actief ? 'Deactiveren' : 'Activeren'}
+                        >
+                          <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${s.actief ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+                        </button>
 
                         <div className="flex gap-1 shrink-0">
                           <button onClick={() => openBewerken(s)} title="Bewerken" aria-label={`${s.naam} bewerken`} className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors">
