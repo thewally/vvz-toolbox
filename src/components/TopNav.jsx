@@ -37,6 +37,19 @@ export default function TopNav() {
               Beheer
             </Link>
           )}
+          {user ? (
+            <button onClick={signOut} className="text-white/80 font-medium text-sm hover:text-white transition-colors">
+              Uitloggen
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              state={{ from: { pathname: location.pathname } }}
+              className="text-white/80 font-medium text-sm hover:text-white transition-colors"
+            >
+              Inloggen
+            </Link>
+          )}
           {!menuOpen && (
             <button
               onClick={() => setMenuOpen(true)}
@@ -104,22 +117,6 @@ export default function TopNav() {
                   </NavLink>
                 )
               )}
-              {/* Inloggen/uitloggen — alleen zichtbaar op desktop */}
-              <div className="hidden sm:block mt-6 pt-4 border-t border-white/20">
-                {user ? (
-                  <button onClick={signOut} className="text-lg text-white/70 hover:text-white transition-colors">
-                    Uitloggen
-                  </button>
-                ) : (
-                  <Link
-                    to="/login"
-                    state={{ from: { pathname: location.pathname } }}
-                    className="text-lg text-white/70 hover:text-white transition-colors"
-                  >
-                    Inloggen
-                  </Link>
-                )}
-              </div>
             </div>
 
             {/* Kolom 2: secties met accordion */}
@@ -171,23 +168,6 @@ export default function TopNav() {
               })}
             </div>
           </div>
-        </div>
-
-        {/* Auth op mobiel — boven de lijn */}
-        <div className="sm:hidden px-6 pb-3 flex justify-end shrink-0">
-          {user ? (
-            <button onClick={signOut} className="text-lg text-white/70 hover:text-white transition-colors">
-              Uitloggen
-            </button>
-          ) : (
-            <Link
-              to="/login"
-              state={{ from: { pathname: location.pathname } }}
-              className="text-lg text-white/70 hover:text-white transition-colors"
-            >
-              Inloggen
-            </Link>
-          )}
         </div>
 
         {/* Slogan */}

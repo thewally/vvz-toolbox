@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
 
 const TILES = [
   {
@@ -60,7 +59,6 @@ const TILES = [
 ]
 
 export default function BeheerDashboardPage() {
-  const { signOut } = useAuth()
 
   return (
     <div className="max-w-5xl mx-auto p-4 pt-8">
@@ -101,14 +99,6 @@ export default function BeheerDashboardPage() {
         )}
       </div>
 
-      <div className="mt-12 pt-6 border-t border-gray-200">
-        <button
-          onClick={signOut}
-          className="text-sm text-red-600 hover:text-red-800 transition-colors"
-        >
-          Uitloggen
-        </button>
-      </div>
     </div>
   )
 }
