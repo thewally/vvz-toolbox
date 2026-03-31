@@ -501,7 +501,7 @@ export default function TeamPage() {
                     })()}
                     <span className="shrink-0 text-xs text-gray-400 capitalize">{formatDagLabel(w.wedstrijddatum)}</span>
                   </div>
-                  {w.accommodatie && <p className="text-xs text-gray-400 pl-[4.5rem]">{w.accommodatie}</p>}
+                  {w.accommodatie && <p className="text-xs text-gray-400 text-center">{w.accommodatie}</p>}
                 </div>
               </div>
             ))}
@@ -570,7 +570,7 @@ export default function TeamPage() {
                         })()}
                         <span className="shrink-0 text-xs text-gray-400 capitalize">{formatDagLabel(w.wedstrijddatum)}</span>
                       </div>
-                      {w.accommodatie && <p className="text-xs text-gray-400 pl-[4.5rem]">{w.accommodatie}</p>}
+                      {w.accommodatie && <p className="text-xs text-gray-400 text-center">{w.accommodatie}</p>}
                     </div>
                   </div>
                 )
