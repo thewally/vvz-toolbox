@@ -66,8 +66,8 @@ export const NAV_SECTIONS = [
     label: 'CONTACT',
     children: [
       { label: 'Contactgegevens', to: '/contact/gegevens' },
-      { label: 'Wie doet wat?', to: '/contact/wie-doet-wat' },
       { label: 'Locatie & Routebeschrijving', to: '/contact/locatie' },
+      { label: 'Wie doet wat?', to: '/contact/wie-doet-wat' },
     ],
   },
 ]
