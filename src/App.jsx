@@ -9,8 +9,10 @@ import PlattegrondPage from './pages/PlattegrondPage'
 import VeldindelingPage from './pages/VeldindelingPage'
 import HuistijlPage from './pages/HuistijlPage'
 import AgendaLayout from './components/AgendaLayout'
-import AgendaPage from './pages/AgendaPage'
-import AgendaBeheerPage from './pages/AgendaBeheerPage'
+import ActiviteitenPage from './pages/ActiviteitenPage'
+import ActiviteitenBeheerPage from './pages/ActiviteitenBeheerPage'
+import BeheerLayout from './components/BeheerLayout'
+import BeheerDashboardPage from './pages/BeheerDashboardPage'
 import WedstrijdenLayout from './components/WedstrijdenLayout'
 import WedstrijdenProgrammaPage from './pages/WedstrijdenProgrammaPage'
 import WedstrijdenUitslagenPage from './pages/WedstrijdenUitslagenPage'
@@ -18,6 +20,7 @@ import WedstrijdenTeamsCatPage from './pages/WedstrijdenTeamsCatPage'
 import WedstrijdenTeamsZaalPage from './pages/WedstrijdenTeamsZaalPage'
 import WedstrijdenAfgelastingenPage from './pages/WedstrijdenAfgelastingenPage'
 import TeamPage from './pages/TeamPage'
+import TrainingschemaBeheerPage from './pages/TrainingschemaBeheerPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import PlaceholderPage from './pages/PlaceholderPage'
 import ContactgegevensPage from './pages/ContactgegevensPage'
@@ -27,6 +30,9 @@ import SponsorsPage from './pages/SponsorsPage'
 import SponsorDetailPage from './pages/SponsorDetailPage'
 import SponsorWordenPage from './pages/SponsorWordenPage'
 import SponsoringBeheerPage from './pages/SponsoringBeheerPage'
+import WieDoetWatPage from './pages/WieDoetWatPage'
+import ContactBeheerPage from './pages/ContactBeheerPage'
+import WieDoetWatBeheerPage from './pages/WieDoetWatBeheerPage'
 
 export default function App() {
   return (
@@ -34,21 +40,33 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="trainingsschema" element={<TrainingschemaLayout />}>
-          <Route index element={<SchedulePage />} />
+          <Route index element={<SchedulePage isAdmin={false} />} />
           <Route path="veldindeling" element={<VeldindelingPage />} />
-          <Route path="beheer" element={
-            <ProtectedRoute>
-              <AdminPage />
-            </ProtectedRoute>
-          } />
+          <Route path="beheer" element={<Navigate to="/beheer/trainingsschema/instellingen" replace />} />
         </Route>
-        <Route path="agenda" element={<AgendaLayout />}>
-          <Route index element={<AgendaPage />} />
-          <Route path="beheer" element={
-            <ProtectedRoute>
-              <AgendaBeheerPage />
-            </ProtectedRoute>
-          } />
+        <Route path="agenda" element={<Navigate to="/activiteiten" replace />} />
+        <Route path="agenda/beheer" element={<Navigate to="/beheer/activiteiten" replace />} />
+        <Route path="activiteiten" element={<AgendaLayout />}>
+          <Route index element={<ActiviteitenPage />} />
+        </Route>
+        <Route path="beheer" element={
+          <ProtectedRoute>
+            <BeheerLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<BeheerDashboardPage />} />
+          <Route path="activiteiten" element={<ActiviteitenBeheerPage />} />
+          <Route path="trainingsschema" element={<TrainingschemaLayout />}>
+            <Route path=":scheduleId" element={<TrainingschemaBeheerPage />} />
+            <Route path="instellingen" element={<AdminPage />} />
+          </Route>
+          <Route path="sponsoring" element={<SponsoringBeheerPage />} />
+          <Route path="contact">
+            <Route index element={<ContactBeheerPage />} />
+            <Route path="gegevens" element={<Navigate to="/beheer/contact" replace />} />
+            <Route path="locatie" element={<Navigate to="/beheer/contact" replace />} />
+            <Route path="wie-doet-wat" element={<WieDoetWatBeheerPage />} />
+          </Route>
         </Route>
         <Route path="wedstrijden" element={<WedstrijdenLayout />}>
           <Route index element={<Navigate to="programma" replace />} />
@@ -84,7 +102,7 @@ export default function App() {
         <Route path="contact">
           <Route index element={<PlaceholderPage title="Contact" />} />
           <Route path="gegevens" element={<ContactgegevensPage />} />
-          <Route path="wie-doet-wat" element={<PlaceholderPage title="Wie doet wat?" />} />
+          <Route path="wie-doet-wat" element={<WieDoetWatPage />} />
           <Route path="locatie" element={<LocatieRoutebeschrijvingPage />} />
         </Route>
         <Route path="teams/senioren" element={<WedstrijdenTeamsCatPage />} />

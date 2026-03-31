@@ -1,9 +1,7 @@
-import { NavLink, Outlet, useOutletContext } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { Outlet } from 'react-router-dom'
 import { useState, useCallback } from 'react'
 
 export default function TrainingschemaLayout() {
-  const { user } = useAuth()
   const [exportHandler, setExportHandler] = useState(null)
   const [exporting, setExporting] = useState(false)
 
@@ -25,56 +23,10 @@ export default function TrainingschemaLayout() {
 
   return (
     <div>
-      {/* Sub-navigatie */}
-      <nav className="bg-white border-b border-gray-200 shadow-sm no-print">
-        <div className="max-w-7xl mx-auto px-4 flex items-center gap-1 h-10">
-          <NavLink
-            to="/trainingsschema"
-            end
-            className={({ isActive }) =>
-              `px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-vvz-green/10 text-vvz-green'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-              }`
-            }
-          >
-            Schema
-          </NavLink>
-
-          <NavLink
-            to="/trainingsschema/veldindeling"
-            className={({ isActive }) =>
-              `px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-vvz-green/10 text-vvz-green'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-              }`
-            }
-          >
-            Veldindeling
-          </NavLink>
-
-          {user && (
-            <NavLink
-              to="/trainingsschema/beheer"
-              className={({ isActive }) =>
-                `px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-vvz-green/10 text-vvz-green'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-                }`
-              }
-            >
-              Beheer
-            </NavLink>
-          )}
-
-          {/* Spacer */}
-          <div className="flex-1" />
-
-          {/* PDF Export knop */}
-          {exportHandler && (
+      {/* PDF Export balk (alleen zichtbaar als exportHandler geregistreerd is) */}
+      {exportHandler && (
+        <div className="bg-white border-b border-gray-200 shadow-sm no-print">
+          <div className="max-w-7xl mx-auto px-4 flex items-center justify-end h-10">
             <button
               onClick={handleExportClick}
               disabled={exporting}
@@ -85,9 +37,9 @@ export default function TrainingschemaLayout() {
               </svg>
               {exporting ? 'Exporteren...' : 'PDF exporteren'}
             </button>
-          )}
+          </div>
         </div>
-      </nav>
+      )}
 
       <Outlet context={{ registerExportHandler }} />
     </div>

@@ -1,6 +1,6 @@
 export const QUICK_LINKS = [
   { label: 'Nieuws', to: '/nieuws' },
-  { label: 'Activiteiten', to: '/agenda' },
+  { label: 'Activiteiten', to: '/activiteiten' },
   { label: 'Vrijwilliger worden?', to: '/vrijwilliger' },
   { label: 'Sponsors', to: '/sponsors' },
   { label: 'Ledenshop', href: 'https://clubs.stanno.com/nl/vvz-49/clubcollectie' },
@@ -32,6 +32,7 @@ export const NAV_SECTIONS = [
     label: 'TRAINEN',
     children: [
       { label: 'Trainingsschema', to: '/trainingsschema' },
+      { label: 'Veldindeling', to: '/trainingsschema/veldindeling' },
       { label: 'Techniektrainingen', to: '/techniektrainingen' },
     ],
   },
@@ -65,8 +66,8 @@ export const NAV_SECTIONS = [
     label: 'CONTACT',
     children: [
       { label: 'Contactgegevens', to: '/contact/gegevens' },
-      { label: 'Wie doet wat?', to: '/contact/wie-doet-wat' },
       { label: 'Locatie & Routebeschrijving', to: '/contact/locatie' },
+      { label: 'Wie doet wat?', to: '/contact/wie-doet-wat' },
     ],
   },
 ]

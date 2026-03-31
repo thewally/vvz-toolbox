@@ -69,7 +69,8 @@ export default function WedstrijdenProgrammaPage() {
           <div className="flex flex-col gap-3">
             {items.map((w, i) => {
               const isThuis = w.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
-              const locatieLabel = (w.locatie || '').toUpperCase() || null
+              const _loc = (w.locatie || '').toLowerCase()
+              const locatieLabel = _loc ? (_loc.includes('futsal') || _loc.includes('zaal') ? 'ZAAL' : (w.locatie || '').toUpperCase()) : null
               return (
                 <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 hover:shadow-md transition-shadow cursor-default">
                   {/* Mobiel: verticale layout */}
@@ -95,19 +96,24 @@ export default function WedstrijdenProgrammaPage() {
                     </div>
                   </div>
                   {/* Desktop: horizontale layout */}
-                  <div className="hidden sm:flex items-center gap-2">
-                    <div className="shrink-0 flex items-center gap-2">
+                  <div className="hidden sm:grid gap-x-2 gap-y-0.5" style={{gridTemplateColumns: 'auto 1fr 4rem 1fr auto'}}>
+                    <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
                       <span className={`w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                         {isThuis ? 'THUIS' : 'UIT'}
                       </span>
                     </div>
-                    <span className={`flex-1 text-right font-semibold text-sm truncate ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
-                    <span className="shrink-0 w-16 text-center text-gray-400 text-xs">vs</span>
-                    <span className={`flex-1 font-semibold text-sm truncate ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
-                    {locatieLabel ? (
-                      <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${locatieLabel.includes('ZAAL') || locatieLabel.includes('FUTSAL') ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>{locatieLabel}</span>
-                    ) : <span className="shrink-0 w-14" />}
+                    <span className={`self-center text-right font-semibold text-sm truncate ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                    <span className="self-center text-center text-gray-400 text-xs">vs</span>
+                    <span className={`self-center font-semibold text-sm truncate ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                    <div className="self-center flex items-center">
+                      {locatieLabel ? (
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${locatieLabel.includes('ZAAL') || locatieLabel.includes('FUTSAL') ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>{locatieLabel}</span>
+                      ) : <span className="w-14" />}
+                    </div>
+                    {w.accommodatie && (
+                      <span className="text-center text-xs text-gray-400 col-start-2 col-end-5">{w.accommodatie}</span>
+                    )}
                   </div>
                 </div>
               )

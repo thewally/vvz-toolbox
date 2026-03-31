@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getAllSponsors, createSponsor, updateSponsor, deleteSponsor, generateSlug } from '../services/sponsors'
 import RichTextEditor from '../components/RichTextEditor'
 
@@ -80,6 +81,11 @@ export default function SponsoringBeheerPage() {
     window.location.reload()
   }
 
+  async function handleToggleActief(s) {
+    await updateSponsor(s.id, { actief: !s.actief })
+    laadSponsors()
+  }
+
   async function handleDrop(categorie, toIndex) {
     if (!dragInfo || dragInfo.fromIndex === toIndex) {
       setDragInfo(null); setDropIndex(null); return
@@ -98,6 +104,7 @@ export default function SponsoringBeheerPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      <Link to="/beheer" className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1 mb-4">&#8249; Terug naar Beheer</Link>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-xl font-bold text-gray-800">Sponsors beheren</h2>
         <button onClick={openNieuw} className="bg-vvz-green text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors">
@@ -154,13 +161,22 @@ export default function SponsoringBeheerPage() {
 
                         <span className="font-medium text-gray-800 flex-1">{s.naam}</span>
 
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${s.actief ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                          {s.actief ? 'Actief' : 'Inactief'}
-                        </span>
+                        <button
+                          onClick={() => handleToggleActief(s)}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none shrink-0 ${s.actief ? 'bg-vvz-green' : 'bg-gray-300'}`}
+                          aria-label={s.actief ? `${s.naam} deactiveren` : `${s.naam} activeren`}
+                          title={s.actief ? 'Deactiveren' : 'Activeren'}
+                        >
+                          <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${s.actief ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+                        </button>
 
-                        <div className="flex gap-3 shrink-0">
-                          <button onClick={() => openBewerken(s)} className="text-xs text-gray-500 hover:text-vvz-green transition-colors">Bewerken</button>
-                          <button onClick={() => handleVerwijderen(s.id)} className="text-xs text-gray-400 hover:text-red-500 transition-colors">Verwijderen</button>
+                        <div className="flex gap-1 shrink-0">
+                          <button onClick={() => openBewerken(s)} title="Bewerken" aria-label={`${s.naam} bewerken`} className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                          </button>
+                          <button onClick={() => handleVerwijderen(s.id)} title="Verwijderen" aria-label={`${s.naam} verwijderen`} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
                         </div>
                       </div>
                     ))

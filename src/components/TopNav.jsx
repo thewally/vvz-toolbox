@@ -30,18 +30,40 @@ export default function TopNav() {
   return (
     <nav className="bg-vvz-green no-print">
       {/* Hamburgerbalk */}
-      <div className="flex items-center justify-end px-4 py-2">
-        {!menuOpen && (
-          <button
-            onClick={() => setMenuOpen(true)}
-            className="text-white p-1"
-            aria-label="Menu openen"
-          >
-            <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        )}
+      <div className="flex items-center justify-between px-4 py-2">
+        <div>
+          {user && (
+            <Link to="/beheer" className="inline-flex items-center text-white font-medium text-sm px-3 py-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors">
+              Beheer
+            </Link>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          {user ? (
+            <button onClick={signOut} className="text-white/80 font-medium text-sm hover:text-white transition-colors">
+              Uitloggen
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              state={{ from: { pathname: location.pathname } }}
+              className="text-white/80 font-medium text-sm hover:text-white transition-colors"
+            >
+              Inloggen
+            </Link>
+          )}
+          {!menuOpen && (
+            <button
+              onClick={() => setMenuOpen(true)}
+              className="text-white p-1"
+              aria-label="Menu openen"
+            >
+              <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Schermvullend menu */}
@@ -97,22 +119,6 @@ export default function TopNav() {
                   </NavLink>
                 )
               )}
-              {/* Inloggen/uitloggen — alleen zichtbaar op desktop */}
-              <div className="hidden sm:block mt-6 pt-4 border-t border-white/20">
-                {user ? (
-                  <button onClick={signOut} className="text-sm text-white/50 hover:text-white/80 transition-colors">
-                    Uitloggen
-                  </button>
-                ) : (
-                  <Link
-                    to="/login"
-                    state={{ from: { pathname: location.pathname } }}
-                    className="text-sm text-white/50 hover:text-white/80 transition-colors"
-                  >
-                    Inloggen
-                  </Link>
-                )}
-              </div>
             </div>
 
             {/* Kolom 2: secties met accordion */}
@@ -164,23 +170,6 @@ export default function TopNav() {
               })}
             </div>
           </div>
-        </div>
-
-        {/* Auth op mobiel — boven de lijn */}
-        <div className="sm:hidden px-6 pb-3 flex justify-end shrink-0">
-          {user ? (
-            <button onClick={signOut} className="text-sm text-white/50 hover:text-white/80 transition-colors">
-              Uitloggen
-            </button>
-          ) : (
-            <Link
-              to="/login"
-              state={{ from: { pathname: location.pathname } }}
-              className="text-sm text-white/50 hover:text-white/80 transition-colors"
-            >
-              Inloggen
-            </Link>
-          )}
         </div>
 
         {/* Slogan */}

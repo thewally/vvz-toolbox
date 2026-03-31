@@ -13,11 +13,11 @@ jobs:
           node-version: 20
       - run: node scripts/sportlink-cache.js
         env:
-          SPORTLINK_CLIENT_ID: ${{ secrets.SPORTLINK_CLIENT_ID }}
-          SPORTLINK_CLUB_RELATIECODE: ${{ secrets.SPORTLINK_CLUB_RELATIECODE }}
+          SPORTLINK_CLIENT_ID: ${{ secrets.VITE_SPORTLINK_CLIENT_ID }}
+          SPORTLINK_CLUB_RELATIECODE: ${{ secrets.VITE_SPORTLINK_CLUB_RELATIECODE }}
       - run: node scripts/generate-ical.js
         env:
-          SPORTLINK_CLIENT_ID: ${{ secrets.SPORTLINK_CLIENT_ID }}
+          SPORTLINK_CLIENT_ID: ${{ secrets.VITE_SPORTLINK_CLIENT_ID }}
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update Sportlink cache en iCal-bestanden"

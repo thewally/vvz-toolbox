@@ -77,7 +77,7 @@ export default function WedstrijdenUitslagenPage() {
 
               const sportOmschrijving = (w.sportomschrijving || '').toLowerCase()
               const isZaal = sportOmschrijving.includes('zaal') || sportOmschrijving.includes('futsal')
-              const locatieLabel = w.sportomschrijving ? (isZaal ? 'FUTSAL' : 'VELD') : null
+              const locatieLabel = w.sportomschrijving ? (isZaal ? 'ZAAL' : 'VELD') : null
 
               return (
                 <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 hover:shadow-md transition-shadow cursor-default">
@@ -93,6 +93,7 @@ export default function WedstrijdenUitslagenPage() {
                       <span className={`font-semibold text-sm ${isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
                       <span className="text-lg font-bold text-gray-800 tabular-nums">{thuisScore} – {uitScore}</span>
                       <span className={`font-semibold text-sm ${!isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                      {w.accommodatie && <p className="text-xs text-gray-400">{w.accommodatie}</p>}
                     </div>
                     <div className="flex flex-col justify-center items-end shrink-0">
                       {locatieLabel ? (
@@ -103,21 +104,26 @@ export default function WedstrijdenUitslagenPage() {
                     </div>
                   </div>
                   {/* Desktop: horizontale layout */}
-                  <div className="hidden sm:flex items-center gap-2">
-                    <div className="shrink-0 flex items-center gap-2">
+                  <div className="hidden sm:grid gap-x-2 gap-y-0.5" style={{gridTemplateColumns: 'auto 1fr 4rem 1fr auto'}}>
+                    <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
                       <span className={`w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                         {isThuis ? 'THUIS' : 'UIT'}
                       </span>
                     </div>
-                    <span className={`flex-1 text-right font-semibold text-sm truncate ${isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
-                    <span className="shrink-0 w-16 text-center text-lg font-bold text-gray-800 tabular-nums">{thuisScore} – {uitScore}</span>
-                    <span className={`flex-1 font-semibold text-sm truncate ${!isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
-                    {locatieLabel ? (
-                      <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${isZaal ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>
-                        {locatieLabel}
-                      </span>
-                    ) : <span className="shrink-0 w-14" />}
+                    <span className={`self-center text-right font-semibold text-sm truncate ${isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                    <span className="self-center text-center text-lg font-bold text-gray-800 tabular-nums">{thuisScore} – {uitScore}</span>
+                    <span className={`self-center font-semibold text-sm truncate ${!isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                    <div className="self-center flex items-center">
+                      {locatieLabel ? (
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isZaal ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>
+                          {locatieLabel}
+                        </span>
+                      ) : <span className="w-14" />}
+                    </div>
+                    {w.accommodatie && (
+                      <span className="text-center text-xs text-gray-400 col-start-2 col-end-5">{w.accommodatie}</span>
+                    )}
                   </div>
                 </div>
               )

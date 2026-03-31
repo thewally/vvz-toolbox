@@ -24,13 +24,13 @@ function minutesToTime(mins) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
-export default function SchedulePage() {
+export default function SchedulePage({ isAdmin: isAdminProp, scheduleId: scheduleIdProp }) {
   const { user } = useAuth()
-  const isAdmin = !!user
+  const isAdmin = isAdminProp !== undefined ? isAdminProp : !!user
 
   const [activeSchedules, setActiveSchedules] = useState([])
   const [allSchedules, setAllSchedules] = useState([])
-  const [selectedScheduleId, setSelectedScheduleId] = useState(null)
+  const [selectedScheduleId, setSelectedScheduleId] = useState(scheduleIdProp || null)
   const [slots, setSlots] = useState([])
   const [fields, setFields] = useState([])
   const [teams, setTeams] = useState([])
@@ -211,8 +211,8 @@ export default function SchedulePage() {
       const allRes = await fetchSchedules()
       const all = allRes.data || []
       setAllSchedules(all)
-      // Als er nog geen selectie is, kies het schema dat geldig is vandaag, anders het eerste actieve, anders het eerste
-      if (!selectedScheduleId) {
+      // Als scheduleIdProp is meegegeven, sla auto-selectie over
+      if (!scheduleIdProp && !selectedScheduleId) {
         const today = new Date().toISOString().slice(0, 10)
         const current = all.find(s =>
           (!s.valid_from || s.valid_from <= today) &&
@@ -734,7 +734,11 @@ export default function SchedulePage() {
   return (
     <div className="max-w-[1400px] mx-auto px-2 sm:px-4 py-3 pb-24">
       <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-        {isAdmin && allSchedules.length > 1 ? (
+        {scheduleIdProp && currentSchedule ? (
+          <span className="text-xs font-medium text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full">
+            {currentSchedule.name}{currentSchedule.active === false ? ' (concept)' : ''}
+          </span>
+        ) : isAdmin && allSchedules.length > 1 ? (
           <>
             <select
               value={selectedScheduleId || ''}
