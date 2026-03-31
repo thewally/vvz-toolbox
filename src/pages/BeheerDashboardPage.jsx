@@ -16,11 +16,7 @@ const TILES = [
   {
     title: 'Trainingsschema',
     description: 'Trainingen beheren en schema-instellingen',
-    multiAction: true,
-    actions: [
-      { label: 'Trainingen beheren', to: '/beheer/trainingsschema' },
-      { label: 'Instellingen', to: '/beheer/trainingsschema/instellingen' },
-    ],
+    to: '/beheer/trainingsschema/instellingen',
     icon: (
       <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path
