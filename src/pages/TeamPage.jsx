@@ -302,8 +302,8 @@ export default function TeamPage() {
   const eersteWedstrijd = [...programma, ...uitslagen][0]
   const sportBadgeLabel = (() => {
     // Programma gebruikt w.locatie, uitslagen w.sportomschrijving
-    const locatie = (eersteWedstrijd?.locatie || '').toUpperCase()
-    if (locatie) return locatie
+    const locatieRaw = (eersteWedstrijd?.locatie || '').toLowerCase()
+    if (locatieRaw) return locatieRaw.includes('futsal') || locatieRaw.includes('zaal') ? 'ZAAL' : locatieRaw.toUpperCase()
     const sport = (eersteWedstrijd?.sportomschrijving || '').toLowerCase()
     if (sport.includes('zaal') || sport.includes('futsal')) return 'ZAAL'
     if (sport) return 'VELD'

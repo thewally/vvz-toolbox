@@ -69,7 +69,8 @@ export default function WedstrijdenProgrammaPage() {
           <div className="flex flex-col gap-3">
             {items.map((w, i) => {
               const isThuis = w.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
-              const locatieLabel = (w.locatie || '').toUpperCase() || null
+              const _loc = (w.locatie || '').toLowerCase()
+              const locatieLabel = _loc ? (_loc.includes('futsal') || _loc.includes('zaal') ? 'ZAAL' : (w.locatie || '').toUpperCase()) : null
               return (
                 <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 hover:shadow-md transition-shadow cursor-default">
                   {/* Mobiel: verticale layout */}
