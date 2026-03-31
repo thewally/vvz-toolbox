@@ -33,7 +33,7 @@ export default function TopNav() {
       <div className="flex items-center justify-between px-4 py-2">
         <div>
           {user && (
-            <Link to="/beheer" className="text-white font-medium text-sm hover:text-white/80 transition-colors">
+            <Link to="/beheer" className="inline-flex items-center text-white font-medium text-sm px-3 py-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors">
               Beheer
             </Link>
           )}
