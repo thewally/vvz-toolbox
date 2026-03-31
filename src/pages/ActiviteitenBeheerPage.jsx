@@ -360,7 +360,7 @@ function AdminActivityCard({
       </div>
 
       {/* Admin action buttons */}
-      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 focus-within:opacity-100 transition-opacity">
+      <div className="absolute top-2 right-2 flex gap-1">
         <button
           onClick={() => onEdit(activity)}
           className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors bg-white/80 backdrop-blur-sm shadow-sm"
