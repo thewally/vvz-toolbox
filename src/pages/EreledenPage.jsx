@@ -52,17 +52,17 @@ function PrintLayout({ ereleden }) {
       display: 'flex',
       flexDirection: 'column',
     }}>
-      {/* Header: dun-dik-dun met logo gecentreerd over de dikke lijn */}
-      <div style={{ marginBottom: 16 }}>
+      {/* Header: dun-dik-dun met logo gecentreerd eroverheen */}
+      <div style={{ position: 'relative', marginBottom: 20 }}>
         <div style={{ borderTop: '1px solid #2d6a4f' }} />
-        <div style={{ position: 'relative', borderTop: '4px solid #2d6a4f', borderBottom: '1px solid #2d6a4f', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2px 0' }}>
-          <div style={{ position: 'absolute', top: -22, background: '#fff', padding: '0 4px' }}>
-            <img
-              src={`${import.meta.env.BASE_URL}logo-vvz.png`}
-              alt="VVZ'49"
-              style={{ height: 44, width: 44, objectFit: 'contain', display: 'block' }}
-            />
-          </div>
+        <div style={{ borderTop: '4px solid #2d6a4f', margin: '3px 0' }} />
+        <div style={{ borderTop: '1px solid #2d6a4f' }} />
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#fff', padding: '0 8px' }}>
+          <img
+            src={`${import.meta.env.BASE_URL}logo-vvz.png`}
+            alt="VVZ'49"
+            style={{ height: 48, width: 48, objectFit: 'contain', display: 'block' }}
+          />
         </div>
       </div>
 
@@ -71,7 +71,7 @@ function PrintLayout({ ereleden }) {
         <div style={{
           fontFamily: "'Playfair Display', 'Georgia', serif",
           fontStyle: 'italic',
-          fontSize: 52,
+          fontSize: 60,
           color: '#2d6a4f',
           lineHeight: 1.1,
         }}>
@@ -116,13 +116,13 @@ function PrintLayout({ ereleden }) {
         </div>
       </div>
 
-      {/* Footer: dun — datum — dik — dun */}
+      {/* Footer: datum — dun-dik-dun */}
       <div style={{ marginTop: 20 }}>
-        <div style={{ borderTop: '1px solid #2d6a4f', marginBottom: 4 }} />
         <div style={{ textAlign: 'right', marginBottom: 4 }}>
           <span style={{ fontSize: 8, color: '#374151', letterSpacing: 0.5 }}>PER {datum}</span>
         </div>
-        <div style={{ borderTop: '4px solid #2d6a4f', marginBottom: 3 }} />
+        <div style={{ borderTop: '1px solid #2d6a4f' }} />
+        <div style={{ borderTop: '4px solid #2d6a4f', margin: '3px 0' }} />
         <div style={{ borderTop: '1px solid #2d6a4f' }} />
       </div>
     </div>
