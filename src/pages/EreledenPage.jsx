@@ -24,8 +24,10 @@ function EreledenTabel({ items }) {
           <tr key={item.id} style={{ borderTop: '1px solid #d1fae5' }}>
             <td style={{ fontSize: 11, color: '#374151', padding: '3px 0', fontVariantNumeric: 'tabular-nums', verticalAlign: 'top' }}>{item.jaar}</td>
             <td style={{ fontSize: 11, color: '#111827', padding: '3px 0 3px 8px', verticalAlign: 'top' }}>
-              {item.naam}
-              {item.overleden && <span style={{ marginLeft: 4, color: '#6b7280' }}>†</span>}
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                <span>{item.naam}</span>
+                {item.overleden && <span style={{ fontWeight: 700, color: '#6b7280', flexShrink: 0 }}>†</span>}
+              </div>
             </td>
           </tr>
         ))}
