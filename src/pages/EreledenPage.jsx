@@ -15,8 +15,8 @@ function EreledenTabel({ items }) {
     <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 6 }}>
       <thead>
         <tr>
-          <th style={{ textAlign: 'left', fontSize: 8, fontWeight: 700, color: '#13a538', textTransform: 'uppercase', letterSpacing: 1, paddingBottom: 2, width: 36 }}>JAAR</th>
-          <th style={{ textAlign: 'left', fontSize: 8, fontWeight: 700, color: '#13a538', textTransform: 'uppercase', letterSpacing: 1, paddingBottom: 2 }}>NAAM</th>
+          <th style={{ textAlign: 'left', fontSize: 8, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 1, paddingBottom: 2, width: 36 }}>JAAR</th>
+          <th style={{ textAlign: 'left', fontSize: 8, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 1, paddingBottom: 2 }}>NAAM</th>
         </tr>
       </thead>
       <tbody>
