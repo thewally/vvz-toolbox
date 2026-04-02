@@ -63,7 +63,7 @@ function PrintLayout({ ereleden }) {
           src={`${import.meta.env.BASE_URL}logo-vvz.png`}
           alt="VVZ'49"
           style={{
-            position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+            position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)',
             height: 52, width: 52, objectFit: 'contain', display: 'block',
           }}
         />
