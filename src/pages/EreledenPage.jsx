@@ -84,7 +84,7 @@ function PrintLayout({ ereleden }) {
 
       {/* Twee kolommen + footer — gecentreerd, smallere vaste breedte */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-        <div style={{ display: 'flex', gap: 24, width: '75mm', alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', gap: 24, width: '150mm', alignItems: 'flex-start' }}>
           {/* Linker kolom: Erevoorzitters + Ereleden */}
           <div style={{ flex: 1 }}>
             {erevoorzitters.length > 0 && (
@@ -118,15 +118,16 @@ function PrintLayout({ ereleden }) {
           </div>
         </div>
 
-        {/* Footer: datum rechts uitgelijnd tot rechterkolom — dun-dik-dun */}
-        <div style={{ marginTop: 20, width: '75mm' }}>
-          <div style={{ textAlign: 'right', marginBottom: 4 }}>
-            <span style={{ fontSize: 8, color: '#374151', letterSpacing: 0.5 }}>PER {datum}</span>
-          </div>
-          <div style={{ borderTop: '1px solid #388E3C' }} />
-          <div style={{ borderTop: '4px solid #388E3C', margin: '3px 0' }} />
-          <div style={{ borderTop: '1px solid #388E3C' }} />
+      </div>
+
+      {/* Footer: datum rechts tot rechterkolom, lijnen volle breedte */}
+      <div style={{ marginTop: 20 }}>
+        <div style={{ textAlign: 'right', marginBottom: 4 }}>
+          <span style={{ fontSize: 8, color: '#374151', letterSpacing: 0.5 }}>PER {datum}</span>
         </div>
+        <div style={{ borderTop: '1px solid #388E3C' }} />
+        <div style={{ borderTop: '4px solid #388E3C', margin: '3px 0' }} />
+        <div style={{ borderTop: '1px solid #388E3C' }} />
       </div>
     </div>
   )
