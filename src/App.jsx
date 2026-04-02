@@ -36,6 +36,9 @@ import WieDoetWatBeheerPage from './pages/WieDoetWatBeheerPage'
 import EreledenPage from './pages/EreledenPage'
 import EreledenBeheerPage from './pages/EreledenBeheerPage'
 import MenuBeheerPage from './pages/MenuBeheerPage'
+import ContentPage from './pages/ContentPage'
+import ContentBeheerPage from './pages/ContentBeheerPage'
+import ContentEditPage from './pages/ContentEditPage'
 
 export default function App() {
   return (
@@ -68,6 +71,9 @@ export default function App() {
             <Route path="ereleden" element={<EreledenBeheerPage />} />
           </Route>
           <Route path="menu" element={<MenuBeheerPage />} />
+          <Route path="content" element={<ContentBeheerPage />} />
+          <Route path="content/nieuw" element={<ContentEditPage />} />
+          <Route path="content/:id" element={<ContentEditPage />} />
           <Route path="contact">
             <Route index element={<ContactBeheerPage />} />
             <Route path="gegevens" element={<Navigate to="/beheer/contact" replace />} />
@@ -83,6 +89,7 @@ export default function App() {
           <Route path="verslagen" element={<PlaceholderPage title="Wedstrijdverslagen" />} />
           <Route path="topscorers" element={<PlaceholderPage title="Topscorers & Keeperstrofee" />} />
         </Route>
+        <Route path="pagina/:slug" element={<ContentPage />} />
         <Route path="nieuws" element={<PlaceholderPage title="Nieuws" />} />
         <Route path="vrijwilliger" element={<PlaceholderPage title="Vrijwilliger worden?" />} />
         <Route path="techniektrainingen" element={<PlaceholderPage title="Techniektrainingen" />} />
