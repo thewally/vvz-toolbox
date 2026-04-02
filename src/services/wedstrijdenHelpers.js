@@ -93,6 +93,33 @@ export function filterVorigeSpeelweek(wedstrijden) {
 }
 
 /**
+ * Bouw een Map van teamnaam -> teamcode vanuit de teams-lijst.
+ */
+export function buildTeamcodeLookup(teams) {
+  const map = new Map()
+  for (const t of teams) {
+    if (t.teamnaam && t.teamcode) {
+      map.set(t.teamnaam, t.teamcode)
+    }
+  }
+  return map
+}
+
+/**
+ * Geeft de teamcode terug van het VVZ-team in een wedstrijd, of null.
+ * Bij twee VVZ-teams: thuisteam wint.
+ */
+export function getVvzTeamcode(wedstrijd, teamcodeLookup) {
+  const CLUB = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
+  const isThuis = wedstrijd.thuisteamclubrelatiecode === CLUB
+  const isUit = wedstrijd.uitteamclubrelatiecode === CLUB
+
+  if (isThuis) return teamcodeLookup.get(wedstrijd.thuisteam) ?? null
+  if (isUit) return teamcodeLookup.get(wedstrijd.uitteam) ?? null
+  return null
+}
+
+/**
  * Bepaal het afgelastingen-niveau op basis van afgelastingen en programma.
  * groen = geen, geel = sommige, oranje = alle thuis, rood = alles
  */
