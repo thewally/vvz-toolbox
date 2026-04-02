@@ -54,9 +54,9 @@ function PrintLayout({ ereleden }) {
     }}>
       {/* Header: dun-dik-dun met logo eroverheen */}
       <div style={{ position: 'relative', marginBottom: 20, paddingTop: 24 }}>
-        <div style={{ borderTop: '1px solid #388E3C' }} />
-        <div style={{ borderTop: '4px solid #388E3C', margin: '3px 0' }} />
-        <div style={{ borderTop: '1px solid #388E3C' }} />
+        <div style={{ borderTop: '1px solid #43A047' }} />
+        <div style={{ borderTop: '4px solid #43A047', margin: '3px 0' }} />
+        <div style={{ borderTop: '1px solid #43A047' }} />
         <img
           src={`${import.meta.env.BASE_URL}logo-vvz.png`}
           alt="VVZ'49"
