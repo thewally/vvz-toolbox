@@ -69,17 +69,11 @@ function PrintLayout({ ereleden }) {
 
       {/* Titel */}
       <div style={{ textAlign: 'center', marginBottom: 20, marginTop: 12 }}>
-        <div style={{
-          fontFamily: "'Pinyon Script', 'Playfair Display', cursive",
-          fontSize: 72,
-          fontWeight: 700,
-          color: '#43A047',
-          lineHeight: 1.1,
-        }}>
-          Galerij der Ereleden
-          <br />
-          &amp;&nbsp;Leden van Verdienste
-        </div>
+        <img
+          src={`${import.meta.env.BASE_URL}galerij-titel.png`}
+          alt="Galerij der Ereleden & Leden van Verdienste"
+          style={{ maxWidth: '100%', height: 'auto', display: 'inline-block' }}
+        />
       </div>
 
       {/* Twee kolommen + footer — gecentreerd, smallere vaste breedte */}
