@@ -15,8 +15,8 @@ function EreledenTabel({ items }) {
     <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 6 }}>
       <thead>
         <tr>
-          <th style={{ textAlign: 'left', fontSize: 8, fontWeight: 700, color: '#2E7D32', textTransform: 'uppercase', letterSpacing: 1, paddingBottom: 2, width: 36 }}>JAAR</th>
-          <th style={{ textAlign: 'left', fontSize: 8, fontWeight: 700, color: '#2E7D32', textTransform: 'uppercase', letterSpacing: 1, paddingBottom: 2 }}>NAAM</th>
+          <th style={{ textAlign: 'left', fontSize: 8, fontWeight: 700, color: '#2d6a4f', textTransform: 'uppercase', letterSpacing: 1, paddingBottom: 2, width: 36 }}>JAAR</th>
+          <th style={{ textAlign: 'left', fontSize: 8, fontWeight: 700, color: '#2d6a4f', textTransform: 'uppercase', letterSpacing: 1, paddingBottom: 2 }}>NAAM</th>
         </tr>
       </thead>
       <tbody>
@@ -54,9 +54,9 @@ function PrintLayout({ ereleden }) {
     }}>
       {/* Header: dun-dik-dun met logo eroverheen */}
       <div style={{ position: 'relative', marginBottom: 20, paddingTop: 24 }}>
-        <div style={{ borderTop: '1px solid #2E7D32' }} />
-        <div style={{ borderTop: '4px solid #2E7D32', margin: '3px 0' }} />
-        <div style={{ borderTop: '1px solid #2E7D32' }} />
+        <div style={{ borderTop: '1px solid #2d6a4f' }} />
+        <div style={{ borderTop: '4px solid #2d6a4f', margin: '3px 0' }} />
+        <div style={{ borderTop: '1px solid #2d6a4f' }} />
         <img
           src={`${import.meta.env.BASE_URL}logo-vvz.png`}
           alt="VVZ'49"
@@ -70,10 +70,9 @@ function PrintLayout({ ereleden }) {
       {/* Titel */}
       <div style={{ textAlign: 'center', marginBottom: 20, marginTop: 12 }}>
         <div style={{
-          fontFamily: "'Playfair Display', 'Georgia', serif",
-          fontStyle: 'italic',
-          fontSize: 60,
-          color: '#2E7D32',
+          fontFamily: "'Pinyon Script', 'Playfair Display', cursive",
+          fontSize: 72,
+          color: '#2d6a4f',
           lineHeight: 1.1,
         }}>
           Galerij der Ereleden
@@ -88,7 +87,7 @@ function PrintLayout({ ereleden }) {
         <div style={{ flex: 1 }}>
           {erevoorzitters.length > 0 && (
             <div style={{ marginBottom: 20 }}>
-              <h2 style={{ fontFamily: "'Playfair Display', 'Georgia', serif", fontStyle: 'italic', fontWeight: 700, fontSize: 15, color: '#2E7D32', marginBottom: 4 }}>
+              <h2 style={{ fontFamily: "'Playfair Display', 'Georgia', serif", fontStyle: 'italic', fontWeight: 700, fontSize: 15, color: '#2d6a4f', marginBottom: 4 }}>
                 Erevoorzitters
               </h2>
               <EreledenTabel items={erevoorzitters} />
@@ -96,7 +95,7 @@ function PrintLayout({ ereleden }) {
           )}
           {ereledeLijst.length > 0 && (
             <div>
-              <h2 style={{ fontFamily: "'Playfair Display', 'Georgia', serif", fontStyle: 'italic', fontWeight: 700, fontSize: 15, color: '#2E7D32', marginBottom: 4 }}>
+              <h2 style={{ fontFamily: "'Playfair Display', 'Georgia', serif", fontStyle: 'italic', fontWeight: 700, fontSize: 15, color: '#2d6a4f', marginBottom: 4 }}>
                 Ereleden
               </h2>
               <EreledenTabel items={ereledeLijst} />
@@ -108,7 +107,7 @@ function PrintLayout({ ereleden }) {
         <div style={{ flex: 1 }}>
           {ledenVerdienste.length > 0 && (
             <div>
-              <h2 style={{ fontFamily: "'Playfair Display', 'Georgia', serif", fontStyle: 'italic', fontWeight: 700, fontSize: 15, color: '#2E7D32', marginBottom: 4 }}>
+              <h2 style={{ fontFamily: "'Playfair Display', 'Georgia', serif", fontStyle: 'italic', fontWeight: 700, fontSize: 15, color: '#2d6a4f', marginBottom: 4 }}>
                 Leden van verdienste
               </h2>
               <EreledenTabel items={ledenVerdienste} />
@@ -122,9 +121,9 @@ function PrintLayout({ ereleden }) {
         <div style={{ textAlign: 'right', marginBottom: 4 }}>
           <span style={{ fontSize: 8, color: '#374151', letterSpacing: 0.5 }}>PER {datum}</span>
         </div>
-        <div style={{ borderTop: '1px solid #2E7D32' }} />
-        <div style={{ borderTop: '4px solid #2E7D32', margin: '3px 0' }} />
-        <div style={{ borderTop: '1px solid #2E7D32' }} />
+        <div style={{ borderTop: '1px solid #2d6a4f' }} />
+        <div style={{ borderTop: '4px solid #2d6a4f', margin: '3px 0' }} />
+        <div style={{ borderTop: '1px solid #2d6a4f' }} />
       </div>
     </div>
   )
@@ -185,7 +184,7 @@ export default function EreledenPage() {
   <meta charset="utf-8" />
   <title>Galerij der Ereleden - VVZ'49</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: white; }
