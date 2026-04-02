@@ -73,7 +73,7 @@ function PrintLayout({ ereleden }) {
           fontFamily: "'Pinyon Script', 'Playfair Display', cursive",
           fontSize: 72,
           fontWeight: 700,
-          color: '#388E3C',
+          color: '#43A047',
           lineHeight: 1.1,
         }}>
           Galerij der Ereleden
