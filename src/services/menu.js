@@ -11,6 +11,11 @@
 -- ALTER TABLE quick_links ENABLE ROW LEVEL SECURITY;
 -- CREATE POLICY "Iedereen leest zichtbare quick links" ON quick_links FOR SELECT USING (is_visible = true);
 -- CREATE POLICY "Beheerders CRUD" ON quick_links FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Fase 3: kolommen toevoegen aan quick_links:
+-- ALTER TABLE quick_links ADD COLUMN description TEXT;
+-- ALTER TABLE quick_links ADD COLUMN icon TEXT;
+-- ALTER TABLE quick_links ADD COLUMN show_on_home BOOLEAN NOT NULL DEFAULT false;
 */
 
 import { supabase } from '../lib/supabaseClient'
@@ -178,7 +183,7 @@ export async function deleteMenuItem(id) {
 /**
  * Maakt een nieuwe quick link aan.
  */
-export async function createQuickLink({ label, type, page_id, tool_route, external_url, position, is_visible }) {
+export async function createQuickLink({ label, type, page_id, tool_route, external_url, position, is_visible, description, icon, show_on_home }) {
   const { data, error } = await supabase
     .from('quick_links')
     .insert({
@@ -189,6 +194,9 @@ export async function createQuickLink({ label, type, page_id, tool_route, extern
       external_url: external_url || null,
       position: position ?? 0,
       is_visible: is_visible ?? true,
+      description: description || null,
+      icon: icon || null,
+      show_on_home: show_on_home ?? false,
     })
     .select()
     .single()
