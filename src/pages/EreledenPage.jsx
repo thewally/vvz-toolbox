@@ -52,23 +52,19 @@ function PrintLayout({ ereleden }) {
       display: 'flex',
       flexDirection: 'column',
     }}>
-      {/* Header: dun-dik-dun met logo gecentreerd eroverheen — lijnen links+rechts van logo */}
-      <div style={{ marginBottom: 20 }}>
-        {['1px', '4px', '1px'].map((w, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', margin: i === 1 ? '3px 0' : 0 }}>
-            <div style={{ flex: 1, borderTop: `${w} solid #2E7D32` }} />
-            {i === 1 ? (
-              <img
-                src={`${import.meta.env.BASE_URL}logo-vvz.png`}
-                alt="VVZ'49"
-                style={{ height: 48, width: 48, objectFit: 'contain', display: 'block', margin: '0 6px' }}
-              />
-            ) : (
-              <div style={{ width: 60 }} />
-            )}
-            <div style={{ flex: 1, borderTop: `${w} solid #2E7D32` }} />
-          </div>
-        ))}
+      {/* Header: dun-dik-dun met logo eroverheen */}
+      <div style={{ position: 'relative', marginBottom: 20, paddingTop: 24 }}>
+        <div style={{ borderTop: '1px solid #2E7D32' }} />
+        <div style={{ borderTop: '4px solid #2E7D32', margin: '3px 0' }} />
+        <div style={{ borderTop: '1px solid #2E7D32' }} />
+        <img
+          src={`${import.meta.env.BASE_URL}logo-vvz.png`}
+          alt="VVZ'49"
+          style={{
+            position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+            height: 52, width: 52, objectFit: 'contain', display: 'block',
+          }}
+        />
       </div>
 
       {/* Titel */}
