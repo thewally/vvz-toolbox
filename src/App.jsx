@@ -35,9 +35,7 @@ import ContactBeheerPage from './pages/ContactBeheerPage'
 import WieDoetWatBeheerPage from './pages/WieDoetWatBeheerPage'
 import EreledenPage from './pages/EreledenPage'
 import EreledenBeheerPage from './pages/EreledenBeheerPage'
-import ContentPage from './pages/ContentPage'
-import ContentBeheerPage from './pages/ContentBeheerPage'
-import ContentEditPage from './pages/ContentEditPage'
+import MenuBeheerPage from './pages/MenuBeheerPage'
 
 export default function App() {
   return (
@@ -69,9 +67,7 @@ export default function App() {
           <Route path="club">
             <Route path="ereleden" element={<EreledenBeheerPage />} />
           </Route>
-          <Route path="content" element={<ContentBeheerPage />} />
-          <Route path="content/nieuw" element={<ContentEditPage />} />
-          <Route path="content/:id" element={<ContentEditPage />} />
+          <Route path="menu" element={<MenuBeheerPage />} />
           <Route path="contact">
             <Route index element={<ContactBeheerPage />} />
             <Route path="gegevens" element={<Navigate to="/beheer/contact" replace />} />
@@ -122,7 +118,6 @@ export default function App() {
         <Route path="teams/pupillen" element={<WedstrijdenTeamsCatPage />} />
         <Route path="teams/zaalvoetbal" element={<WedstrijdenTeamsZaalPage />} />
         <Route path="teams/:teamcode" element={<TeamPage />} />
-        <Route path="pagina/:slug" element={<ContentPage />} />
         <Route path="plattegrond" element={<PlattegrondPage />} />
         <Route path="huistijl" element={<HuistijlPage />} />
         <Route path="login" element={<LoginPage />} />

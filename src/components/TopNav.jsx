@@ -2,16 +2,99 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { QUICK_LINKS, NAV_SECTIONS } from '../lib/navigation'
+import { fetchMenu, fetchQuickLinks } from '../services/menu'
+
+/**
+ * Normaliseert een database menu-item naar het formaat dat de render-logica verwacht.
+ * Database: { label, type, children, tool_route, external_url, page_id, page }
+ * Nav: { label, to, href, children }
+ */
+function normalizeMenuItem(item) {
+  if (item.type === 'group') {
+    return {
+      label: item.label,
+      children: (item.children || []).map(child => {
+        if (child.type === 'group') {
+          // Sub-verzamelitem (niveau 2)
+          return {
+            label: child.label,
+            isSubGroup: true,
+            children: (child.children || []).map(normalizeMenuItem),
+          }
+        }
+        return normalizeMenuItem(child)
+      }),
+    }
+  }
+
+  const result = { label: item.label }
+
+  if (item.type === 'external') {
+    result.href = item.external_url
+  } else if (item.type === 'tool') {
+    result.to = item.tool_route
+  } else if (item.type === 'page' && item.page?.slug) {
+    result.to = `/pagina/${item.page.slug}`
+  }
+
+  return result
+}
+
+/**
+ * Normaliseert een database quick link naar het formaat dat de render-logica verwacht.
+ */
+function normalizeQuickLink(item) {
+  const result = { label: item.label }
+
+  if (item.type === 'external') {
+    result.href = item.external_url
+  } else if (item.type === 'tool') {
+    result.to = item.tool_route
+  } else if (item.type === 'page' && item.page?.slug) {
+    result.to = `/pagina/${item.page.slug}`
+  }
+
+  return result
+}
 
 export default function TopNav() {
   const { user, signOut } = useAuth()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const [accordion, setAccordion] = useState(null)
+  const [subAccordion, setSubAccordion] = useState(null)
+
+  // Database-gedreven menu met fallback naar hardcoded navigatie
+  const [navSections, setNavSections] = useState(NAV_SECTIONS)
+  const [quickLinks, setQuickLinks] = useState(QUICK_LINKS)
+
+  useEffect(() => {
+    async function loadMenu() {
+      try {
+        const [menuResult, quickLinksResult] = await Promise.all([
+          fetchMenu(),
+          fetchQuickLinks(),
+        ])
+
+        if (!menuResult.error && menuResult.data && menuResult.data.length > 0) {
+          setNavSections(menuResult.data.map(normalizeMenuItem))
+        }
+
+        if (!quickLinksResult.error && quickLinksResult.data && quickLinksResult.data.length > 0) {
+          setQuickLinks(quickLinksResult.data.map(normalizeQuickLink))
+        }
+      } catch {
+        // Fallback: gebruik hardcoded navigatie (al ingesteld als default)
+      }
+    }
+
+    loadMenu()
+  }, [])
 
   useEffect(() => {
     setMenuOpen(false)
     setAccordion(null)
+    setSubAccordion(null)
   }, [location.pathname])
 
   useEffect(() => {
@@ -26,6 +109,33 @@ export default function TopNav() {
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
+
+  /** Rendert een link-item (tool, page, of external) */
+  function renderLinkItem(child, className) {
+    if (child.href) {
+      return (
+        <a
+          key={child.href}
+          href={child.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={typeof className === 'function' ? className({ isActive: false }) : className}
+        >
+          {child.label}
+        </a>
+      )
+    }
+
+    return (
+      <NavLink
+        key={child.to}
+        to={child.to}
+        className={className}
+      >
+        {child.label}
+      </NavLink>
+    )
+  }
 
   return (
     <nav className="bg-vvz-green no-print">
@@ -96,7 +206,7 @@ export default function TopNav() {
 
             {/* Kolom 1: quick links + inloggen */}
             <div className="flex flex-col gap-1.5 sm:gap-3 whitespace-nowrap order-2 sm:order-1">
-              {QUICK_LINKS.map(item =>
+              {quickLinks.map(item =>
                 item.href ? (
                   <a
                     key={item.href}
@@ -123,13 +233,16 @@ export default function TopNav() {
 
             {/* Kolom 2: secties met accordion */}
             <div className="flex flex-col w-fit order-1 sm:order-2">
-              {NAV_SECTIONS.map((section, idx) => {
+              {navSections.map((section, idx) => {
                 if (section.children) {
                   const expanded = accordion === section.label
                   return (
                     <div key={section.label}>
                       <button
-                        onClick={() => setAccordion(expanded ? null : section.label)}
+                        onClick={() => {
+                          setAccordion(expanded ? null : section.label)
+                          setSubAccordion(null)
+                        }}
                         aria-expanded={expanded}
                         className={`flex items-center gap-2 text-base sm:text-3xl font-semibold uppercase tracking-wider text-white ${idx === 0 ? 'pb-1 sm:pb-3 pt-0' : 'py-1 sm:py-3'}`}
                       >
@@ -140,17 +253,42 @@ export default function TopNav() {
                       </button>
                       {expanded && (
                         <div className="pb-3 flex flex-col gap-1 pl-2">
-                          {section.children.map(child => (
-                            <NavLink
-                              key={child.to}
-                              to={child.to}
-                              className={({ isActive }) =>
-                                `py-0.5 sm:py-1 text-base sm:text-2xl ${isActive ? 'text-white font-medium' : 'text-white/70 hover:text-white'} transition-colors`
-                              }
-                            >
-                              {child.label}
-                            </NavLink>
-                          ))}
+                          {section.children.map(child => {
+                            // Sub-verzamelitem (geneste groep)
+                            if (child.isSubGroup && child.children) {
+                              const subExpanded = subAccordion === child.label
+                              return (
+                                <div key={child.label}>
+                                  {/* Mobiel: scheidingslijn boven sub-groep */}
+                                  <div className="border-t border-white/20 my-1 sm:my-2" />
+                                  <button
+                                    onClick={() => setSubAccordion(subExpanded ? null : child.label)}
+                                    aria-expanded={subExpanded}
+                                    className="flex items-center gap-1.5 py-0.5 sm:py-1 text-base sm:text-2xl font-medium text-white/90 hover:text-white transition-colors"
+                                  >
+                                    {child.label}
+                                    <svg className={`w-3 h-3 transition-transform shrink-0 ${subExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                  </button>
+                                  {subExpanded && (
+                                    <div className="pb-1 flex flex-col gap-0.5 pl-4 sm:pl-3">
+                                      {child.children.map(subChild =>
+                                        renderLinkItem(subChild, ({ isActive }) =>
+                                          `py-0.5 sm:py-1 text-sm sm:text-xl ${isActive ? 'text-white font-medium' : 'text-white/70 hover:text-white'} transition-colors`
+                                        )
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            }
+
+                            // Gewoon link-item
+                            return renderLinkItem(child, ({ isActive }) =>
+                              `py-0.5 sm:py-1 text-base sm:text-2xl ${isActive ? 'text-white font-medium' : 'text-white/70 hover:text-white'} transition-colors`
+                            )
+                          })}
                         </div>
                       )}
                     </div>

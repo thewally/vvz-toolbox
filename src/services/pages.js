@@ -7,7 +7,13 @@
 // CREATE POLICY "Beheerders schrijven" ON pages FOR INSERT TO authenticated WITH CHECK (true);
 // CREATE POLICY "Beheerders wijzigen" ON pages FOR UPDATE TO authenticated USING (true);
 // CREATE POLICY "Beheerders verwijderen" ON pages FOR DELETE TO authenticated USING (true);
-// Storage bucket: maak 'page-images' aan als publieke bucket in Supabase Storage
+// Storage bucket aanmaken en policies instellen in Supabase:
+// 1. Ga naar Storage → New bucket → naam: page-images → zet Public bucket AAN
+// 2. Voer daarna deze policies uit in de SQL editor:
+// CREATE POLICY "Publiek lezen storage" ON storage.objects FOR SELECT USING (bucket_id = 'page-images');
+// CREATE POLICY "Beheerders uploaden" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'page-images');
+// CREATE POLICY "Beheerders verwijderen storage" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'page-images');
+// CREATE POLICY "Beheerders updaten storage" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'page-images');
 
 import { supabase } from '../lib/supabaseClient'
 
