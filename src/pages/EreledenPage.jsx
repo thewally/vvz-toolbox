@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { fetchEreleden } from '../services/ereleden'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
 
 const CATEGORIE_LABELS = {
   erevoorzitter: 'Erevoorzitters',
@@ -21,9 +23,9 @@ function EreledenTabel({ items }) {
       </thead>
       <tbody>
         {items.map((item, i) => (
-          <tr key={item.id} style={{ borderTop: '1px solid #d1fae5' }}>
-            <td style={{ fontSize: 11, color: '#374151', padding: '3px 0', fontVariantNumeric: 'tabular-nums', verticalAlign: 'top' }}>{item.jaar}</td>
-            <td style={{ fontSize: 11, color: '#111827', padding: '3px 0 3px 8px', verticalAlign: 'top' }}>
+          <tr key={item.id} style={{ borderBottom: '1px solid #a7f3d0' }}>
+            <td style={{ fontSize: 11, color: '#374151', padding: '0 0 5px', fontVariantNumeric: 'tabular-nums', verticalAlign: 'top' }}>{item.jaar}</td>
+            <td style={{ fontSize: 11, color: '#111827', padding: '0 0 5px 8px', verticalAlign: 'top' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                 <span>{item.naam}</span>
                 {item.overleden && <span style={{ fontWeight: 700, color: '#6b7280', flexShrink: 0 }}>†</span>}
@@ -164,6 +166,7 @@ export default function EreledenPage() {
   const [ereleden, setEreleden] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [exporting, setExporting] = useState(false)
   const printRef = useRef(null)
 
   useEffect(() => {
@@ -176,31 +179,25 @@ export default function EreledenPage() {
     load()
   }, [])
 
-  function handlePrint() {
-    const printContents = printRef.current?.innerHTML
-    if (!printContents) return
-    const w = window.open('', '_blank')
-    w.document.write(`<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Galerij der Ereleden - VVZ'49</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: white; }
-    @page { size: A4; margin: 0; }
-    @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  async function handlePrint() {
+    if (!printRef.current || exporting) return
+    setExporting(true)
+    try {
+      const el = printRef.current
+      el.style.display = 'block'
+      el.style.width = '794px'
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 794 })
+      el.style.width = ''
+      el.style.display = 'none'
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+      const pageW = pdf.internal.pageSize.getWidth()
+      const imgH = (canvas.height * pageW) / canvas.width
+      pdf.addImage(imgData, 'PNG', 0, 0, pageW, imgH)
+      pdf.save("galerij-ereleden-vvz49.pdf")
+    } finally {
+      setExporting(false)
     }
-  </style>
-</head>
-<body>${printContents}</body>
-</html>`)
-    w.document.close()
-    w.focus()
-    setTimeout(() => { w.print(); w.close() }, 500)
   }
 
   if (loading) {
@@ -227,12 +224,13 @@ export default function EreledenPage() {
         <h1 className="text-2xl font-bold text-gray-800">Galerij der Ereleden &amp; Leden van Verdienste</h1>
         <button
           onClick={handlePrint}
-          className="shrink-0 inline-flex items-center gap-2 bg-vvz-green text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-vvz-green/90 transition-colors"
+          disabled={exporting}
+          className="shrink-0 inline-flex items-center gap-2 bg-vvz-green text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-vvz-green/90 transition-colors disabled:opacity-50"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
-          Exporteer PDF
+          {exporting ? 'Exporteren...' : 'Exporteer PDF'}
         </button>
       </div>
 
