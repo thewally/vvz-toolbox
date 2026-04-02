@@ -72,6 +72,7 @@ function PrintLayout({ ereleden }) {
         <div style={{
           fontFamily: "'Pinyon Script', 'Playfair Display', cursive",
           fontSize: 72,
+          fontWeight: 700,
           color: '#2d6a4f',
           lineHeight: 1.1,
         }}>
@@ -184,7 +185,7 @@ export default function EreledenPage() {
   <meta charset="utf-8" />
   <title>Galerij der Ereleden - VVZ'49</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: white; }
