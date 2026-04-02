@@ -33,6 +33,8 @@ import SponsoringBeheerPage from './pages/SponsoringBeheerPage'
 import WieDoetWatPage from './pages/WieDoetWatPage'
 import ContactBeheerPage from './pages/ContactBeheerPage'
 import WieDoetWatBeheerPage from './pages/WieDoetWatBeheerPage'
+import EreledenPage from './pages/EreledenPage'
+import EreledenBeheerPage from './pages/EreledenBeheerPage'
 
 export default function App() {
   return (
@@ -61,6 +63,9 @@ export default function App() {
             <Route path="instellingen" element={<AdminPage />} />
           </Route>
           <Route path="sponsoring" element={<SponsoringBeheerPage />} />
+          <Route path="club">
+            <Route path="ereleden" element={<EreledenBeheerPage />} />
+          </Route>
           <Route path="contact">
             <Route index element={<ContactBeheerPage />} />
             <Route path="gegevens" element={<Navigate to="/beheer/contact" replace />} />
@@ -93,7 +98,7 @@ export default function App() {
         </Route>
         <Route path="club">
           <Route path="historie" element={<PlaceholderPage title="Historie" />} />
-          <Route path="ereleden" element={<PlaceholderPage title="Ereleden" />} />
+          <Route path="ereleden" element={<EreledenPage />} />
           <Route path="reglementen" element={<ReglemenenPage />} />
         </Route>
         <Route path="lidmaatschap">
