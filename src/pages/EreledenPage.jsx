@@ -119,6 +119,35 @@ function PrintLayout({ ereleden }) {
   )
 }
 
+function EreledenSectie({ cat, items }) {
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-100">
+        <h2 className="text-lg font-bold text-vvz-green italic">{CATEGORIE_LABELS[cat]}</h2>
+      </div>
+      <table className="w-full">
+        <thead>
+          <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+            <th className="px-6 py-2 text-left w-20">Jaar</th>
+            <th className="px-6 py-2 text-left">Naam</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-50">
+          {items.map(item => (
+            <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+              <td className="px-6 py-2.5 text-sm text-gray-500 tabular-nums">{item.jaar}</td>
+              <td className="px-6 py-2.5 text-sm text-gray-800">
+                {item.naam}
+                {item.overleden && <span className="ml-1.5 text-gray-400">†</span>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 export default function EreledenPage() {
   const [ereleden, setEreleden] = useState([])
   const [loading, setLoading] = useState(true)
@@ -181,7 +210,7 @@ export default function EreledenPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-4 pt-6 space-y-8">
+    <div className="max-w-5xl mx-auto p-4 pt-6 space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-800">Galerij der Ereleden &amp; Leden van Verdienste</h1>
         <button
@@ -195,36 +224,24 @@ export default function EreledenPage() {
         </button>
       </div>
 
-      {CATEGORIE_ORDER.map(cat => {
-        const items = ereleden.filter(e => e.categorie === cat)
-        if (items.length === 0) return null
-        return (
-          <div key={cat} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-vvz-green italic">{CATEGORIE_LABELS[cat]}</h2>
-            </div>
-            <table className="w-full">
-              <thead>
-                <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                  <th className="px-6 py-2 text-left w-20">Jaar</th>
-                  <th className="px-6 py-2 text-left">Naam</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {items.map(item => (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-2.5 text-sm text-gray-500 tabular-nums">{item.jaar}</td>
-                    <td className="px-6 py-2.5 text-sm text-gray-800">
-                      {item.naam}
-                      {item.overleden && <span className="ml-1.5 text-gray-400">†</span>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )
-      })}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
+        {/* Linker kolom: Erevoorzitters + Ereleden */}
+        <div className="space-y-6">
+          {['erevoorzitter', 'erelid'].map(cat => {
+            const items = ereleden.filter(e => e.categorie === cat)
+            if (items.length === 0) return null
+            return <EreledenSectie key={cat} cat={cat} items={items} />
+          })}
+        </div>
+        {/* Rechter kolom: Leden van verdienste */}
+        <div>
+          {(() => {
+            const items = ereleden.filter(e => e.categorie === 'lid_van_verdienste')
+            if (items.length === 0) return null
+            return <EreledenSectie cat="lid_van_verdienste" items={items} />
+          })()}
+        </div>
+      </div>
 
       {/* Verborgen print layout */}
       <div ref={printRef} style={{ display: 'none' }}>
