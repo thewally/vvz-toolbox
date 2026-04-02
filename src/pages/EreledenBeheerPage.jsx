@@ -32,9 +32,9 @@ export default function EreledenBeheerPage() {
     setLoading(false)
   }
 
-  function openAdd() {
+  function openAdd(cat) {
     setEditing(null)
-    setForm(EMPTY_FORM)
+    setForm({ ...EMPTY_FORM, categorie: cat ?? EMPTY_FORM.categorie })
     setModalOpen(true)
   }
 
@@ -81,18 +81,7 @@ export default function EreledenBeheerPage() {
         <Link to="/beheer" className="text-sm text-vvz-green hover:underline">&larr; Terug naar Beheer</Link>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Ereleden</h1>
-        <button
-          onClick={openAdd}
-          className="inline-flex items-center gap-1.5 bg-vvz-green text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-vvz-green/90 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          Toevoegen
-        </button>
-      </div>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Ereleden</h1>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-lg mb-4">{error}</div>
@@ -104,8 +93,19 @@ export default function EreledenBeheerPage() {
           return (
             <div key={cat} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-                <h2 className="font-semibold text-gray-800">{CATEGORIE_LABELS[cat]}</h2>
-                <span className="text-xs text-gray-400">{items.length}</span>
+                <div className="flex items-center gap-3">
+                  <h2 className="font-semibold text-gray-800">{CATEGORIE_LABELS[cat]}</h2>
+                  <span className="text-xs text-gray-400">{items.length}</span>
+                </div>
+                <button
+                  onClick={() => openAdd(cat)}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-vvz-green hover:text-vvz-green/80 transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                  Toevoegen
+                </button>
               </div>
               {items.length === 0 ? (
                 <p className="px-5 py-4 text-sm text-gray-400">Geen items</p>
