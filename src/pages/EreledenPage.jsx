@@ -147,8 +147,10 @@ function EreledenSectie({ cat, items }) {
             <tr key={item.id} className="hover:bg-gray-50 transition-colors">
               <td className="px-6 py-2.5 text-sm text-gray-500 tabular-nums">{item.jaar}</td>
               <td className="px-6 py-2.5 text-sm text-gray-800">
-                {item.naam}
-                {item.overleden && <span className="ml-1.5 text-gray-400">†</span>}
+                <div className="flex justify-between gap-2">
+                  <span>{item.naam}</span>
+                  {item.overleden && <span className="font-bold text-gray-400 shrink-0">†</span>}
+                </div>
               </td>
             </tr>
           ))}
