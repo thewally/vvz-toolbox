@@ -52,27 +52,32 @@ function PrintLayout({ ereleden }) {
       display: 'flex',
       flexDirection: 'column',
     }}>
-      {/* Groene lijnen bovenaan */}
-      <div style={{ borderTop: '3px solid #2d6a4f', paddingTop: 3, borderBottom: '1px solid #2d6a4f', paddingBottom: 6, marginBottom: 8, display: 'flex', justifyContent: 'center' }}>
-        <img
-          src={`${import.meta.env.BASE_URL}logo-vvz.png`}
-          alt="VVZ'49"
-          style={{ height: 40, width: 40, objectFit: 'contain' }}
-        />
+      {/* Header: dun-dik-dun met logo gecentreerd over de dikke lijn */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ borderTop: '1px solid #2d6a4f' }} />
+        <div style={{ position: 'relative', borderTop: '4px solid #2d6a4f', borderBottom: '1px solid #2d6a4f', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2px 0' }}>
+          <div style={{ position: 'absolute', top: -22, background: '#fff', padding: '0 4px' }}>
+            <img
+              src={`${import.meta.env.BASE_URL}logo-vvz.png`}
+              alt="VVZ'49"
+              style={{ height: 44, width: 44, objectFit: 'contain', display: 'block' }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Titel */}
-      <div style={{ textAlign: 'center', marginBottom: 16 }}>
+      <div style={{ textAlign: 'center', marginBottom: 20, marginTop: 12 }}>
         <div style={{
           fontFamily: "'Playfair Display', 'Georgia', serif",
           fontStyle: 'italic',
-          fontSize: 30,
+          fontSize: 52,
           color: '#2d6a4f',
-          lineHeight: 1.15,
+          lineHeight: 1.1,
         }}>
           Galerij der Ereleden
           <br />
-          &amp; Leden van Verdienste
+          &amp;&nbsp;Leden van Verdienste
         </div>
       </div>
 
@@ -111,9 +116,14 @@ function PrintLayout({ ereleden }) {
         </div>
       </div>
 
-      {/* Groene lijnen onderaan + datum */}
-      <div style={{ borderTop: '1px solid #2d6a4f', paddingTop: 4, borderBottom: '3px solid #2d6a4f', paddingBottom: 4, marginTop: 16, textAlign: 'right' }}>
-        <span style={{ fontSize: 8, color: '#374151', letterSpacing: 0.5 }}>PER {datum}</span>
+      {/* Footer: dun — datum — dik — dun */}
+      <div style={{ marginTop: 20 }}>
+        <div style={{ borderTop: '1px solid #2d6a4f', marginBottom: 4 }} />
+        <div style={{ textAlign: 'right', marginBottom: 4 }}>
+          <span style={{ fontSize: 8, color: '#374151', letterSpacing: 0.5 }}>PER {datum}</span>
+        </div>
+        <div style={{ borderTop: '4px solid #2d6a4f', marginBottom: 3 }} />
+        <div style={{ borderTop: '1px solid #2d6a4f' }} />
       </div>
     </div>
   )
