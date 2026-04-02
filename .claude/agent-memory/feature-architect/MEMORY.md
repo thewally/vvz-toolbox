@@ -3,3 +3,4 @@
 - [Beheer-pagina spec](project_beheer_pagina_spec.md) — feature spec voor centrale /beheer landingspagina in .claude/specs/beheer-pagina.md
 - [Contactgegevens spec](project_contactgegevens_spec.md) — feature spec voor Contact-sectie (gegevens, locatie, wie doet wat) in .claude/specs/contactgegevens.md
 - [Doorlinken teampagina spec](project_doorlinken_teampagina_spec.md) — klikbare wedstrijd-cards navigeren naar teampagina, teamnaam->teamcode lookup nodig
+- [Vrije Content spec](project_vrije_content_spec.md) — CMS feature: contentpagina's (TipTap), dynamisch menu, Quick Links in 3 fases
