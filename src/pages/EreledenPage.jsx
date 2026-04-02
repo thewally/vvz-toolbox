@@ -68,11 +68,11 @@ function PrintLayout({ ereleden }) {
       </div>
 
       {/* Titel */}
-      <div style={{ textAlign: 'center', marginBottom: 20, marginTop: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20, marginTop: 12 }}>
         <img
           src={`${import.meta.env.BASE_URL}galerij-titel.png`}
           alt="Galerij der Ereleden & Leden van Verdienste"
-          style={{ maxWidth: '100%', height: 'auto', display: 'inline-block' }}
+          style={{ width: '150mm', height: 'auto', display: 'block' }}
         />
       </div>
 
