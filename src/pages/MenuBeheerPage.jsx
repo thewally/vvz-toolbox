@@ -13,6 +13,7 @@ import {
   reorderQuickLinks,
   getAvailableTools,
 } from '../services/menu'
+import { fetchPageGroups } from '../services/pageGroups'
 import { supabase } from '../lib/supabaseClient'
 import { QUICK_LINK_ICONS, QUICK_LINK_ICON_KEYS } from '../lib/quickLinkIcons'
 import { NAV_SECTIONS, QUICK_LINKS } from '../lib/navigation'
@@ -22,6 +23,7 @@ const TYPE_BADGES = {
   page: { label: 'Pagina', className: 'bg-green-100 text-green-700' },
   tool: { label: 'Tool', className: 'bg-blue-100 text-blue-700' },
   external: { label: 'Extern', className: 'bg-orange-100 text-orange-700' },
+  page_group: { label: 'Pagina groep', className: 'bg-teal-100 text-teal-700' },
 }
 
 const TABS = [
@@ -34,6 +36,7 @@ export default function MenuBeheerPage() {
   const [menuItems, setMenuItems] = useState([])
   const [quickLinkItems, setQuickLinkItems] = useState([])
   const [pages, setPages] = useState([])
+  const [pageGroups, setPageGroups] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
@@ -160,6 +163,14 @@ export default function MenuBeheerPage() {
       } catch {
         setPages([])
       }
+
+      // Probeer pagina groepen op te halen (tabel bestaat misschien nog niet)
+      try {
+        const { data: pgData } = await fetchPageGroups()
+        setPageGroups(pgData || [])
+      } catch {
+        setPageGroups([])
+      }
     } catch (err) {
       setError(err.message)
     } finally {
@@ -260,6 +271,7 @@ export default function MenuBeheerPage() {
         label: '',
         type: isQuickLink ? 'tool' : (parentId ? 'tool' : 'group'),
         page_id: null,
+        page_group_id: null,
         tool_route: '',
         external_url: '',
         is_visible: true,
@@ -282,6 +294,7 @@ export default function MenuBeheerPage() {
         label: item.label,
         type: item.type,
         page_id: item.page_id,
+        page_group_id: item.page_group_id || null,
         tool_route: item.tool_route || '',
         external_url: item.external_url || '',
         is_visible: item.is_visible,
@@ -301,6 +314,9 @@ export default function MenuBeheerPage() {
     }
     if (item.type === 'page' && !item.page_id) {
       errors.page_id = 'Selecteer een pagina'
+    }
+    if (item.type === 'page_group' && !item.page_group_id) {
+      errors.page_group_id = 'Selecteer een pagina groep'
     }
     if (item.type === 'external') {
       if (!item.external_url) {
@@ -354,12 +370,16 @@ export default function MenuBeheerPage() {
     }
 
     try {
+      // NB: type 'page_group' vereist DB migratie: ALTER TABLE menu_items DROP CONSTRAINT menu_items_type_check;
+      // ALTER TABLE menu_items ADD CONSTRAINT menu_items_type_check CHECK (type IN ('group', 'page', 'tool', 'external', 'page_group'));
+      // ALTER TABLE menu_items ADD COLUMN page_group_id UUID REFERENCES page_groups(id) ON DELETE SET NULL;
       const payload = {
         label: item.label,
         type: item.type,
         page_id: item.type === 'page' ? item.page_id : null,
         tool_route: item.type === 'tool' ? item.tool_route : null,
         external_url: item.type === 'external' ? item.external_url : null,
+        page_group_id: item.type === 'page_group' ? item.page_group_id : null,
         is_visible: item.is_visible,
       }
 
@@ -425,6 +445,7 @@ export default function MenuBeheerPage() {
     return [
       { value: 'group', label: 'Groep' },
       { value: 'page', label: 'Pagina' },
+      { value: 'page_group', label: 'Pagina groep' },
       { value: 'tool', label: 'Tool' },
       { value: 'external', label: 'Extern' },
     ]
@@ -823,6 +844,29 @@ export default function MenuBeheerPage() {
                     placeholder="https://..."
                   />
                   {fieldErrors.external_url && <p className="text-xs text-red-500 mt-1">{fieldErrors.external_url}</p>}
+                </div>
+              )}
+
+              {editModal.item.type === 'page_group' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Pagina groep</label>
+                  {pageGroups.length > 0 ? (
+                    <select
+                      value={editModal.item.page_group_id || ''}
+                      onChange={e => { updateModalField('page_group_id', e.target.value || null); setFieldErrors(fe => ({ ...fe, page_group_id: undefined })) }}
+                      className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green ${fieldErrors.page_group_id ? 'border-red-400' : 'border-gray-300'}`}
+                    >
+                      <option value="">Selecteer een pagina groep...</option>
+                      {pageGroups.map(pg => (
+                        <option key={pg.id} value={pg.id}>{pg.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">
+                      Geen pagina groepen beschikbaar. Maak eerst een groep aan via Pagina&apos;s beheer.
+                    </p>
+                  )}
+                  {fieldErrors.page_group_id && <p className="text-xs text-red-500 mt-1">{fieldErrors.page_group_id}</p>}
                 </div>
               )}
 

@@ -34,6 +34,16 @@ function normalizeMenuItem(item) {
     result.to = item.tool_route
   } else if (item.type === 'page' && item.page?.slug) {
     result.to = `/pagina/${item.page.slug}`
+  } else if (item.type === 'page_group') {
+    const pages = item._groupPages || []
+    if (pages.length === 0) return null
+    return {
+      label: item.label,
+      children: pages.map(p => ({
+        label: p.title,
+        to: `/pagina/${p.slug}`,
+      })),
+    }
   } else if (item.type === 'page') {
     return null  // pagina verwijderd
   }

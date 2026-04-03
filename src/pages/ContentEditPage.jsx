@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { fetchPageById, createPage, updatePage, deletePageImage } from '../services/pages'
+import { fetchPageGroups } from '../services/pageGroups'
 import TipTapEditor from '../components/TipTapEditor'
 
 function slugify(text) {
@@ -15,6 +16,7 @@ function slugify(text) {
 export default function ContentEditPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const isNew = !id || id === 'nieuw'
 
   const [loading, setLoading] = useState(!isNew)
@@ -22,6 +24,7 @@ export default function ContentEditPage() {
   const [error, setError] = useState(null)
   const [slugManual, setSlugManual] = useState(false)
   const [ogOpen, setOgOpen] = useState(false)
+  const [groups, setGroups] = useState([])
   const uploadedPathsRef = useRef([])
   const savedRef = useRef(false)
 
@@ -34,9 +37,15 @@ export default function ContentEditPage() {
     og_title: '',
     og_description: '',
     og_image_url: '',
+    group_id: searchParams.get('group') || '',
   })
 
   useEffect(() => {
+    // Load page groups (table might not exist yet)
+    fetchPageGroups()
+      .then(({ data }) => setGroups(data || []))
+      .catch(() => setGroups([]))
+
     if (!isNew) {
       loadPage()
     }
@@ -62,6 +71,7 @@ export default function ContentEditPage() {
         og_title: data.og_title || '',
         og_description: data.og_description || '',
         og_image_url: data.og_image_url || '',
+        group_id: data.group_id || '',
       })
       setSlugManual(true)
     }
@@ -94,6 +104,7 @@ export default function ContentEditPage() {
       og_title: form.og_title || null,
       og_description: form.og_description || null,
       og_image_url: form.og_image_url || null,
+      group_id: form.group_id || null,
     }
 
     let result
@@ -175,6 +186,24 @@ export default function ContentEditPage() {
           </div>
           <p className="text-xs text-gray-400 mt-1">Wordt automatisch gegenereerd op basis van de titel. Pas het veld hierboven aan om de slug handmatig te wijzigen.</p>
         </div>
+
+        {/* Groep */}
+        {groups.length > 0 && (
+          <div>
+            <label htmlFor="page-group" className="block text-sm font-medium text-gray-700 mb-1">Groep</label>
+            <select
+              id="page-group"
+              value={form.group_id}
+              onChange={e => setForm(f => ({ ...f, group_id: e.target.value }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green"
+            >
+              <option value="">(geen groep)</option>
+              {groups.map(g => (
+                <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Datums */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -20,7 +20,9 @@ import { supabase } from '../lib/supabaseClient'
 export async function fetchAllPages() {
   const { data, error } = await supabase
     .from('pages')
-    .select('*')
+    .select('*, group:page_groups(id, name, slug)')
+    .order('group_id', { ascending: true, nullsFirst: false })
+    .order('position', { ascending: true })
     .order('created_at', { ascending: false })
   return { data, error }
 }
@@ -108,4 +110,17 @@ export async function deletePageImage(path) {
     .from('page-images')
     .remove([path])
   return { data, error }
+}
+
+export async function reorderPages(items) {
+  const results = await Promise.all(
+    items.map(({ id, position }) =>
+      supabase
+        .from('pages')
+        .update({ position, updated_at: new Date().toISOString() })
+        .eq('id', id)
+    )
+  )
+  const error = results.find(r => r.error)?.error || null
+  return { data: !error, error }
 }

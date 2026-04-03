@@ -132,18 +132,41 @@ export function getAvailableTools() {
 export async function fetchMenu() {
   const { data, error } = await supabase
     .from('menu_items')
-    .select('*, page:pages(slug)')
+    .select('*, page:pages(slug), page_group:page_groups(id, name, slug)')
     .eq('is_visible', true)
     .order('position', { ascending: true })
 
   if (error) return { data: null, error }
+
+  // Haal pagina's op voor page_group items
+  const pageGroupIds = data
+    .filter(item => item.type === 'page_group' && item.page_group_id)
+    .map(item => item.page_group_id)
+
+  let groupPages = []
+  if (pageGroupIds.length > 0) {
+    const now = new Date().toISOString()
+    const { data: gp } = await supabase
+      .from('pages')
+      .select('id, title, slug, group_id')
+      .in('group_id', pageGroupIds)
+      .not('published_at', 'is', null)
+      .lte('published_at', now)
+      .or('expires_at.is.null,expires_at.gt.' + now)
+      .order('position', { ascending: true })
+    groupPages = gp || []
+  }
 
   // Bouw boomstructuur
   const itemMap = new Map()
   const roots = []
 
   for (const item of data) {
-    itemMap.set(item.id, { ...item, children: [] })
+    const node = { ...item, children: [] }
+    if (item.type === 'page_group' && item.page_group_id) {
+      node._groupPages = groupPages.filter(p => p.group_id === item.page_group_id)
+    }
+    itemMap.set(item.id, node)
   }
 
   for (const item of data) {
@@ -200,7 +223,7 @@ export async function fetchAllQuickLinks() {
 /**
  * Maakt een nieuw menu-item aan.
  */
-export async function createMenuItem({ parent_id, label, type, page_id, tool_route, external_url, position, is_visible }) {
+export async function createMenuItem({ parent_id, label, type, page_id, tool_route, external_url, page_group_id, position, is_visible }) {
   const { data, error } = await supabase
     .from('menu_items')
     .insert({
@@ -210,6 +233,7 @@ export async function createMenuItem({ parent_id, label, type, page_id, tool_rou
       page_id: page_id || null,
       tool_route: tool_route || null,
       external_url: external_url || null,
+      page_group_id: page_group_id || null,
       position: position ?? 0,
       is_visible: is_visible ?? true,
     })
