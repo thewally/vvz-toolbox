@@ -65,11 +65,24 @@ export async function updatePage(id, updates) {
 }
 
 export async function deletePage(id) {
-  const { data, error } = await supabase
-    .from('pages')
-    .delete()
-    .eq('id', id)
+  // Haal eerst de pagina op om afbeeldingen te kunnen verwijderen
+  const { data: page } = await supabase.from('pages').select('content').eq('id', id).single()
+  if (page?.content) {
+    const paths = extractImagePaths(page.content)
+    if (paths.length > 0) {
+      await supabase.storage.from('page-images').remove(paths)
+    }
+  }
+  const { data, error } = await supabase.from('pages').delete().eq('id', id)
   return { data, error }
+}
+
+function extractImagePaths(html) {
+  const matches = [...html.matchAll(/<img[^>]+src="([^"]+)"/g)]
+  return matches
+    .map(m => m[1])
+    .filter(url => url.includes('/page-images/'))
+    .map(url => url.split('/page-images/').pop().split('?')[0])
 }
 
 export async function uploadPageImage(file) {
