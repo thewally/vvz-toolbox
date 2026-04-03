@@ -39,6 +39,7 @@ function normalizeMenuItem(item) {
     if (pages.length === 0) return null
     return {
       label: item.label,
+      isSubGroup: true,
       children: pages.map(p => ({
         label: p.title,
         to: `/pagina/${p.slug}`,
