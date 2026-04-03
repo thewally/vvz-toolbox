@@ -149,59 +149,50 @@ export default function HomePage() {
   const displayCards = cards === undefined ? FALLBACK_CARDS : cards
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex flex-col lg:flex-row gap-8 items-start">
-        <div className="flex-1 min-w-0 lg:order-1">
-          {displayCards && displayCards.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {displayCards.map((card, idx) => (
-                <QuickLinkCard
-                  key={card.id || card.to || idx}
-                  label={card.label}
-                  description={card.description}
-                  icon={card.icon}
-                  to={card.to}
-                  external={card.external}
-                />
-              ))}
-            </div>
-          )}
-        </div>
 
-        {newsItems.length > 0 && (
-          <aside className="w-full lg:w-96 shrink-0 lg:order-2">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Nieuws</h3>
+        {/* Breed: nieuws */}
+        <main className="flex-1 min-w-0">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Nieuws</h2>
+          {newsItems.length > 0 ? (
             <div className="space-y-4">
               {newsItems.map(item => (
-                <Link key={item.id} to={`/nieuws/${item.slug}`} className="flex gap-3 group border-b border-gray-100 pb-4 last:border-0">
+                <Link key={item.id} to={`/nieuws/${item.slug}`} className="flex gap-4 group bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
                   {item.image_url && (
                     <img
                       src={item.image_url}
                       alt=""
-                      className="w-20 h-20 object-cover rounded-lg shrink-0"
+                      className="w-24 h-24 object-cover rounded-lg shrink-0"
                     />
                   )}
                   <div className="min-w-0">
-                    <p className="text-xs text-gray-400 mb-0.5">
-                      {new Date(item.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    <p className="text-xs text-gray-400 mb-1">
+                      {new Date(item.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
-                    <p className="text-sm font-semibold text-gray-800 group-hover:text-vvz-green transition-colors leading-snug">
+                    <p className="font-semibold text-gray-800 group-hover:text-vvz-green transition-colors leading-snug">
                       {item.title}
                     </p>
                     {item.intro && (
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">
                         {item.intro}
                       </p>
                     )}
                   </div>
                 </Link>
               ))}
+              <Link to="/nieuws" className="inline-block mt-2 text-sm text-vvz-green hover:underline">
+                Alle nieuwsberichten &rarr;
+              </Link>
             </div>
-            <Link to="/nieuws" className="inline-block mt-3 text-sm text-vvz-green hover:underline">
-              Meer nieuws &rarr;
-            </Link>
-          </aside>
-        )}
+          ) : (
+            <p className="text-sm text-gray-400">Er zijn momenteel geen nieuwsberichten.</p>
+          )}
+        </main>
+
+        {/* Smal: gereserveerd voor toekomstige content */}
+        <aside className="w-full lg:w-72 shrink-0" />
+
       </div>
     </div>
   )
