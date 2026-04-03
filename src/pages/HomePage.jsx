@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { fetchQuickLinks } from '../services/menu'
 import { fetchAllPages } from '../services/pages'
 import { fetchPublicNewsItems } from '../services/news'
+import { fetchActivities } from '../services/activities'
 import { QUICK_LINK_ICONS } from '../lib/quickLinkIcons'
 
 const CARD_CLASS = "group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 hover:-translate-y-1 border border-gray-100 overflow-hidden"
@@ -75,19 +76,22 @@ function QuickLinkCard({ label, description, icon, to, external }) {
 }
 
 export default function HomePage() {
-  const [cards, setCards] = useState(undefined) // undefined = nog laden, null = DB bereikt maar leeg, [] = data
+  const [cards, setCards] = useState(undefined)
   const [newsItems, setNewsItems] = useState([])
+  const [activities, setActivities] = useState([])
 
   useEffect(() => {
     async function loadHomeCards() {
       try {
-        const [qlResult, pagesResult, newsResult] = await Promise.all([
+        const [qlResult, pagesResult, newsResult, activitiesResult] = await Promise.all([
           fetchQuickLinks(),
           fetchAllPages(),
           fetchPublicNewsItems(3),
+          fetchActivities({ hidePast: true }),
         ])
 
         if (newsResult.data) setNewsItems(newsResult.data)
+        if (activitiesResult.data) setActivities(activitiesResult.data.slice(0, 5))
 
         if (qlResult.error || !qlResult.data) {
           setCards(undefined)
@@ -190,8 +194,38 @@ export default function HomePage() {
           )}
         </main>
 
-        {/* Smal: gereserveerd voor toekomstige content */}
-        <aside className="w-full lg:w-72 shrink-0" />
+        {/* Smal: activiteiten */}
+        <aside className="w-full lg:w-72 shrink-0">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Activiteiten</h2>
+          {activities.length > 0 ? (
+            <div className="space-y-2">
+              {activities.map(item => {
+                const dateStr = item.date ?? item.dates_item ?? item.date_start ?? item.sort_date
+                const date = dateStr ? new Date(dateStr).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : null
+                return (
+                  <div key={item.id} className="flex gap-3 items-start border-b border-gray-100 pb-2 last:border-0">
+                    {date && (
+                      <div className="bg-vvz-green/10 text-vvz-green text-xs font-semibold rounded-lg px-2 py-1 shrink-0 text-center min-w-[44px]">
+                        {date}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-800 leading-snug">{item.title}</p>
+                      {item.time_start && (
+                        <p className="text-xs text-gray-400">{item.time_start.slice(0, 5)} uur</p>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+              <Link to="/activiteiten" className="inline-block mt-1 text-sm text-vvz-green hover:underline">
+                Alle activiteiten &rarr;
+              </Link>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400">Geen aankomende activiteiten.</p>
+          )}
+        </aside>
 
       </div>
     </div>
