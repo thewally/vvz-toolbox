@@ -36,6 +36,8 @@ export default function ContentBeheerPage() {
   const [groupForm, setGroupForm] = useState({ name: '', slug: '' })
   const [groupSlugManual, setGroupSlugManual] = useState(false)
   const [groupSaving, setGroupSaving] = useState(false)
+  const [dragState, setDragState] = useState(null) // { itemId, type: 'page'|'group', groupId }
+  const [dropTargetId, setDropTargetId] = useState(null)
 
   useEffect(() => {
     if (location.state?.success) {
@@ -148,71 +150,73 @@ export default function ContentBeheerPage() {
     load()
   }
 
-  // Reorder groups
-  async function handleMoveGroup(groupId, direction) {
-    const idx = groups.findIndex(g => g.id === groupId)
-    if (idx === -1) return
-    const newIdx = idx + direction
-    if (newIdx < 0 || newIdx >= groups.length) return
 
-    const reordered = [...groups]
-    const [moved] = reordered.splice(idx, 1)
-    reordered.splice(newIdx, 0, moved)
+  // Drag-and-drop: pagina's binnen een groep herordenen
+  async function handleDropPage(toPageId, groupId) {
+    setDropTargetId(null)
+    if (!dragState || dragState.itemId === toPageId) { setDragState(null); return }
 
-    const updates = reordered.map((g, i) => ({ id: g.id, position: i }))
-    const { error: reorderError } = await reorderPageGroups(updates)
-    if (reorderError) { setError('Herordenen mislukt: ' + reorderError.message); return }
-    load()
-  }
-
-  // Reorder pages within a group
-  async function handleMovePage(pageId, groupId, direction) {
-    const groupPages = pages
+    const siblings = pages
       .filter(p => (p.group_id || null) === (groupId || null))
       .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
 
-    const idx = groupPages.findIndex(p => p.id === pageId)
-    if (idx === -1) return
-    const newIdx = idx + direction
-    if (newIdx < 0 || newIdx >= groupPages.length) return
+    const fromIdx = siblings.findIndex(p => p.id === dragState.itemId)
+    const toIdx = siblings.findIndex(p => p.id === toPageId)
+    if (fromIdx === -1 || toIdx === -1) { setDragState(null); return }
 
-    const reordered = [...groupPages]
-    const [moved] = reordered.splice(idx, 1)
-    reordered.splice(newIdx, 0, moved)
+    const reordered = [...siblings]
+    const [moved] = reordered.splice(fromIdx, 1)
+    reordered.splice(toIdx, 0, moved)
 
     const updates = reordered.map((p, i) => ({ id: p.id, position: i }))
     const { error: reorderError } = await reorderPages(updates)
-    if (reorderError) { setError('Herordenen mislukt: ' + reorderError.message); return }
-    load()
+    if (reorderError) setError('Herordenen mislukt: ' + reorderError.message)
+    else load()
+    setDragState(null)
   }
 
-  function renderPageRow(page, groupId, index, total) {
+  // Drag-and-drop: groepen herordenen
+  async function handleDropGroup(toGroupId) {
+    setDropTargetId(null)
+    if (!dragState || dragState.itemId === toGroupId) { setDragState(null); return }
+
+    const fromIdx = groups.findIndex(g => g.id === dragState.itemId)
+    const toIdx = groups.findIndex(g => g.id === toGroupId)
+    if (fromIdx === -1 || toIdx === -1) { setDragState(null); return }
+
+    const reordered = [...groups]
+    const [moved] = reordered.splice(fromIdx, 1)
+    reordered.splice(toIdx, 0, moved)
+
+    const updates = reordered.map((g, i) => ({ id: g.id, position: i }))
+    const { error: reorderError } = await reorderPageGroups(updates)
+    if (reorderError) setError('Herordenen mislukt: ' + reorderError.message)
+    else load()
+    setDragState(null)
+  }
+
+  function renderPageRow(page, groupId) {
     const status = getStatus(page)
+    const isDragging = dragState?.itemId === page.id
+    const isDropTarget = dropTargetId === page.id && !isDragging
     return (
-      <div key={page.id} className="flex items-center gap-2 py-2 px-4 bg-white border-b border-gray-50 last:border-b-0">
-        {/* Reorder arrows */}
-        <div className="flex flex-col gap-0.5 shrink-0">
-          <button
-            onClick={() => handleMovePage(page.id, groupId, -1)}
-            disabled={index === 0}
-            className="text-gray-300 hover:text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Omhoog"
-          >
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-            </svg>
-          </button>
-          <button
-            onClick={() => handleMovePage(page.id, groupId, 1)}
-            disabled={index === total - 1}
-            className="text-gray-300 hover:text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Omlaag"
-          >
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-        </div>
+      <div
+        key={page.id}
+        draggable
+        onDragStart={() => setDragState({ itemId: page.id, type: 'page', groupId })}
+        onDragOver={e => { e.preventDefault(); setDropTargetId(page.id) }}
+        onDragLeave={() => setDropTargetId(null)}
+        onDrop={() => handleDropPage(page.id, groupId)}
+        onDragEnd={() => { setDragState(null); setDropTargetId(null) }}
+        className={`flex items-center gap-2 py-2 px-4 bg-white border-b border-gray-50 last:border-b-0 cursor-grab active:cursor-grabbing transition-all
+          ${isDragging ? 'opacity-40' : 'hover:bg-gray-50'}
+          ${isDropTarget ? 'border-t-2 border-vvz-green' : ''}
+        `}
+      >
+        {/* Sleepgreep */}
+        <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
+        </svg>
 
         {/* Title */}
         <div className="flex-1 min-w-0">
@@ -269,38 +273,34 @@ export default function ContentBeheerPage() {
     )
   }
 
-  function renderGroupSection(group, groupIndex) {
+  function renderGroupSection(group) {
     const groupPages = pages
       .filter(p => p.group_id === group.id)
       .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
 
+    const isDragging = dragState?.itemId === group.id
+    const isDropTarget = dropTargetId === group.id && !isDragging
+
     return (
-      <div key={group.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div
+        key={group.id}
+        draggable
+        onDragStart={() => setDragState({ itemId: group.id, type: 'group' })}
+        onDragOver={e => { e.preventDefault(); setDropTargetId(group.id) }}
+        onDragLeave={() => setDropTargetId(null)}
+        onDrop={() => handleDropGroup(group.id)}
+        onDragEnd={() => { setDragState(null); setDropTargetId(null) }}
+        className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all
+          ${isDragging ? 'opacity-40' : ''}
+          ${isDropTarget ? 'ring-2 ring-vvz-green' : ''}
+        `}
+      >
         {/* Group header */}
-        <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-100">
-          {/* Reorder arrows */}
-          <div className="flex flex-col gap-0.5 shrink-0">
-            <button
-              onClick={() => handleMoveGroup(group.id, -1)}
-              disabled={groupIndex === 0}
-              className="text-gray-300 hover:text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed"
-              title="Omhoog"
-            >
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <button
-              onClick={() => handleMoveGroup(group.id, 1)}
-              disabled={groupIndex === groups.length - 1}
-              className="text-gray-300 hover:text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed"
-              title="Omlaag"
-            >
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
+        <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-100 cursor-grab active:cursor-grabbing">
+          {/* Sleepgreep */}
+          <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
+          </svg>
 
           <span className="font-bold text-gray-800 flex-1">{group.name}</span>
 
@@ -338,7 +338,7 @@ export default function ContentBeheerPage() {
         {/* Pages in group */}
         {groupPages.length > 0 ? (
           <div>
-            {groupPages.map((page, idx) => renderPageRow(page, group.id, idx, groupPages.length))}
+            {groupPages.map(page => renderPageRow(page, group.id))}
           </div>
         ) : (
           <div className="px-4 py-3 text-sm text-gray-400 italic">Geen pagina&apos;s in deze groep.</div>
@@ -402,7 +402,7 @@ export default function ContentBeheerPage() {
       ) : (
         <div className="space-y-4">
           {/* Group sections */}
-          {groups.map((group, idx) => renderGroupSection(group, idx))}
+          {groups.map(group => renderGroupSection(group))}
 
           {/* Ungrouped pages */}
           {ungroupedPages.length > 0 && (
@@ -411,7 +411,7 @@ export default function ContentBeheerPage() {
                 <span className="font-bold text-gray-500 flex-1">Zonder groep</span>
               </div>
               <div>
-                {ungroupedPages.map((page, idx) => renderPageRow(page, null, idx, ungroupedPages.length))}
+                {ungroupedPages.map(page => renderPageRow(page, null))}
               </div>
             </div>
           )}
