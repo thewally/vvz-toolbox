@@ -106,9 +106,11 @@ export default function ContentBeheerPage() {
                   <tr key={page.id}>
                     <td className="px-5 py-3">
                       <span className="text-gray-800">{page.title}</span>
-                      <span className="block text-xs text-gray-400 sm:hidden">/pagina/{page.slug}</span>
+                      <Link to={`/pagina/${page.slug}`} className="block text-xs text-gray-400 hover:text-vvz-green hover:underline transition-colors sm:hidden">/pagina/{page.slug}</Link>
                     </td>
-                    <td className="px-5 py-3 text-gray-500 hidden sm:table-cell">/pagina/{page.slug}</td>
+                    <td className="px-5 py-3 hidden sm:table-cell">
+                      <Link to={`/pagina/${page.slug}`} className="text-gray-500 hover:text-vvz-green hover:underline transition-colors">/pagina/{page.slug}</Link>
+                    </td>
                     <td className="px-5 py-3 text-gray-500 hidden md:table-cell">
                       {page.published_at
                         ? new Date(page.published_at).toLocaleDateString('nl-NL')
