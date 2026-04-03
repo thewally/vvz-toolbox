@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { fetchPageById, createPage, updatePage } from '../services/pages'
+import { fetchPageById, createPage, updatePage, deletePageImage } from '../services/pages'
 import TipTapEditor from '../components/TipTapEditor'
 
 function slugify(text) {
@@ -22,6 +22,8 @@ export default function ContentEditPage() {
   const [error, setError] = useState(null)
   const [slugManual, setSlugManual] = useState(false)
   const [ogOpen, setOgOpen] = useState(false)
+  const uploadedPathsRef = useRef([])
+  const savedRef = useRef(false)
 
   const [form, setForm] = useState({
     title: '',
@@ -37,6 +39,11 @@ export default function ContentEditPage() {
   useEffect(() => {
     if (!isNew) {
       loadPage()
+    }
+    return () => {
+      if (!savedRef.current && uploadedPathsRef.current.length > 0) {
+        uploadedPathsRef.current.forEach(path => deletePageImage(path))
+      }
     }
   }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -102,6 +109,7 @@ export default function ContentEditPage() {
       return
     }
 
+    savedRef.current = true
     navigate('/beheer/content')
   }
 
@@ -198,6 +206,7 @@ export default function ContentEditPage() {
           <TipTapEditor
             content={form.content}
             onChange={content => setForm(f => ({ ...f, content }))}
+            onImageUpload={path => { uploadedPathsRef.current = [...uploadedPathsRef.current, path] }}
           />
         </div>
 

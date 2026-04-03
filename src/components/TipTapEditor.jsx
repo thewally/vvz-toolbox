@@ -27,7 +27,7 @@ function ToolbarButton({ onClick, active, disabled, title, children }) {
   )
 }
 
-export default function TipTapEditor({ content, onChange, disabled = false }) {
+export default function TipTapEditor({ content, onChange, disabled = false, onImageUpload }) {
   const fileInputRef = useRef(null)
 
   const editor = useEditor({
@@ -61,8 +61,9 @@ export default function TipTapEditor({ content, onChange, disabled = false }) {
       return
     }
     editor.chain().focus().setImage({ src: data.url }).run()
+    onImageUpload?.(data.path)
     e.target.value = ''
-  }, [editor])
+  }, [editor, onImageUpload])
 
   const handleAddLink = useCallback(() => {
     if (!editor) return
