@@ -158,7 +158,7 @@ export default function HomePage() {
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         <div className="flex-1 min-w-0">
           {displayCards && displayCards.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {displayCards.map((card, idx) => (
                 <QuickLinkCard
                   key={card.id || card.to || idx}
@@ -178,23 +178,32 @@ export default function HomePage() {
         </div>
 
         {newsItems.length > 0 && (
-          <aside className="w-full lg:w-72 shrink-0">
+          <aside className="w-full lg:w-96 shrink-0">
             <h3 className="text-lg font-bold text-gray-800 mb-4">Nieuws</h3>
             <div className="space-y-4">
               {newsItems.map(item => (
-                <div key={item.id} className="border-b border-gray-100 pb-3 last:border-0">
-                  <p className="text-xs text-gray-400">
-                    {new Date(item.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </p>
-                  <Link to={`/nieuws/${item.slug}`} className="text-sm font-medium text-gray-800 hover:text-vvz-green transition-colors">
-                    {item.title}
-                  </Link>
-                  {item.intro && (
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {item.intro.length > 80 ? item.intro.slice(0, 80) + '\u2026' : item.intro}
-                    </p>
+                <Link key={item.id} to={`/nieuws/${item.slug}`} className="flex gap-3 group border-b border-gray-100 pb-4 last:border-0">
+                  {item.image_url && (
+                    <img
+                      src={item.image_url}
+                      alt=""
+                      className="w-20 h-20 object-cover rounded-lg shrink-0"
+                    />
                   )}
-                </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-400 mb-0.5">
+                      {new Date(item.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                    <p className="text-sm font-semibold text-gray-800 group-hover:text-vvz-green transition-colors leading-snug">
+                      {item.title}
+                    </p>
+                    {item.intro && (
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                        {item.intro}
+                      </p>
+                    )}
+                  </div>
+                </Link>
               ))}
             </div>
             <Link to="/nieuws" className="inline-block mt-3 text-sm text-vvz-green hover:underline">
