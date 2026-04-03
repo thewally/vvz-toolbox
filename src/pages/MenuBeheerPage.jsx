@@ -669,30 +669,34 @@ export default function MenuBeheerPage() {
               </div>
             </div>
           )}
+          <div className="flex justify-end mb-4">
           <button
             onClick={() => openCreateModal(null, false)}
-            className="text-sm font-medium text-white bg-vvz-green hover:bg-vvz-green/90 px-4 py-2 rounded-lg flex items-center gap-1.5 mb-4"
+            className="text-sm font-medium text-white bg-vvz-green hover:bg-vvz-green/90 px-4 py-2 rounded-lg flex items-center gap-1.5"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            + Toevoegen
+            Toevoegen
           </button>
+          </div>
           <div className="space-y-1 mb-4">
             {menuTree.map((item, idx) => renderMenuItem(item, menuTree, idx, 0))}
           </div>
         </div>
       ) : (
         <div>
+          <div className="flex justify-end mb-4">
           <button
             onClick={() => openCreateModal(null, true)}
-            className="text-sm font-medium text-white bg-vvz-green hover:bg-vvz-green/90 px-4 py-2 rounded-lg flex items-center gap-1.5 mb-4"
+            className="text-sm font-medium text-white bg-vvz-green hover:bg-vvz-green/90 px-4 py-2 rounded-lg flex items-center gap-1.5"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            + Toevoegen
+            Toevoegen
           </button>
+          </div>
           <div className="space-y-1 mb-4">
             {quickLinkItems.map(item => renderQuickLinkItem(item, quickLinkItems))}
           </div>
