@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchAllPages, deletePage } from '../services/pages'
+import { fetchAllPages, deletePage, updatePage } from '../services/pages'
 
 function getStatus(page) {
   const now = new Date()
@@ -27,6 +27,21 @@ export default function ContentBeheerPage() {
     if (error) setError(error.message)
     else setPages(data ?? [])
     setLoading(false)
+  }
+
+  function isPublished(page) {
+    const now = new Date()
+    return page.published_at && new Date(page.published_at) <= now &&
+      (!page.expires_at || new Date(page.expires_at) > now)
+  }
+
+  async function handleTogglePublished(page) {
+    const published = isPublished(page)
+    const { error: updateError } = await updatePage(page.id, {
+      published_at: published ? '9999-01-01T00:00:00Z' : new Date().toISOString(),
+    })
+    if (updateError) { setError('Opslaan mislukt: ' + updateError.message); return }
+    load()
   }
 
   async function handleDelete(id) {
@@ -106,6 +121,14 @@ export default function ContentBeheerPage() {
                     </td>
                     <td className="px-5 py-3 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleTogglePublished(page)}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none shrink-0 ${isPublished(page) ? 'bg-vvz-green' : 'bg-gray-300'}`}
+                          aria-label={isPublished(page) ? `${page.title} depubliceren` : `${page.title} publiceren`}
+                          title={isPublished(page) ? 'Depubliceren' : 'Publiceren'}
+                        >
+                          <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${isPublished(page) ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+                        </button>
                         <Link
                           to={`/beheer/content/${page.id}`}
                           className="text-gray-400 hover:text-vvz-green transition-colors"

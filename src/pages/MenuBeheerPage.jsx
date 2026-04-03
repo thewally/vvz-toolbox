@@ -185,6 +185,14 @@ export default function MenuBeheerPage() {
     await loadData()
   }
 
+  // Toggle zichtbaarheid
+  async function handleToggleVisible(item, isQuickLink) {
+    const updateFn = isQuickLink ? updateQuickLink : updateMenuItem
+    const { error: updateError } = await updateFn(item.id, { is_visible: !item.is_visible })
+    if (updateError) { setError(updateError.message); return }
+    await loadData()
+  }
+
   // Verwijder item
   async function handleDelete() {
     const { item, isQuickLink } = deleteConfirm
@@ -358,11 +366,14 @@ export default function MenuBeheerPage() {
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.className}`}>
             {badge.label}
           </span>
-          {!item.is_visible && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 font-medium">
-              Verborgen
-            </span>
-          )}
+          <button
+            onClick={() => handleToggleVisible(item, false)}
+            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none shrink-0 ${item.is_visible ? 'bg-vvz-green' : 'bg-gray-300'}`}
+            aria-label={item.is_visible ? `${item.label} verbergen` : `${item.label} tonen`}
+            title={item.is_visible ? 'Verbergen' : 'Tonen'}
+          >
+            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${item.is_visible ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+          </button>
           <div className="flex items-center gap-1">
             <button
               onClick={() => handleReorder(siblings, index, -1, false)}
@@ -450,11 +461,14 @@ export default function MenuBeheerPage() {
             Homepage
           </span>
         )}
-        {!item.is_visible && (
-          <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 font-medium">
-            Verborgen
-          </span>
-        )}
+        <button
+          onClick={() => handleToggleVisible(item, true)}
+          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none shrink-0 ${item.is_visible ? 'bg-vvz-green' : 'bg-gray-300'}`}
+          aria-label={item.is_visible ? `${item.label} verbergen` : `${item.label} tonen`}
+          title={item.is_visible ? 'Verbergen' : 'Tonen'}
+        >
+          <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${item.is_visible ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+        </button>
         <div className="flex items-center gap-1">
           <button
             onClick={() => handleReorder(siblings, index, -1, true)}
@@ -771,17 +785,6 @@ export default function MenuBeheerPage() {
                   </div>
                 </>
               )}
-
-              {/* Zichtbaarheid */}
-              <label className="flex items-center gap-2 text-sm text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={editModal.item.is_visible}
-                  onChange={e => updateModalField('is_visible', e.target.checked)}
-                  className="rounded border-gray-300 text-vvz-green focus:ring-vvz-green"
-                />
-                Zichtbaar in menu
-              </label>
 
               {/* Knoppen */}
               <div className="flex justify-end gap-2 pt-2">
