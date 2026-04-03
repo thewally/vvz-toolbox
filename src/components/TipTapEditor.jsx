@@ -4,8 +4,46 @@ import Image from '@tiptap/extension-image'
 import Youtube from '@tiptap/extension-youtube'
 import Link from '@tiptap/extension-link'
 import Underline from '@tiptap/extension-underline'
+import { Node, mergeAttributes } from '@tiptap/core'
 import { useRef, useCallback, useEffect } from 'react'
 import { uploadPageImage } from '../services/pages'
+
+const Vimeo = Node.create({
+  name: 'vimeo',
+  group: 'block',
+  atom: true,
+  addAttributes() {
+    return {
+      src: { default: null },
+    }
+  },
+  parseHTML() {
+    return [{ tag: 'div[data-vimeo]' }]
+  },
+  renderHTML({ HTMLAttributes }) {
+    const { src } = HTMLAttributes
+    return ['div', mergeAttributes({ 'data-vimeo': '' }, { 'data-src': src }), [
+      'iframe', {
+        src,
+        width: '100%',
+        height: '360',
+        frameborder: '0',
+        allow: 'autoplay; fullscreen; picture-in-picture',
+        allowfullscreen: '',
+      },
+    ]]
+  },
+  addCommands() {
+    return {
+      setVimeoVideo: (options) => ({ commands }) => {
+        return commands.insertContent({
+          type: this.name,
+          attrs: options,
+        })
+      },
+    }
+  },
+})
 
 function ToolbarButton({ onClick, active, disabled, title, children }) {
   return (
@@ -37,6 +75,7 @@ export default function TipTapEditor({ content, onChange, disabled = false, onIm
       Youtube.configure({ controls: false }),
       Link.configure({ openOnClick: false }),
       Underline,
+      Vimeo,
     ],
     content: content || '',
     editable: !disabled,
@@ -84,6 +123,19 @@ export default function TipTapEditor({ content, onChange, disabled = false, onIm
     editor.commands.setYoutubeVideo({ src: url })
   }, [editor])
 
+  const handleAddVimeo = useCallback(() => {
+    if (!editor) return
+    const url = window.prompt('Vimeo URL invoeren (bijv. https://vimeo.com/123456789):')
+    if (!url) return
+    const match = url.match(/vimeo\.com\/(\d+)/)
+    if (!match) {
+      alert('Ongeldige Vimeo URL. Gebruik bijv. https://vimeo.com/123456789')
+      return
+    }
+    const embedUrl = `https://player.vimeo.com/video/${match[1]}`
+    editor.commands.setVimeoVideo({ src: embedUrl })
+  }, [editor])
+
   if (!editor) return null
 
   return (
@@ -117,6 +169,14 @@ export default function TipTapEditor({ content, onChange, disabled = false, onIm
 
         <span className="w-px bg-gray-300 mx-1" role="separator" aria-orientation="vertical" />
 
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          active={editor.isActive('heading', { level: 1 })}
+          disabled={disabled}
+          title="Kop 1"
+        >
+          H1
+        </ToolbarButton>
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           active={editor.isActive('heading', { level: 2 })}
@@ -194,6 +254,13 @@ export default function TipTapEditor({ content, onChange, disabled = false, onIm
           title="YouTube video"
         >
           YouTube
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={handleAddVimeo}
+          disabled={disabled}
+          title="Vimeo video"
+        >
+          Vimeo
         </ToolbarButton>
 
         <input

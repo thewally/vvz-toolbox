@@ -132,7 +132,7 @@ export default function ContentBeheerPage() {
                         : <span className="text-gray-400">/pagina/{page.slug}</span>}
                     </td>
                     <td className="px-5 py-3 text-gray-500 hidden md:table-cell">
-                      {page.published_at
+                      {page.published_at && new Date(page.published_at) <= new Date() && new Date(page.published_at).getFullYear() < 9000
                         ? new Date(page.published_at).toLocaleDateString('nl-NL')
                         : '—'}
                     </td>

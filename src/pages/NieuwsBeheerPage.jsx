@@ -123,7 +123,7 @@ export default function NieuwsBeheerPage() {
                       <span className="text-gray-800">{item.title}</span>
                     </td>
                     <td className="px-5 py-3 text-gray-500 hidden md:table-cell">
-                      {item.published_at
+                      {item.published_at && new Date(item.published_at) <= new Date() && new Date(item.published_at).getFullYear() < 9000
                         ? new Date(item.published_at).toLocaleDateString('nl-NL')
                         : '\u2014'}
                     </td>
