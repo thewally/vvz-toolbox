@@ -150,14 +150,9 @@ export default function HomePage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
-      <div className="text-center mb-10">
-        <h2 className="text-2xl font-bold text-gray-800">Welkom bij de website van VVZ&apos;49</h2>
-        <p className="text-gray-500 mt-2">Snelle links naar de belangrijkste onderdelen</p>
-      </div>
-
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         <div className="flex-1 min-w-0">
-          {displayCards && displayCards.length > 0 ? (
+          {displayCards && displayCards.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {displayCards.map((card, idx) => (
                 <QuickLinkCard
@@ -170,11 +165,7 @@ export default function HomePage() {
                 />
               ))}
             </div>
-          ) : displayCards === null ? (
-            <p className="text-center text-gray-400 py-8">
-              Er zijn nog geen snelkoppelingen ingesteld.
-            </p>
-          ) : null}
+          )}
         </div>
 
         {newsItems.length > 0 && (
