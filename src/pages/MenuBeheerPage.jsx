@@ -37,6 +37,7 @@ export default function MenuBeheerPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [editModal, setEditModal] = useState(null) // { mode: 'create'|'edit', item, parentId, isQuickLink }
+  const [deleteConfirm, setDeleteConfirm] = useState(null) // { item, isQuickLink, hasChildren }
   const [saving, setSaving] = useState(false)
   const [initializing, setInitializing] = useState(false)
 
@@ -185,13 +186,9 @@ export default function MenuBeheerPage() {
   }
 
   // Verwijder item
-  async function handleDelete(item, isQuickLink) {
-    const hasChildren = !isQuickLink && menuItems.some(mi => mi.parent_id === item.id)
-    const msg = hasChildren
-      ? `Weet je zeker dat je "${item.label}" wilt verwijderen? Alle onderliggende items worden ook verwijderd.`
-      : `Weet je zeker dat je "${item.label}" wilt verwijderen?`
-
-    if (!window.confirm(msg)) return
+  async function handleDelete() {
+    const { item, isQuickLink } = deleteConfirm
+    setDeleteConfirm(null)
 
     const deleteFn = isQuickLink ? deleteQuickLink : deleteMenuItem
     const { error: deleteError } = await deleteFn(item.id)
@@ -397,7 +394,7 @@ export default function MenuBeheerPage() {
               </svg>
             </button>
             <button
-              onClick={() => handleDelete(item, false)}
+              onClick={() => setDeleteConfirm({ item, isQuickLink: false, hasChildren: item.children?.length > 0 })}
               className="p-1 text-red-400 hover:text-red-600"
               title="Verwijderen"
             >
@@ -489,7 +486,7 @@ export default function MenuBeheerPage() {
             </svg>
           </button>
           <button
-            onClick={() => handleDelete(item, true)}
+            onClick={() => setDeleteConfirm({ item, isQuickLink: true, hasChildren: false })}
             className="p-1 text-red-400 hover:text-red-600"
             title="Verwijderen"
           >
@@ -584,6 +581,37 @@ export default function MenuBeheerPage() {
             </svg>
             Quick Link toevoegen
           </button>
+        </div>
+      )}
+
+      {/* Verwijder bevestiging */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+            <h2 id="delete-dialog-title" className="text-lg font-bold text-gray-800 mb-2">Verwijderen?</h2>
+            <p className="text-sm text-gray-600 mb-2">
+              Weet je zeker dat je <strong>{deleteConfirm.item.label}</strong> wilt verwijderen?
+            </p>
+            {deleteConfirm.hasChildren && (
+              <p className="text-sm text-orange-600 mb-3">
+                Alle onderliggende items worden ook verwijderd.
+              </p>
+            )}
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 border border-gray-300 text-gray-700 text-sm font-medium py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Annuleren
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 bg-red-500 text-white text-sm font-medium py-2 rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Verwijderen
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
