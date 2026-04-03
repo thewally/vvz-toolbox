@@ -39,6 +39,10 @@ import MenuBeheerPage from './pages/MenuBeheerPage'
 import ContentPage from './pages/ContentPage'
 import ContentBeheerPage from './pages/ContentBeheerPage'
 import ContentEditPage from './pages/ContentEditPage'
+import NieuwsPage from './pages/NieuwsPage'
+import NieuwsDetailPage from './pages/NieuwsDetailPage'
+import NieuwsBeheerPage from './pages/NieuwsBeheerPage'
+import NieuwsEditPage from './pages/NieuwsEditPage'
 
 export default function App() {
   return (
@@ -71,6 +75,9 @@ export default function App() {
             <Route path="ereleden" element={<EreledenBeheerPage />} />
           </Route>
           <Route path="menu" element={<MenuBeheerPage />} />
+          <Route path="nieuws" element={<NieuwsBeheerPage />} />
+          <Route path="nieuws/nieuw" element={<NieuwsEditPage />} />
+          <Route path="nieuws/:id" element={<NieuwsEditPage />} />
           <Route path="content" element={<ContentBeheerPage />} />
           <Route path="content/nieuw" element={<ContentEditPage />} />
           <Route path="content/:id" element={<ContentEditPage />} />
@@ -90,7 +97,10 @@ export default function App() {
           <Route path="topscorers" element={<PlaceholderPage title="Topscorers & Keeperstrofee" />} />
         </Route>
         <Route path="pagina/:slug" element={<ContentPage />} />
-        <Route path="nieuws" element={<PlaceholderPage title="Nieuws" />} />
+        <Route path="nieuws">
+          <Route index element={<NieuwsPage />} />
+          <Route path=":slug" element={<NieuwsDetailPage />} />
+        </Route>
         <Route path="vrijwilliger" element={<PlaceholderPage title="Vrijwilliger worden?" />} />
         <Route path="techniektrainingen" element={<PlaceholderPage title="Techniektrainingen" />} />
         <Route path="sponsors" element={<SponsorsPage />} />

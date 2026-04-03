@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchQuickLinks } from '../services/menu'
 import { fetchAllPages } from '../services/pages'
+import { fetchPublicNewsItems } from '../services/news'
 import { QUICK_LINK_ICONS } from '../lib/quickLinkIcons'
 
 const CARD_CLASS = "group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 hover:-translate-y-1 border border-gray-100 overflow-hidden"
@@ -75,14 +76,18 @@ function QuickLinkCard({ label, description, icon, to, external }) {
 
 export default function HomePage() {
   const [cards, setCards] = useState(undefined) // undefined = nog laden, null = DB bereikt maar leeg, [] = data
+  const [newsItems, setNewsItems] = useState([])
 
   useEffect(() => {
     async function loadHomeCards() {
       try {
-        const [qlResult, pagesResult] = await Promise.all([
+        const [qlResult, pagesResult, newsResult] = await Promise.all([
           fetchQuickLinks(),
           fetchAllPages(),
+          fetchPublicNewsItems(3),
         ])
+
+        if (newsResult.data) setNewsItems(newsResult.data)
 
         if (qlResult.error || !qlResult.data) {
           setCards(undefined)
@@ -144,30 +149,60 @@ export default function HomePage() {
   const displayCards = cards === undefined ? FALLBACK_CARDS : cards
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
+    <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="text-center mb-10">
         <h2 className="text-2xl font-bold text-gray-800">Welkom bij de website van VVZ&apos;49</h2>
         <p className="text-gray-500 mt-2">Snelle links naar de belangrijkste onderdelen</p>
       </div>
 
-      {displayCards && displayCards.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayCards.map((card, idx) => (
-            <QuickLinkCard
-              key={card.id || card.to || idx}
-              label={card.label}
-              description={card.description}
-              icon={card.icon}
-              to={card.to}
-              external={card.external}
-            />
-          ))}
+      <div className="flex flex-col lg:flex-row gap-8 items-start">
+        <div className="flex-1 min-w-0">
+          {displayCards && displayCards.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayCards.map((card, idx) => (
+                <QuickLinkCard
+                  key={card.id || card.to || idx}
+                  label={card.label}
+                  description={card.description}
+                  icon={card.icon}
+                  to={card.to}
+                  external={card.external}
+                />
+              ))}
+            </div>
+          ) : displayCards === null ? (
+            <p className="text-center text-gray-400 py-8">
+              Er zijn nog geen snelkoppelingen ingesteld.
+            </p>
+          ) : null}
         </div>
-      ) : displayCards === null ? (
-        <p className="text-center text-gray-400 py-8">
-          Er zijn nog geen snelkoppelingen ingesteld.
-        </p>
-      ) : null}
+
+        {newsItems.length > 0 && (
+          <aside className="w-full lg:w-72 shrink-0">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Nieuws</h3>
+            <div className="space-y-4">
+              {newsItems.map(item => (
+                <div key={item.id} className="border-b border-gray-100 pb-3 last:border-0">
+                  <p className="text-xs text-gray-400">
+                    {new Date(item.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                  <Link to={`/nieuws/${item.slug}`} className="text-sm font-medium text-gray-800 hover:text-vvz-green transition-colors">
+                    {item.title}
+                  </Link>
+                  {item.intro && (
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {item.intro.length > 80 ? item.intro.slice(0, 80) + '\u2026' : item.intro}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+            <Link to="/nieuws" className="inline-block mt-3 text-sm text-vvz-green hover:underline">
+              Meer nieuws &rarr;
+            </Link>
+          </aside>
+        )}
+      </div>
     </div>
   )
 }

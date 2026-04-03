@@ -1,0 +1,61 @@
+name: Cleanup verlopen nieuwsberichten
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'   # Elke zondag om 03:00 UTC
+  workflow_dispatch:        # Handmatig uitvoerbaar
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verwijder nieuwsberichten ouder dan 6 maanden
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          # Bereken datum 6 maanden geleden
+          CUTOFF=$(date -u -d '6 months ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v-6m +%Y-%m-%dT%H:%M:%SZ)
+
+          echo "Cutoff datum: $CUTOFF"
+
+          # Haal items op die verwijderd moeten worden
+          ITEMS=$(curl -s \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            "${SUPABASE_URL}/rest/v1/news_items?select=id,content,image_path&published_at=not.is.null&published_at=lt.${CUTOFF}" \
+          )
+
+          COUNT=$(echo "$ITEMS" | jq 'length')
+          echo "Gevonden items om te verwijderen: $COUNT"
+
+          if [ "$COUNT" = "0" ] || [ "$COUNT" = "null" ]; then
+            echo "Niets te verwijderen."
+            exit 0
+          fi
+
+          # Verzamel storage paden voor cleanup
+          IMAGE_PATHS=$(echo "$ITEMS" | jq -r '.[] | .image_path // empty')
+          CONTENT_PATHS=$(echo "$ITEMS" | jq -r '.[] | .content // empty' | grep -oP 'page-images/\K[^"?]+' || true)
+          ALL_PATHS=$(printf '%s\n%s' "$IMAGE_PATHS" "$CONTENT_PATHS" | sort -u | grep -v '^$')
+
+          # Verwijder storage bestanden
+          if [ -n "$ALL_PATHS" ]; then
+            JSON_PATHS=$(echo "$ALL_PATHS" | jq -R -s 'split("\n") | map(select(length > 0))')
+            curl -s -X DELETE \
+              -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+              -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+              -H "Content-Type: application/json" \
+              -d "$JSON_PATHS" \
+              "${SUPABASE_URL}/storage/v1/object/page-images"
+            echo "Storage bestanden opgeruimd."
+          fi
+
+          # Verwijder de database records
+          curl -s -X DELETE \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Prefer: return=representation" \
+            "${SUPABASE_URL}/rest/v1/news_items?published_at=not.is.null&published_at=lt.${CUTOFF}"
+
+          echo "Cleanup voltooid."
