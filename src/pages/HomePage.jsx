@@ -151,7 +151,7 @@ export default function HomePage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="flex flex-col lg:flex-row gap-8 items-start">
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 lg:order-1">
           {displayCards && displayCards.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {displayCards.map((card, idx) => (
@@ -169,7 +169,7 @@ export default function HomePage() {
         </div>
 
         {newsItems.length > 0 && (
-          <aside className="w-full lg:w-96 shrink-0">
+          <aside className="w-full lg:w-96 shrink-0 lg:order-2">
             <h3 className="text-lg font-bold text-gray-800 mb-4">Nieuws</h3>
             <div className="space-y-4">
               {newsItems.map(item => (
