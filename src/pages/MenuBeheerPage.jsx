@@ -40,6 +40,8 @@ export default function MenuBeheerPage() {
   const [actionLoading, setActionLoading] = useState(false)
   const [editModal, setEditModal] = useState(null) // { mode: 'create'|'edit', item, parentId, isQuickLink }
   const [deleteConfirm, setDeleteConfirm] = useState(null) // { item, isQuickLink, hasChildren }
+  const [dragState, setDragState] = useState(null) // { itemId, siblings, isQuickLink }
+  const [dropTargetId, setDropTargetId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [initializing, setInitializing] = useState(false)
   const [initConfirm, setInitConfirm] = useState(null) // null or { count: number }
@@ -195,33 +197,26 @@ export default function MenuBeheerPage() {
     return roots.sort((a, b) => a.position - b.position)
   }
 
-  // Verplaats item omhoog/omlaag in de lijst
-  async function handleReorder(items, index, direction, isQuickLink) {
-    const swapIndex = index + direction
-    if (swapIndex < 0 || swapIndex >= items.length) return
+  // Drag-and-drop herordenen
+  async function handleDropReorder(toItemId) {
+    setDropTargetId(null)
+    if (!dragState || dragState.itemId === toItemId) { setDragState(null); return }
 
-    const a = items[index]
-    const b = items[swapIndex]
+    const { siblings, isQuickLink } = dragState
+    const fromIdx = siblings.findIndex(s => s.id === dragState.itemId)
+    const toIdx = siblings.findIndex(s => s.id === toItemId)
+    if (fromIdx === -1 || toIdx === -1) { setDragState(null); return }
 
-    const updates = [
-      { id: a.id, position: b.position },
-      { id: b.id, position: a.position },
-    ]
+    const reordered = [...siblings]
+    const [moved] = reordered.splice(fromIdx, 1)
+    reordered.splice(toIdx, 0, moved)
 
-    // Als posities gelijk zijn, wijs nieuwe posities toe
-    if (a.position === b.position) {
-      updates[0].position = swapIndex
-      updates[1].position = index
-    }
-
+    const updates = reordered.map((item, idx) => ({ id: item.id, position: idx }))
     const reorderFn = isQuickLink ? reorderQuickLinks : reorderMenuItems
     const { error: reorderError } = await reorderFn(updates)
-    if (reorderError) {
-      setError(reorderError.message)
-      return
-    }
-
-    await loadData()
+    if (reorderError) { showError(reorderError.message) }
+    else { await loadData() }
+    setDragState(null)
   }
 
   // Toggle zichtbaarheid
@@ -438,11 +433,42 @@ export default function MenuBeheerPage() {
   // Render een enkel menu-item in de boomlijst
   function renderMenuItem(item, siblings, index, depth = 0) {
     const badge = TYPE_BADGES[item.type] || TYPE_BADGES.tool
+    const isDragging = dragState?.itemId === item.id
+    const isDropTarget = dropTargetId === item.id && !isDragging
+    const indentClass = depth === 1 ? 'ml-6' : depth >= 2 ? 'ml-12' : ''
 
     return (
       <div key={item.id}>
-        <div className={`flex items-center gap-2 py-2 px-3 bg-white rounded-lg shadow-sm ${depth > 0 ? 'ml-8' : ''}`}>
+        <div
+          draggable
+          onDragStart={() => setDragState({ itemId: item.id, siblings, isQuickLink: false })}
+          onDragOver={e => { e.preventDefault(); setDropTargetId(item.id) }}
+          onDragLeave={() => setDropTargetId(null)}
+          onDrop={() => handleDropReorder(item.id)}
+          onDragEnd={() => { setDragState(null); setDropTargetId(null) }}
+          className={`flex items-center gap-2 py-2 px-3 bg-white rounded-lg shadow-sm cursor-grab active:cursor-grabbing transition-all ${indentClass}
+            ${isDragging ? 'opacity-40' : 'hover:bg-gray-50'}
+            ${isDropTarget ? 'border-t-2 border-vvz-green' : ''}
+          `}
+        >
+          {/* Sleepgreep */}
+          <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
+          </svg>
           <span className="font-medium text-gray-800 flex-1">{item.label}</span>
+          {/* Inline "+ toevoegen" voor groepen */}
+          {item.type === 'group' && (
+            <button
+              onClick={e => { e.stopPropagation(); openCreateModal(item.id, false) }}
+              className="text-xs text-gray-400 hover:text-vvz-green transition-colors flex items-center gap-0.5 shrink-0"
+              title="Item toevoegen aan deze groep"
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              toevoegen
+            </button>
+          )}
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.className}`}>
             {badge.label}
           </span>
@@ -455,26 +481,6 @@ export default function MenuBeheerPage() {
             <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${item.is_visible ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
           </button>
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => handleReorder(siblings, index, -1, false)}
-              disabled={index === 0}
-              className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
-              title="Omhoog"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <button
-              onClick={() => handleReorder(siblings, index, 1, false)}
-              disabled={index === siblings.length - 1}
-              className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
-              title="Omlaag"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
             <button
               onClick={() => openEditModal(item, false)}
               className="p-1 text-blue-500 hover:text-blue-700"
@@ -504,29 +510,34 @@ export default function MenuBeheerPage() {
             )}
           </div>
         )}
-
-        {/* Item toevoegen knop voor groepen */}
-        {item.type === 'group' && (
-          <button
-            onClick={() => openCreateModal(item.id, false)}
-            className={`mt-1 text-sm text-vvz-green hover:text-vvz-green/80 flex items-center gap-1 ${depth > 0 ? 'ml-8' : 'ml-8'} px-3`}
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            Item toevoegen
-          </button>
-        )}
       </div>
     )
   }
 
   // Render quick link item
-  function renderQuickLinkItem(item, siblings, index) {
+  function renderQuickLinkItem(item, siblings) {
     const badge = TYPE_BADGES[item.type] || TYPE_BADGES.tool
+    const isDragging = dragState?.itemId === item.id
+    const isDropTarget = dropTargetId === item.id && !isDragging
 
     return (
-      <div key={item.id} className="flex items-center gap-2 py-2 px-3 bg-white rounded-lg shadow-sm">
+      <div
+        key={item.id}
+        draggable
+        onDragStart={() => setDragState({ itemId: item.id, siblings, isQuickLink: true })}
+        onDragOver={e => { e.preventDefault(); setDropTargetId(item.id) }}
+        onDragLeave={() => setDropTargetId(null)}
+        onDrop={() => handleDropReorder(item.id)}
+        onDragEnd={() => { setDragState(null); setDropTargetId(null) }}
+        className={`flex items-center gap-2 py-2 px-3 bg-white rounded-lg shadow-sm cursor-grab active:cursor-grabbing transition-all
+          ${isDragging ? 'opacity-40' : 'hover:bg-gray-50'}
+          ${isDropTarget ? 'border-t-2 border-vvz-green' : ''}
+        `}
+      >
+        {/* Sleepgreep */}
+        <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
+        </svg>
         {item.icon && QUICK_LINK_ICONS[item.icon] && (
           <span className="text-gray-400 flex-shrink-0 [&>svg]:w-5 [&>svg]:h-5">
             {QUICK_LINK_ICONS[item.icon]}
@@ -550,26 +561,6 @@ export default function MenuBeheerPage() {
           <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${item.is_visible ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
         </button>
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => handleReorder(siblings, index, -1, true)}
-            disabled={index === 0}
-            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
-            title="Omhoog"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-            </svg>
-          </button>
-          <button
-            onClick={() => handleReorder(siblings, index, 1, true)}
-            disabled={index === siblings.length - 1}
-            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
-            title="Omlaag"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
           <button
             onClick={() => openEditModal(item, true)}
             className="p-1 text-blue-500 hover:text-blue-700"
@@ -673,7 +664,7 @@ export default function MenuBeheerPage() {
       ) : (
         <div>
           <div className="space-y-1 mb-4">
-            {quickLinkItems.map((item, idx) => renderQuickLinkItem(item, quickLinkItems, idx))}
+            {quickLinkItems.map(item => renderQuickLinkItem(item, quickLinkItems))}
           </div>
           <button
             onClick={() => openCreateModal(null, true)}

@@ -266,12 +266,10 @@ export default function TopNav() {
                               const subExpanded = subAccordion === child.label
                               return (
                                 <div key={child.label}>
-                                  {/* Mobiel: scheidingslijn boven sub-groep */}
-                                  <div className="border-t border-white/20 my-1 sm:my-2" />
                                   <button
                                     onClick={() => setSubAccordion(subExpanded ? null : child.label)}
                                     aria-expanded={subExpanded}
-                                    className="flex items-center gap-1.5 py-0.5 sm:py-1 text-base sm:text-2xl font-medium text-white/90 hover:text-white transition-colors"
+                                    className="flex items-center gap-1.5 py-0.5 sm:py-1 text-base sm:text-2xl font-medium text-white/70 hover:text-white transition-colors"
                                   >
                                     {child.label}
                                     <svg className={`w-3 h-3 transition-transform shrink-0 ${subExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
