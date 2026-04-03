@@ -132,7 +132,7 @@ export default function NieuwsEditPage() {
     }
 
     savedRef.current = true
-    navigate('/beheer/nieuws')
+    navigate('/beheer/nieuws', { state: { success: 'Nieuwsbericht opgeslagen' } })
   }
 
   if (loading) {

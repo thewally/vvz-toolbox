@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { fetchNewsItemBySlug } from '../services/news'
+import { useAuth } from '../context/AuthContext'
 
 export default function NieuwsDetailPage() {
   const { slug } = useParams()
+  const { user } = useAuth()
   const [item, setItem] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
@@ -45,6 +47,12 @@ export default function NieuwsDetailPage() {
       <div className="mb-4">
         <Link to="/nieuws" className="text-sm text-vvz-green hover:underline">&larr; Terug naar Nieuws</Link>
       </div>
+
+      {item.expires_at && new Date(item.expires_at) < new Date() && user && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm p-4 rounded-lg mb-4">
+          Deze pagina is verlopen en niet meer zichtbaar voor bezoekers.
+        </div>
+      )}
 
       <h1 className="text-2xl font-bold text-gray-800 mb-2">{item.title}</h1>
       {item.published_at && (

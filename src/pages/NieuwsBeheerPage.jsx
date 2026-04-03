@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { fetchAllNewsItems, deleteNewsItem, updateNewsItem } from '../services/news'
 
 function getStatus(item) {
@@ -14,10 +14,22 @@ function getStatus(item) {
 }
 
 export default function NieuwsBeheerPage() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
+
+  useEffect(() => {
+    if (location.state?.success) {
+      setSuccess(location.state.success)
+      navigate(location.pathname, { replace: true, state: {} })
+      const timer = setTimeout(() => setSuccess(null), 4000)
+      return () => clearTimeout(timer)
+    }
+  }, [location.state]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { load() }, [])
 
@@ -38,7 +50,7 @@ export default function NieuwsBeheerPage() {
   async function handleTogglePublished(item) {
     const published = isPublished(item)
     const { error: updateError } = await updateNewsItem(item.id, {
-      published_at: published ? '9999-01-01T00:00:00Z' : new Date().toISOString(),
+      published_at: published ? null : new Date().toISOString(),
     })
     if (updateError) { setError('Opslaan mislukt: ' + updateError.message); return }
     load()
@@ -80,6 +92,10 @@ export default function NieuwsBeheerPage() {
           Nieuw nieuwsbericht
         </Link>
       </div>
+
+      {success && (
+        <div className="bg-green-50 border border-green-200 text-green-700 text-sm p-4 rounded-lg mb-4">{success}</div>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-lg mb-4">{error}</div>

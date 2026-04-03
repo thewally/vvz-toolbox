@@ -156,6 +156,24 @@ export default function TipTapEditor({ content, onChange, disabled = false, onIm
         <span className="w-px bg-gray-300 mx-1" role="separator" aria-orientation="vertical" />
 
         <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          active={editor.isActive('blockquote')}
+          disabled={disabled}
+          title="Citaat"
+        >
+          Citaat
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          disabled={disabled}
+          title="Horizontale lijn"
+        >
+          ---
+        </ToolbarButton>
+
+        <span className="w-px bg-gray-300 mx-1" role="separator" aria-orientation="vertical" />
+
+        <ToolbarButton
           onClick={handleAddLink}
           active={editor.isActive('link')}
           disabled={disabled}

@@ -110,7 +110,7 @@ export default function ContentEditPage() {
     }
 
     savedRef.current = true
-    navigate('/beheer/content')
+    navigate('/beheer/content', { state: { success: 'Pagina opgeslagen' } })
   }
 
   if (loading) {

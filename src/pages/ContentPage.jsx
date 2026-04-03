@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { fetchPageBySlug } from '../services/pages'
+import { useAuth } from '../context/AuthContext'
 
 export default function ContentPage() {
   const { slug } = useParams()
+  const { user } = useAuth()
   const [page, setPage] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
@@ -40,8 +42,15 @@ export default function ContentPage() {
     )
   }
 
+  const isExpired = page.expires_at && new Date(page.expires_at) < new Date()
+
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6">
+      {isExpired && user && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm p-4 rounded-lg mb-4">
+          Deze pagina is verlopen en niet meer zichtbaar voor bezoekers.
+        </div>
+      )}
       <h1 className="text-2xl font-bold text-gray-800 mb-2">{page.title}</h1>
       {page.published_at && (
         <p className="text-sm text-gray-400 mb-6">

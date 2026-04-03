@@ -36,18 +36,57 @@ export default function MenuBeheerPage() {
   const [pages, setPages] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(null)
+  const [actionLoading, setActionLoading] = useState(false)
   const [editModal, setEditModal] = useState(null) // { mode: 'create'|'edit', item, parentId, isQuickLink }
   const [deleteConfirm, setDeleteConfirm] = useState(null) // { item, isQuickLink, hasChildren }
   const [saving, setSaving] = useState(false)
   const [initializing, setInitializing] = useState(false)
+  const [initConfirm, setInitConfirm] = useState(null) // null or { count: number }
 
   const availableTools = getAvailableTools()
 
+  function showSuccess(msg) {
+    setSuccess(msg)
+    setTimeout(() => setSuccess(null), 3000)
+  }
+
+  function showError(msg) {
+    setError(msg)
+    setTimeout(() => setError(null), 5000)
+  }
+
   async function handleInitializeMenu() {
+    // Check of er al items bestaan
+    setError(null)
+    try {
+      const { data: existing, error: fetchErr } = await fetchAllMenuItems()
+      if (fetchErr) throw new Error(fetchErr.message)
+      if (existing && existing.length > 0) {
+        setInitConfirm({ count: existing.length })
+        return
+      }
+    } catch (err) {
+      setError(err.message)
+      return
+    }
+    await doInitializeMenu()
+  }
+
+  async function doInitializeMenu() {
+    setInitConfirm(null)
     setInitializing(true)
     setError(null)
 
     try {
+      // Verwijder bestaande items als die er zijn
+      const { data: existing } = await fetchAllMenuItems()
+      if (existing && existing.length > 0) {
+        for (const item of existing) {
+          await deleteMenuItem(item.id)
+        }
+      }
+
       for (let idx = 0; idx < NAV_SECTIONS.length; idx++) {
         const section = NAV_SECTIONS[idx]
 
@@ -187,10 +226,13 @@ export default function MenuBeheerPage() {
 
   // Toggle zichtbaarheid
   async function handleToggleVisible(item, isQuickLink) {
+    setActionLoading(true)
     const updateFn = isQuickLink ? updateQuickLink : updateMenuItem
     const { error: updateError } = await updateFn(item.id, { is_visible: !item.is_visible })
-    if (updateError) { setError(updateError.message); return }
+    if (updateError) { showError(updateError.message); setActionLoading(false); return }
     await loadData()
+    showSuccess(item.is_visible ? 'Item verborgen' : 'Item zichtbaar gemaakt')
+    setActionLoading(false)
   }
 
   // Verwijder item
@@ -198,18 +240,23 @@ export default function MenuBeheerPage() {
     const { item, isQuickLink } = deleteConfirm
     setDeleteConfirm(null)
 
+    setActionLoading(true)
     const deleteFn = isQuickLink ? deleteQuickLink : deleteMenuItem
     const { error: deleteError } = await deleteFn(item.id)
     if (deleteError) {
-      setError(deleteError.message)
+      showError(deleteError.message)
+      setActionLoading(false)
       return
     }
 
     await loadData()
+    showSuccess('Item verwijderd')
+    setActionLoading(false)
   }
 
   // Open modal voor nieuw item
   function openCreateModal(parentId = null, isQuickLink = false) {
+    setFieldErrors({})
     setEditModal({
       mode: 'create',
       parentId,
@@ -230,6 +277,7 @@ export default function MenuBeheerPage() {
 
   // Open modal voor bewerken
   function openEditModal(item, isQuickLink = false) {
+    setFieldErrors({})
     setEditModal({
       mode: 'edit',
       parentId: item.parent_id,
@@ -249,9 +297,40 @@ export default function MenuBeheerPage() {
     })
   }
 
+  // Validatie van modal formulier
+  function validateModal() {
+    const { item } = editModal
+    const errors = {}
+    if (item.type === 'tool' && !item.tool_route) {
+      errors.tool_route = 'Selecteer een tool'
+    }
+    if (item.type === 'page' && !item.page_id) {
+      errors.page_id = 'Selecteer een pagina'
+    }
+    if (item.type === 'external') {
+      if (!item.external_url) {
+        errors.external_url = 'Voer een URL in'
+      } else {
+        try {
+          new URL(item.external_url)
+        } catch {
+          errors.external_url = 'Voer een geldige URL in (bijv. https://...)'
+        }
+      }
+    }
+    return errors
+  }
+
+  const [fieldErrors, setFieldErrors] = useState({})
+
   // Opslaan (create of update)
   async function handleSave(e) {
     e.preventDefault()
+
+    const errors = validateModal()
+    setFieldErrors(errors)
+    if (Object.keys(errors).length > 0) return
+
     setSaving(true)
     setError(null)
 
@@ -315,8 +394,9 @@ export default function MenuBeheerPage() {
 
       setEditModal(null)
       await loadData()
+      showSuccess(mode === 'create' ? 'Item aangemaakt' : 'Item bijgewerkt')
     } catch (err) {
-      setError(err.message)
+      showError(err.message)
     } finally {
       setSaving(false)
     }
@@ -523,9 +603,18 @@ export default function MenuBeheerPage() {
 
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Menubeheer</h1>
 
+      {success && (
+        <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg mb-4">{success}</div>
+      )}
+
       {error && (
-        <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg mb-4">
-          {error}
+        <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 ml-2" aria-label="Sluiten">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
       )}
 
@@ -629,6 +718,32 @@ export default function MenuBeheerPage() {
         </div>
       )}
 
+      {/* Initialisatie bevestiging */}
+      {initConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" role="dialog" aria-modal="true">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-2">Menu vervangen?</h2>
+            <p className="text-sm text-gray-600 mb-5">
+              Er zijn al <strong>{initConfirm.count}</strong> items. Wil je deze vervangen door het standaardmenu?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setInitConfirm(null)}
+                className="flex-1 border border-gray-300 text-gray-700 text-sm font-medium py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Annuleren
+              </button>
+              <button
+                onClick={doInitializeMenu}
+                className="flex-1 bg-orange-500 text-white text-sm font-medium py-2 rounded-lg hover:bg-orange-600 transition-colors"
+              >
+                Vervangen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Edit/Create Modal */}
       {editModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 overflow-y-auto py-8">
@@ -672,8 +787,8 @@ export default function MenuBeheerPage() {
                   {pages.length > 0 ? (
                     <select
                       value={editModal.item.page_id || ''}
-                      onChange={e => updateModalField('page_id', e.target.value || null)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green"
+                      onChange={e => { updateModalField('page_id', e.target.value || null); setFieldErrors(fe => ({ ...fe, page_id: undefined })) }}
+                      className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green ${fieldErrors.page_id ? 'border-red-400' : 'border-gray-300'}`}
                     >
                       <option value="">Selecteer een pagina...</option>
                       {pages.map(p => (
@@ -685,6 +800,7 @@ export default function MenuBeheerPage() {
                       Geen pagina&apos;s beschikbaar. Maak eerst een pagina aan via Pagina&apos;s beheer.
                     </p>
                   )}
+                  {fieldErrors.page_id && <p className="text-xs text-red-500 mt-1">{fieldErrors.page_id}</p>}
                 </div>
               )}
 
@@ -693,14 +809,15 @@ export default function MenuBeheerPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tool</label>
                   <select
                     value={editModal.item.tool_route}
-                    onChange={e => updateModalField('tool_route', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green"
+                    onChange={e => { updateModalField('tool_route', e.target.value); setFieldErrors(fe => ({ ...fe, tool_route: undefined })) }}
+                    className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green ${fieldErrors.tool_route ? 'border-red-400' : 'border-gray-300'}`}
                   >
                     <option value="">Selecteer een tool...</option>
                     {availableTools.map(t => (
                       <option key={t.route} value={t.route}>{t.label} ({t.route})</option>
                     ))}
                   </select>
+                  {fieldErrors.tool_route && <p className="text-xs text-red-500 mt-1">{fieldErrors.tool_route}</p>}
                 </div>
               )}
 
@@ -710,10 +827,11 @@ export default function MenuBeheerPage() {
                   <input
                     type="url"
                     value={editModal.item.external_url}
-                    onChange={e => updateModalField('external_url', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green"
+                    onChange={e => { updateModalField('external_url', e.target.value); setFieldErrors(fe => ({ ...fe, external_url: undefined })) }}
+                    className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green ${fieldErrors.external_url ? 'border-red-400' : 'border-gray-300'}`}
                     placeholder="https://..."
                   />
+                  {fieldErrors.external_url && <p className="text-xs text-red-500 mt-1">{fieldErrors.external_url}</p>}
                 </div>
               )}
 
@@ -797,7 +915,7 @@ export default function MenuBeheerPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={saving}
+                  disabled={saving || Object.values(fieldErrors).some(Boolean)}
                   className="px-4 py-2 text-sm font-medium text-white bg-vvz-green hover:bg-vvz-green/90 rounded-lg disabled:opacity-50"
                 >
                   {saving ? 'Opslaan...' : 'Opslaan'}
