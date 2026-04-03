@@ -15,6 +15,7 @@ import {
 } from '../services/menu'
 import { supabase } from '../lib/supabaseClient'
 import { QUICK_LINK_ICONS, QUICK_LINK_ICON_KEYS } from '../lib/quickLinkIcons'
+import { NAV_SECTIONS, QUICK_LINKS } from '../lib/navigation'
 
 const TYPE_BADGES = {
   group: { label: 'Groep', className: 'bg-gray-200 text-gray-700' },
@@ -37,8 +38,59 @@ export default function MenuBeheerPage() {
   const [error, setError] = useState(null)
   const [editModal, setEditModal] = useState(null) // { mode: 'create'|'edit', item, parentId, isQuickLink }
   const [saving, setSaving] = useState(false)
+  const [initializing, setInitializing] = useState(false)
 
   const availableTools = getAvailableTools()
+
+  async function handleInitializeMenu() {
+    setInitializing(true)
+    setError(null)
+
+    try {
+      for (let idx = 0; idx < NAV_SECTIONS.length; idx++) {
+        const section = NAV_SECTIONS[idx]
+
+        // Maak parent groep aan
+        const { data: parent, error: parentError } = await createMenuItem({
+          label: section.label,
+          type: 'group',
+          position: idx,
+          is_visible: true,
+        })
+        if (parentError) throw new Error(parentError.message)
+
+        // Maak children aan
+        if (section.children) {
+          for (let childIdx = 0; childIdx < section.children.length; childIdx++) {
+            const child = section.children[childIdx]
+            const childPayload = {
+              parent_id: parent.id,
+              label: child.label,
+              position: childIdx,
+              is_visible: true,
+            }
+
+            if (child.href) {
+              childPayload.type = 'external'
+              childPayload.external_url = child.href
+            } else {
+              childPayload.type = 'tool'
+              childPayload.tool_route = child.to
+            }
+
+            const { error: childError } = await createMenuItem(childPayload)
+            if (childError) throw new Error(childError.message)
+          }
+        }
+      }
+
+      await loadData()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setInitializing(false)
+    }
+  }
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -487,6 +539,24 @@ export default function MenuBeheerPage() {
         <div className="text-center py-12 text-gray-500">Laden...</div>
       ) : activeTab === 'menu' ? (
         <div>
+          {menuItems.length === 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 flex items-start gap-3">
+              <svg className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="text-sm text-blue-800 font-medium">Het hoofdmenu is nog leeg.</p>
+                <p className="text-sm text-blue-700 mt-1">Klik op de knop om het standaardmenu te laden vanuit de vaste navigatie.</p>
+                <button
+                  onClick={handleInitializeMenu}
+                  disabled={initializing}
+                  className="mt-3 text-sm font-medium bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {initializing ? 'Bezig...' : 'Initialiseer standaardmenu'}
+                </button>
+              </div>
+            </div>
+          )}
           <div className="space-y-1 mb-4">
             {menuTree.map((item, idx) => renderMenuItem(item, menuTree, idx, 0))}
           </div>

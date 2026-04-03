@@ -16,6 +16,70 @@
 -- ALTER TABLE quick_links ADD COLUMN description TEXT;
 -- ALTER TABLE quick_links ADD COLUMN icon TEXT;
 -- ALTER TABLE quick_links ADD COLUMN show_on_home BOOLEAN NOT NULL DEFAULT false;
+
+-- Fase 4: Seed data - initialiseer het standaard hoofdmenu
+-- Voer dit uit in de Supabase SQL editor als alternatief voor de UI-knop:
+--
+-- DO $$
+-- DECLARE
+--   grp_wedstrijdinformatie UUID;
+--   grp_teams UUID;
+--   grp_trainen UUID;
+--   grp_sponsoring UUID;
+--   grp_clubinformatie UUID;
+--   grp_lidmaatschap UUID;
+--   grp_contact UUID;
+-- BEGIN
+--   -- Groepen aanmaken
+--   INSERT INTO menu_items (label, type, position, is_visible) VALUES ('WEDSTRIJDINFORMATIE', 'group', 0, true) RETURNING id INTO grp_wedstrijdinformatie;
+--   INSERT INTO menu_items (label, type, position, is_visible) VALUES ('TEAMS', 'group', 1, true) RETURNING id INTO grp_teams;
+--   INSERT INTO menu_items (label, type, position, is_visible) VALUES ('TRAINEN', 'group', 2, true) RETURNING id INTO grp_trainen;
+--   INSERT INTO menu_items (label, type, position, is_visible) VALUES ('SPONSORING', 'group', 3, true) RETURNING id INTO grp_sponsoring;
+--   INSERT INTO menu_items (label, type, position, is_visible) VALUES ('CLUBINFORMATIE', 'group', 4, true) RETURNING id INTO grp_clubinformatie;
+--   INSERT INTO menu_items (label, type, position, is_visible) VALUES ('LIDMAATSCHAP', 'group', 5, true) RETURNING id INTO grp_lidmaatschap;
+--   INSERT INTO menu_items (label, type, position, is_visible) VALUES ('CONTACT', 'group', 6, true) RETURNING id INTO grp_contact;
+--
+--   -- WEDSTRIJDINFORMATIE children
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_wedstrijdinformatie, 'Programma', 'tool', '/wedstrijden/programma', 0, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_wedstrijdinformatie, 'Uitslagen', 'tool', '/wedstrijden/uitslagen', 1, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_wedstrijdinformatie, 'Afgelastingen', 'tool', '/wedstrijden/afgelastingen', 2, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_wedstrijdinformatie, 'Wedstrijdverslagen', 'tool', '/wedstrijden/verslagen', 3, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_wedstrijdinformatie, 'Topscorers & Keeperstrofee', 'tool', '/wedstrijden/topscorers', 4, true);
+--
+--   -- TEAMS children
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_teams, 'Senioren', 'tool', '/teams/senioren', 0, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_teams, 'Veteranen', 'tool', '/teams/veteranen', 1, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_teams, 'Junioren', 'tool', '/teams/junioren', 2, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_teams, 'Pupillen', 'tool', '/teams/pupillen', 3, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_teams, 'Zaalvoetbal', 'tool', '/teams/zaalvoetbal', 4, true);
+--
+--   -- TRAINEN children
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_trainen, 'Trainingsschema', 'tool', '/trainingsschema', 0, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_trainen, 'Veldindeling', 'tool', '/trainingsschema/veldindeling', 1, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_trainen, 'Techniektrainingen', 'tool', '/techniektrainingen', 2, true);
+--
+--   -- SPONSORING children
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_sponsoring, 'Sponsors', 'tool', '/sponsors', 0, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_sponsoring, 'Sponsor worden?', 'tool', '/sponsoring/sponsor-worden', 1, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_sponsoring, 'Sponsor Acties', 'tool', '/sponsoring/acties', 2, true);
+--
+--   -- CLUBINFORMATIE children
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_clubinformatie, 'Plattegrond', 'tool', '/plattegrond', 0, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_clubinformatie, 'Huisstijl', 'tool', '/huistijl', 1, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_clubinformatie, 'Historie', 'tool', '/club/historie', 2, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_clubinformatie, 'Ereleden', 'tool', '/club/ereleden', 3, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_clubinformatie, 'Reglementen', 'tool', '/club/reglementen', 4, true);
+--
+--   -- LIDMAATSCHAP children
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_lidmaatschap, 'Lid worden?', 'tool', '/lid-worden', 0, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_lidmaatschap, 'Contributie', 'tool', '/lidmaatschap/contributie', 1, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_lidmaatschap, 'Vrijwilliger worden?', 'tool', '/vrijwilliger', 2, true);
+--
+--   -- CONTACT children
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_contact, 'Contactgegevens', 'tool', '/contact/gegevens', 0, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_contact, 'Locatie & Routebeschrijving', 'tool', '/contact/locatie', 1, true);
+--   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_contact, 'Wie doet wat?', 'tool', '/contact/wie-doet-wat', 2, true);
+-- END $$;
 */
 
 import { supabase } from '../lib/supabaseClient'
@@ -69,6 +133,7 @@ export async function fetchMenu() {
   const { data, error } = await supabase
     .from('menu_items')
     .select('*, page:pages(slug)')
+    .eq('is_visible', true)
     .order('position', { ascending: true })
 
   if (error) return { data: null, error }

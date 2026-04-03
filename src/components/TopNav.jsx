@@ -15,15 +15,14 @@ function normalizeMenuItem(item) {
       label: item.label,
       children: (item.children || []).map(child => {
         if (child.type === 'group') {
-          // Sub-verzamelitem (niveau 2)
           return {
             label: child.label,
             isSubGroup: true,
-            children: (child.children || []).map(normalizeMenuItem),
+            children: (child.children || []).map(normalizeMenuItem).filter(Boolean),
           }
         }
         return normalizeMenuItem(child)
-      }),
+      }).filter(Boolean),
     }
   }
 
@@ -35,6 +34,8 @@ function normalizeMenuItem(item) {
     result.to = item.tool_route
   } else if (item.type === 'page' && item.page?.slug) {
     result.to = `/pagina/${item.page.slug}`
+  } else if (item.type === 'page') {
+    return null  // pagina verwijderd
   }
 
   return result
@@ -77,7 +78,13 @@ export default function TopNav() {
         ])
 
         if (!menuResult.error && menuResult.data && menuResult.data.length > 0) {
-          setNavSections(menuResult.data.map(normalizeMenuItem))
+          const normalized = menuResult.data
+            .map(normalizeMenuItem)
+            .filter(Boolean)
+            .filter(item => !item.children || item.children.length > 0)
+          setNavSections(normalized)
+        } else {
+          console.warn('[TopNav] Menu uit database niet beschikbaar, fallback naar hardcoded navigatie')
         }
 
         if (!quickLinksResult.error && quickLinksResult.data && quickLinksResult.data.length > 0) {
