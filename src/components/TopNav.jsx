@@ -196,7 +196,7 @@ export default function TopNav() {
       </div>
 
       {/* Schermvullend menu */}
-      <div className={`fixed inset-0 z-50 bg-vvz-green text-white flex flex-col transition-transform duration-300 ease-in-out ${menuOpen ? 'translate-y-0 pointer-events-auto' : '-translate-y-full pointer-events-none'}`}>
+      <div className={`fixed inset-0 z-[60] bg-vvz-green text-white flex flex-col transition-transform duration-300 ease-in-out ${menuOpen ? 'translate-y-0 pointer-events-auto' : '-translate-y-full pointer-events-none'}`}>
 
         {/* Topbalk: logo links, sluiten rechts */}
         <div className="flex items-start justify-between px-6 py-2 sm:py-4 shrink-0">
