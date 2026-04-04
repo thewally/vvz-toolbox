@@ -31,7 +31,7 @@ export default function Layout() {
           />
         </Link>
       </header>
-      <main className={`transition-all duration-300 ${scrolled ? 'pt-4' : 'pt-60'}`}>
+      <main className="pt-60">
         <Outlet />
       </main>
       <div className="mt-12 pb-28 no-print" />
