@@ -27,7 +27,7 @@ export default function Layout() {
           <img
             src={`${import.meta.env.BASE_URL}logo-vvz.png`}
             alt="VVZ'49"
-            className={`object-contain drop-shadow-md transition-all duration-300 ${scrolled ? 'h-12 w-12' : 'h-64 w-64'}`}
+            className={`object-contain drop-shadow-md transition-all duration-300 ${scrolled ? 'h-20 w-20' : 'h-64 w-64'}`}
           />
         </Link>
       </header>
