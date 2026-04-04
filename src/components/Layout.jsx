@@ -16,7 +16,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className={`bg-vvz-green text-white no-print sticky top-0 transition-shadow duration-300 ${scrolled ? 'shadow-lg' : ''}`}>
+      <header className={`bg-vvz-green text-white no-print sticky top-0 z-20 transition-shadow duration-300 ${scrolled ? 'shadow-lg' : ''}`}>
         <TopNav />
         {/* Groot logo — gecentreerd, krimpt bij scrollen */}
         <Link
