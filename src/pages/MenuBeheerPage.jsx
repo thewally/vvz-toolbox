@@ -372,10 +372,9 @@ export default function MenuBeheerPage() {
         page_id: item.type === 'page' ? item.page_id : null,
         tool_route: item.type === 'tool' ? item.tool_route : null,
         external_url: item.type === 'external' ? item.external_url : null,
-        page_group_id: item.type === 'page_group' ? item.page_group_id : null,
+        ...(isQuickLink ? {} : { page_group_id: item.type === 'page_group' ? item.page_group_id : null }),
         is_visible: item.is_visible,
       }
-
 
       let result
       if (isQuickLink) {
