@@ -379,10 +379,10 @@ function ActivityCard({ activity, user, isEditing, onStartEdit, onSave, onCancel
       onClick={user ? () => onStartEdit(activity) : undefined}
     >
       {/* Date badge */}
-      <div className="flex flex-col items-center justify-center w-20 shrink-0 bg-vvz-green text-white px-2 py-3">
-        <span className="text-xs uppercase font-medium opacity-80">{badge.weekday}</span>
+      <div className="flex flex-col items-center justify-center w-16 shrink-0 bg-vvz-green/10 text-vvz-green px-2 py-3">
+        <span className="text-[11px] font-normal opacity-70 leading-none">{badge.weekday}</span>
         <span className="text-2xl font-bold leading-tight">{badge.day}</span>
-        <span className="text-xs uppercase font-medium opacity-80">{badge.month}</span>
+        <span className="text-[11px] font-medium opacity-80 uppercase leading-none">{badge.month}</span>
       </div>
 
       {/* Content */}
