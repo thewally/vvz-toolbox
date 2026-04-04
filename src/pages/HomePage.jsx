@@ -1,4 +1,9 @@
 import { useState, useEffect } from 'react'
+
+function stripHtml(html) {
+  if (!html) return ''
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()
+}
 import { Link } from 'react-router-dom'
 import { fetchQuickLinks } from '../services/menu'
 import { fetchAllPages } from '../services/pages'
@@ -177,9 +182,9 @@ export default function HomePage() {
                     <p className="font-semibold text-gray-800 group-hover:text-vvz-green transition-colors leading-snug">
                       {item.title}
                     </p>
-                    {item.intro && (
+                    {item.content && (
                       <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                        {item.intro}
+                        {stripHtml(item.content).slice(0, 150)}{stripHtml(item.content).length > 150 ? '…' : ''}
                       </p>
                     )}
                   </div>
