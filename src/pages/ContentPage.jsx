@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { fetchPageBySlug } from '../services/pages'
 import { useAuth } from '../context/AuthContext'
+import { makeIframesResponsive } from '../lib/htmlUtils'
 
 export default function ContentPage() {
   const { slug } = useParams()
@@ -59,7 +60,7 @@ export default function ContentPage() {
       )}
       <div
         className="prose max-w-none"
-        dangerouslySetInnerHTML={{ __html: page.content || '' }}
+        dangerouslySetInnerHTML={{ __html: makeIframesResponsive(page.content) }}
       />
     </div>
   )

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { fetchNewsItemBySlug } from '../services/news'
 import { useAuth } from '../context/AuthContext'
+import { makeIframesResponsive } from '../lib/htmlUtils'
 
 export default function NieuwsDetailPage() {
   const { slug } = useParams()
@@ -71,7 +72,7 @@ export default function NieuwsDetailPage() {
 
       <div
         className="prose max-w-none"
-        dangerouslySetInnerHTML={{ __html: item.content || '' }}
+        dangerouslySetInnerHTML={{ __html: makeIframesResponsive(item.content) }}
       />
     </div>
   )
