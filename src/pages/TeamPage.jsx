@@ -237,6 +237,9 @@ export default function TeamPage() {
   const [uitslagen, setUitslagen] = useState([])
   const [teamInfo, setTeamInfo] = useState(null)
   const [stand, setStand] = useState([])
+  const [poules, setPoules] = useState([])
+  const [selectedPoulecode, setSelectedPoulecode] = useState(null)
+  const [standLoading, setStandLoading] = useState(false)
   const [teamfoto, setTeamfoto] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -261,19 +264,35 @@ export default function TeamPage() {
     setUitslagen(uitRes.data ?? [])
     setTeamfoto(gegevensRes.data?.team?.teamfoto || null)
 
-    // Zoek team info voor poulecode en teamnaam
+    // Verzamel alle poules voor dit team
     const teams = teamsRes.data ?? []
-    const info = teams.find(t => String(t.teamcode) === String(teamcode) && t.competitiesoort === 'regulier')
-      || teams.find(t => String(t.teamcode) === String(teamcode))
-    setTeamInfo(info || null)
+    const teamPoules = teams.filter(t => String(t.teamcode) === String(teamcode))
+    setPoules(teamPoules)
 
-    // Laad poulestand als poulecode bekend is
+    // Kies standaard: voorkeur voor meest recente reguliere competitie, anders laatste entry
+    const info = teamPoules.find(t => t.competitiesoort === 'regulier')
+      || teamPoules[teamPoules.length - 1]
+      || null
+    setTeamInfo(info)
+
+    // Laad poulestand voor de standaard selectie
     if (info?.poulecode) {
+      setSelectedPoulecode(info.poulecode)
       const standRes = await getPoulestand(info.poulecode)
       setStand(standRes.data ?? [])
     }
 
     setLoading(false)
+  }
+
+  async function handlePouleChange(poulecode) {
+    setSelectedPoulecode(poulecode)
+    const pouleInfo = poules.find(p => p.poulecode === poulecode) || null
+    setTeamInfo(prev => pouleInfo || prev)
+    setStandLoading(true)
+    const standRes = await getPoulestand(poulecode)
+    setStand(standRes.data ?? [])
+    setStandLoading(false)
   }
 
   if (loading) return (
@@ -572,39 +591,84 @@ export default function TeamPage() {
       </section>
 
       {/* Poulestand */}
-      {stand.length > 0 && (
+      {poules.length > 0 && (
         <section className="mb-10">
           <h2 className="text-lg font-bold text-gray-700 mb-4">Stand</h2>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200 text-gray-500">
-                  <th className="px-3 py-2 text-left font-medium w-8">#</th>
-                  <th className="px-3 py-2 text-left font-medium">Team</th>
-                  <th className="px-3 py-2 text-center font-medium w-8">G</th>
-                  <th className="px-3 py-2 text-center font-medium w-8">W</th>
-                  <th className="px-3 py-2 text-center font-medium w-8">G</th>
-                  <th className="px-3 py-2 text-center font-medium w-8">V</th>
-                  <th className="px-3 py-2 text-center font-medium w-12">Pnt</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stand.map((rij, i) => (
-                  <tr key={i} className={`border-b border-gray-50 ${rij.eigenteam === 'true' ? 'bg-green-50 font-semibold' : ''}`}>
-                    <td className="px-3 py-2 text-gray-500">{rij.positie}</td>
-                    <td className="px-3 py-2 truncate max-w-0">
-                      <span className={rij.eigenteam === 'true' ? 'text-vvz-green' : 'text-gray-800'}>{rij.teamnaam}</span>
-                    </td>
-                    <td className="px-3 py-2 text-center text-gray-600">{rij.gespeeldewedstrijden}</td>
-                    <td className="px-3 py-2 text-center text-gray-600">{rij.gewonnen}</td>
-                    <td className="px-3 py-2 text-center text-gray-600">{rij.gelijk}</td>
-                    <td className="px-3 py-2 text-center text-gray-600">{rij.verloren}</td>
-                    <td className="px-3 py-2 text-center font-bold text-gray-800">{rij.punten}</td>
+
+          {/* Periode/competitie selectie */}
+          {poules.length > 1 && (
+            <select
+              value={selectedPoulecode || ''}
+              onChange={e => handlePouleChange(e.target.value)}
+              className="mb-4 w-full sm:w-auto border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-vvz-green focus:border-vvz-green"
+            >
+              {poules.map(p => (
+                <option key={p.poulecode} value={p.poulecode}>
+                  {[p.competitienaam, p.klassenaam, p.poulenaam].filter(Boolean).join(' – ')}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* Poule informatie kaart */}
+          {teamInfo && (teamInfo.klassenaam || teamInfo.poulenaam || teamInfo.competitienaam) && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 mb-4 text-sm text-gray-600">
+              <div className="flex flex-wrap gap-x-6 gap-y-1">
+                {teamInfo.competitienaam && (
+                  <span><span className="font-medium text-gray-700">Competitie:</span> {teamInfo.competitienaam}</span>
+                )}
+                {teamInfo.klassenaam && (
+                  <span><span className="font-medium text-gray-700">Klasse:</span> {teamInfo.klassenaam}</span>
+                )}
+                {teamInfo.poulenaam && (
+                  <span><span className="font-medium text-gray-700">Poule:</span> {teamInfo.poulenaam}</span>
+                )}
+                {teamInfo.competitiesoort && (
+                  <span><span className="font-medium text-gray-700">Soort:</span> {teamInfo.competitiesoort}</span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Stand tabel */}
+          {standLoading ? (
+            <div className="flex justify-center py-6">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-vvz-green" />
+            </div>
+          ) : stand.length > 0 ? (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200 text-gray-500">
+                    <th className="px-3 py-2 text-left font-medium w-8">#</th>
+                    <th className="px-3 py-2 text-left font-medium">Team</th>
+                    <th className="px-3 py-2 text-center font-medium w-8">G</th>
+                    <th className="px-3 py-2 text-center font-medium w-8">W</th>
+                    <th className="px-3 py-2 text-center font-medium w-8">G</th>
+                    <th className="px-3 py-2 text-center font-medium w-8">V</th>
+                    <th className="px-3 py-2 text-center font-medium w-12">Pnt</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {stand.map((rij, i) => (
+                    <tr key={i} className={`border-b border-gray-50 ${rij.eigenteam === 'true' ? 'bg-green-50 font-semibold' : ''}`}>
+                      <td className="px-3 py-2 text-gray-500">{rij.positie}</td>
+                      <td className="px-3 py-2 truncate max-w-0">
+                        <span className={rij.eigenteam === 'true' ? 'text-vvz-green' : 'text-gray-800'}>{rij.teamnaam}</span>
+                      </td>
+                      <td className="px-3 py-2 text-center text-gray-600">{rij.gespeeldewedstrijden}</td>
+                      <td className="px-3 py-2 text-center text-gray-600">{rij.gewonnen}</td>
+                      <td className="px-3 py-2 text-center text-gray-600">{rij.gelijk}</td>
+                      <td className="px-3 py-2 text-center text-gray-600">{rij.verloren}</td>
+                      <td className="px-3 py-2 text-center font-bold text-gray-800">{rij.punten}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400">Geen stand beschikbaar voor deze competitie.</p>
+          )}
         </section>
       )}
     </div>
