@@ -90,6 +90,15 @@ html {
 }
 .ProseMirror li { margin-top: 0.25em; margin-bottom: 0.25em; }
 
+/* Responsive video embeds in publieke content */
+.prose iframe,
+.prose div[data-vimeo] iframe {
+  width: 100%;
+  aspect-ratio: 16/9;
+  height: auto;
+  max-width: 100%;
+}
+
 .ProseMirror div[data-vimeo] {
   margin: 1em 0;
   position: relative;
