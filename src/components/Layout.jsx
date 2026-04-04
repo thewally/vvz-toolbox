@@ -1,27 +1,37 @@
+import { useEffect, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import TopNav from './TopNav'
 import SponsorSlider from './SponsorSlider'
 
 export default function Layout() {
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    function handleScroll() {
+      setScrolled(window.scrollY > 40)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-vvz-green text-white shadow-lg no-print relative">
-        {/* Logo — absoluut gecentreerd, overlapt boven en onder */}
+      <header className={`bg-vvz-green text-white no-print sticky top-0 z-40 transition-shadow duration-300 ${scrolled ? 'shadow-lg' : ''}`}>
         <TopNav />
-        {/* Logo — gecentreerd, hangt volledig onder de header */}
+        {/* Groot logo — gecentreerd, krimpt bij scrollen */}
         <Link
           to="/"
           aria-label="Home"
-          className="absolute left-1/2 -translate-x-1/2 top-0 sm:top-1/2 z-10"
+          className="absolute left-1/2 -translate-x-1/2 top-0 z-10 pointer-events-auto"
         >
           <img
             src={`${import.meta.env.BASE_URL}logo-vvz.png`}
             alt="VVZ'49"
-            className="h-64 w-64 object-contain drop-shadow-md"
+            className={`object-contain drop-shadow-md transition-all duration-300 ${scrolled ? 'h-12 w-12' : 'h-64 w-64'}`}
           />
         </Link>
       </header>
-      <main className="pt-60">
+      <main className={`transition-all duration-300 ${scrolled ? 'pt-4' : 'pt-60'}`}>
         <Outlet />
       </main>
       <div className="mt-12 pb-28 no-print" />

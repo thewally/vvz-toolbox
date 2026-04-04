@@ -75,15 +75,6 @@ export default function TopNav() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [accordion, setAccordion] = useState(null)
   const [subAccordion, setSubAccordion] = useState(null)
-  const [scrolled, setScrolled] = useState(false)
-
-  useEffect(() => {
-    function handleScroll() {
-      setScrolled(window.scrollY > 20)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   // Database-gedreven menu met fallback naar hardcoded navigatie
   const [navSections, setNavSections] = useState(NAV_SECTIONS)
@@ -165,24 +156,18 @@ export default function TopNav() {
   }
 
   return (
-    <nav className={`bg-vvz-green no-print sticky top-0 z-40 transition-shadow duration-300 ${scrolled ? 'shadow-lg' : ''}`}>
+    <nav className="bg-vvz-green no-print">
       {/* Hamburgerbalk */}
       <div className="flex items-center justify-between px-4 py-2">
-        {/* Logo */}
-        <Link to="/" aria-label="Home">
-          <img
-            src={`${import.meta.env.BASE_URL}logo-vvz.png`}
-            alt="VVZ'49"
-            className={`object-contain transition-all duration-300 ${scrolled ? 'h-7 w-7' : 'h-10 w-10'}`}
-          />
-        </Link>
-
-        <div className="flex items-center gap-3">
+        <div>
           {user && (
             <Link to="/beheer" className="inline-flex items-center text-white font-medium text-sm px-3 py-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors">
               Beheer
             </Link>
           )}
+        </div>
+
+        <div className="flex items-center gap-3">
           {user ? (
             <button onClick={signOut} className="text-white/80 font-medium text-sm hover:text-white transition-colors">
               Uitloggen
