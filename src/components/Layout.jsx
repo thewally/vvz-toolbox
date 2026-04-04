@@ -22,7 +22,7 @@ export default function Layout() {
         <Link
           to="/"
           aria-label="Home"
-          className="absolute left-1/2 -translate-x-1/2 top-0 z-10 pointer-events-auto"
+          className="absolute left-1/2 -translate-x-1/2 top-4 z-10 pointer-events-auto"
         >
           <img
             src={`${import.meta.env.BASE_URL}logo-vvz.png`}
