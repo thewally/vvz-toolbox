@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { fetchActivities } from '../services/activities'
 
 const DUTCH_MONTHS_LONG = [
@@ -95,9 +96,15 @@ function ActivityCard({ activity }) {
         <div className="flex items-start gap-2">
           <h3 className="font-semibold text-gray-800 leading-snug">
             {activity.url ? (
-              <a href={activity.url} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">
-                {activity.title}
-              </a>
+              activity.url.startsWith('/') ? (
+                <Link to={activity.url} className="text-vvz-green hover:underline">
+                  {activity.title}
+                </Link>
+              ) : (
+                <a href={activity.url} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">
+                  {activity.title}
+                </a>
+              )
             ) : (
               activity.title
             )}
