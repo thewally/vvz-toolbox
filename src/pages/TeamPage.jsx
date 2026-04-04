@@ -289,7 +289,7 @@ export default function TeamPage() {
   async function handlePouleChange(poulecode) {
     setSelectedPoulecode(poulecode)
     const pouleInfo = poules.find(p => String(p.poulecode) === String(poulecode)) || null
-    setTeamInfo(prev => pouleInfo || prev)
+    if (pouleInfo) setTeamInfo(pouleInfo)
     setStandLoading(true)
     const standRes = await getPoulestand(poulecode)
     setStand(standRes.data ?? [])
@@ -618,8 +618,8 @@ export default function TeamPage() {
                 {teamInfo.competitienaam && (
                   <span><span className="font-medium text-gray-700">Competitie:</span> {teamInfo.competitienaam}</span>
                 )}
-                {teamInfo.klassenaam && (
-                  <span><span className="font-medium text-gray-700">Klasse:</span> {teamInfo.klassenaam}</span>
+                {(teamInfo.klassenaam || teamInfo.klasse) && (
+                  <span><span className="font-medium text-gray-700">Klasse:</span> {teamInfo.klassenaam || teamInfo.klasse}</span>
                 )}
                 {teamInfo.poulenaam && (
                   <span><span className="font-medium text-gray-700">Poule:</span> {teamInfo.poulenaam}</span>
