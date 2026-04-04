@@ -16,7 +16,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className={`bg-vvz-green text-white no-print sticky top-0 z-40 transition-shadow duration-300 ${scrolled ? 'shadow-lg' : ''}`}>
+      <header className={`bg-vvz-green text-white no-print sticky top-0 z-20 transition-shadow duration-300 ${scrolled ? 'shadow-lg' : ''}`}>
         <TopNav />
         {/* Groot logo — gecentreerd, krimpt bij scrollen */}
         <Link
@@ -37,7 +37,7 @@ export default function Layout() {
       <div className="mt-12 pb-28 no-print" />
 
       {/* Sponsor slider + footer — altijd zichtbaar onderaan */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
+      <div className="fixed bottom-0 left-0 right-0 z-30 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
         <SponsorSlider />
         <footer className="bg-gray-200 py-2 text-center text-xs text-gray-600 no-print">
           © {new Date().getFullYear()} Website van VVZ'49 · Gemaakt door Arjen van der Wal
