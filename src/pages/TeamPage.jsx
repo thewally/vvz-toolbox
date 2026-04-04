@@ -269,8 +269,9 @@ export default function TeamPage() {
     const teamPoules = teams.filter(t => String(t.teamcode) === String(teamcode))
     setPoules(teamPoules)
 
-    // Kies standaard: voorkeur voor meest recente reguliere competitie, anders laatste entry
-    const info = teamPoules.find(t => t.competitiesoort === 'regulier')
+    // Kies standaard: meest recente entry (laatste in de lijst), met voorkeur voor regulier
+    const regulier = [...teamPoules].reverse().find(t => t.competitiesoort === 'regulier')
+    const info = regulier
       || teamPoules[teamPoules.length - 1]
       || null
     setTeamInfo(info)
@@ -287,7 +288,7 @@ export default function TeamPage() {
 
   async function handlePouleChange(poulecode) {
     setSelectedPoulecode(poulecode)
-    const pouleInfo = poules.find(p => p.poulecode === poulecode) || null
+    const pouleInfo = poules.find(p => String(p.poulecode) === String(poulecode)) || null
     setTeamInfo(prev => pouleInfo || prev)
     setStandLoading(true)
     const standRes = await getPoulestand(poulecode)
