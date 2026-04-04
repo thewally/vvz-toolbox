@@ -218,19 +218,21 @@ export default function HomePage() {
                 const dateStr = item.date ?? item.dates_item ?? item.date_start ?? item.sort_date
                 const dateObj = dateStr ? new Date(dateStr) : null
                 const weekdag = dateObj ? dateObj.toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '') : null
-                const date = dateObj ? dateObj.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : null
+                const day = dateObj ? dateObj.toLocaleDateString('nl-NL', { day: 'numeric' }) : null
+                const month = dateObj ? dateObj.toLocaleDateString('nl-NL', { month: 'short' }) : null
                 return (
-                  <div key={item.id} className="flex gap-3 items-start border-b border-gray-100 pb-2 last:border-0">
-                    {date && (
-                      <div className="bg-vvz-green/10 text-vvz-green text-xs font-semibold rounded-lg shrink-0 text-center w-12 h-12 flex flex-col items-center justify-center">
-                        {weekdag && <div className="text-[10px] font-normal opacity-70 leading-none">{weekdag}</div>}
-                        <div className="leading-tight">{date}</div>
+                  <div key={item.id} className="flex bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    {dateObj && (
+                      <div className="flex flex-col items-center justify-center w-16 shrink-0 bg-vvz-green/10 text-vvz-green px-2 py-3">
+                        <span className="text-[11px] font-normal opacity-70 leading-none">{weekdag}</span>
+                        <span className="text-2xl font-bold leading-tight">{day}</span>
+                        <span className="text-[11px] font-medium opacity-80 uppercase leading-none">{month}</span>
                       </div>
                     )}
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-800 leading-snug">{item.title}</p>
+                    <div className="flex-1 p-3 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 leading-snug">{item.title}</p>
                       {item.time_start && (
-                        <p className="text-xs text-gray-400">{item.time_start.slice(0, 5)} uur</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{item.time_start.slice(0, 5)} uur</p>
                       )}
                     </div>
                   </div>
