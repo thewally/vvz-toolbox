@@ -4,3 +4,7 @@
 - [Contactgegevens spec](project_contactgegevens_spec.md) — feature spec voor Contact-sectie (gegevens, locatie, wie doet wat) in .claude/specs/contactgegevens.md
 - [Doorlinken teampagina spec](project_doorlinken_teampagina_spec.md) — klikbare wedstrijd-cards navigeren naar teampagina, teamnaam->teamcode lookup nodig
 - [Vrije Content spec](project_vrije_content_spec.md) — CMS feature: contentpagina's (TipTap), dynamisch menu, Quick Links in 3 fases
+- [Nieuws spec](project_nieuws_spec.md) — news_items tabel, publieke/beheer pagina's, homepage sidebar, cleanup workflow
+- [Content-verbeteringen spec](project_content_verbeteringen_spec.md) — 12 verbeteringen aan pagina's/nieuws CMS in .claude/specs/content-verbeteringen.md
+- [Pagina Groepen spec](project_pagina_groepen_spec.md) — page_groups tabel, gegroepeerde beheer-UI, dynamische menu integratie
+- [Gebruikersregistratie spec](project_gebruikers_registratie_spec.md) — zelfregistratie, e-mailverificatie, profiles tabel, profielpagina
