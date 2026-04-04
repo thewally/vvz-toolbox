@@ -91,12 +91,18 @@ html {
 .ProseMirror li { margin-top: 0.25em; margin-bottom: 0.25em; }
 
 /* Responsive video embeds in publieke content */
-.prose iframe,
+.prose iframe {
+  max-width: 100% !important;
+  width: 100% !important;
+  aspect-ratio: 16/9;
+  height: auto !important;
+}
+
 .prose div[data-vimeo] iframe {
+  max-width: 100%;
   width: 100%;
   aspect-ratio: 16/9;
   height: auto;
-  max-width: 100%;
 }
 
 .ProseMirror div[data-vimeo] {
