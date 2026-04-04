@@ -1,3 +1,6 @@
+// Migratie: verwijder intro kolom
+// ALTER TABLE news_items DROP COLUMN intro;
+//
 // Voer dit uit in Supabase SQL editor:
 // CREATE TABLE news_items (
 //   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -38,7 +41,7 @@ export async function fetchAllNewsItems() {
 export async function fetchPublicNewsItems(limit = null) {
   let query = supabase
     .from('news_items')
-    .select('id, title, slug, intro, image_url, published_at')
+    .select('id, title, slug, content, image_url, published_at')
     .order('published_at', { ascending: false })
   if (limit) query = query.limit(limit)
   const { data, error } = await query

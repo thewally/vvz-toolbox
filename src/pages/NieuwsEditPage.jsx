@@ -28,7 +28,6 @@ export default function NieuwsEditPage() {
   const [form, setForm] = useState({
     title: '',
     slug: '',
-    intro: '',
     content: '',
     published_at: new Date().toISOString().slice(0, 10),
     expires_at: '',
@@ -56,7 +55,6 @@ export default function NieuwsEditPage() {
       setForm({
         title: data.title || '',
         slug: data.slug || '',
-        intro: data.intro || '',
         content: data.content || '',
         published_at: data.published_at ? data.published_at.slice(0, 10) : '',
         expires_at: data.expires_at ? data.expires_at.slice(0, 10) : '',
@@ -110,7 +108,6 @@ export default function NieuwsEditPage() {
     const payload = {
       title: form.title,
       slug: form.slug,
-      intro: form.intro || null,
       content: form.content,
       published_at: form.published_at ? new Date(form.published_at).toISOString() : null,
       expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
@@ -212,20 +209,6 @@ export default function NieuwsEditPage() {
           </div>
         </div>
 
-        {/* Introductietekst */}
-        <div>
-          <label htmlFor="news-intro" className="block text-sm font-medium text-gray-700 mb-1">Introductietekst</label>
-          <textarea
-            id="news-intro"
-            value={form.intro}
-            onChange={e => setForm(f => ({ ...f, intro: e.target.value.slice(0, 300) }))}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green"
-            rows={3}
-            placeholder="Korte introductie (max 300 tekens)"
-          />
-          <p className="text-xs text-gray-400 mt-1">{form.intro.length} / 300 tekens</p>
-        </div>
-
         {/* Nieuwsafbeelding */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Nieuwsafbeelding</label>
@@ -277,7 +260,7 @@ export default function NieuwsEditPage() {
           </Link>
           <button
             onClick={handleSave}
-            disabled={saving || !form.title.trim() || !form.slug.trim() || !form.intro.trim()}
+            disabled={saving || !form.title.trim() || !form.slug.trim()}
             className="flex-1 bg-vvz-green text-white text-sm font-medium py-2 rounded-lg hover:bg-vvz-green/90 transition-colors disabled:opacity-50"
           >
             {saving ? 'Opslaan...' : 'Opslaan'}

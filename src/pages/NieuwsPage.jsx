@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchPublicNewsItems } from '../services/news'
 
+function stripHtml(html) {
+  if (!html) return ''
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
 export default function NieuwsPage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -59,11 +64,14 @@ export default function NieuwsPage() {
               <p className="text-xs text-gray-400 mt-1">
                 {new Date(item.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
-              {item.intro && (
-                <p className="text-sm text-gray-600 mt-1">
-                  {item.intro.length > 150 ? item.intro.slice(0, 150) + '\u2026' : item.intro}
-                </p>
-              )}
+              {item.content && (() => {
+                const preview = stripHtml(item.content)
+                return preview ? (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {preview.length > 150 ? preview.slice(0, 150) + '...' : preview}
+                  </p>
+                ) : null
+              })()}
             </div>
           </article>
         ))}
