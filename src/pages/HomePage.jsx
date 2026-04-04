@@ -206,11 +206,14 @@ export default function HomePage() {
             <div className="space-y-2">
               {activities.map(item => {
                 const dateStr = item.date ?? item.dates_item ?? item.date_start ?? item.sort_date
-                const date = dateStr ? new Date(dateStr).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : null
+                const dateObj = dateStr ? new Date(dateStr) : null
+                const weekdag = dateObj ? dateObj.toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '') : null
+                const date = dateObj ? dateObj.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : null
                 return (
                   <div key={item.id} className="flex gap-3 items-start border-b border-gray-100 pb-2 last:border-0">
                     {date && (
                       <div className="bg-vvz-green/10 text-vvz-green text-xs font-semibold rounded-lg px-2 py-1 shrink-0 text-center min-w-[44px]">
+                        {weekdag && <div className="text-[10px] font-normal opacity-70">{weekdag}</div>}
                         {date}
                       </div>
                     )}
