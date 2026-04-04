@@ -115,13 +115,27 @@ export default function SchedulePage({ isAdmin: isAdminProp, scheduleId: schedul
       const row1 = canvases.slice(0, 3)
       const row2 = canvases.slice(3)
 
-      const colWidth = canvases[0]?.width || 0
       const row1Width = row1.reduce((s, c) => s + c.width, 0)
       const row2Width = row2.reduce((s, c) => s + c.width, 0)
-      const totalWidth = Math.max(row1Width, row2Width)
       const row1Height = Math.max(...row1.map(c => c.height))
       const row2Height = row2.length ? Math.max(...row2.map(c => c.height)) : 0
       const gap = 20 // px tussenruimte tussen rijen
+
+      // Laad veldindeling SVG als afbeelding
+      const fieldWidth = row1.length >= 3 ? row1[2].width : 0   // breedte van woensdag
+      const fieldHeight = row2.length >= 2 ? row2[1].height : 0 // hoogte van vrijdag
+      let fieldImg = null
+      if (fieldWidth > 0 && fieldHeight > 0) {
+        fieldImg = await new Promise((resolve, reject) => {
+          const img = new Image()
+          img.onload = () => resolve(img)
+          img.onerror = () => resolve(null) // niet blokkeren als SVG ontbreekt
+          img.src = `${import.meta.env.BASE_URL}plattegrond/plattegrond-trainingschema.svg`
+        })
+      }
+
+      const row2WithFieldWidth = row2Width + (fieldImg ? fieldWidth : 0)
+      const totalWidth = Math.max(row1Width, row2WithFieldWidth)
 
       const combined = document.createElement('canvas')
       combined.width = totalWidth
@@ -137,6 +151,20 @@ export default function SchedulePage({ isAdmin: isAdminProp, scheduleId: schedul
       // Rij 2
       x = 0
       for (const c of row2) { ctx.drawImage(c, x, row1Height + gap); x += c.width }
+
+      // Veldindeling rechts naast vrijdag — behoud aspect ratio van de SVG
+      if (fieldImg) {
+        const svgRatio = fieldImg.naturalWidth / fieldImg.naturalHeight
+        let drawW = fieldWidth
+        let drawH = drawW / svgRatio
+        if (drawH > fieldHeight) {
+          drawH = fieldHeight
+          drawW = drawH * svgRatio
+        }
+        const drawX = row2Width + (fieldWidth - drawW) / 2
+        const drawY = row1Height + gap + (fieldHeight - drawH) / 2
+        ctx.drawImage(fieldImg, drawX, drawY, drawW, drawH)
+      }
 
       const margin = 8
       const imgData = combined.toDataURL('image/jpeg', 0.95)
@@ -798,6 +826,23 @@ export default function SchedulePage({ isAdmin: isAdminProp, scheduleId: schedul
             blockDragRef={blockDragRef}
           />
         ))}
+
+        {/* Veldindeling kaart — positie 6 in het grid (rechts van vrijdag) */}
+        <div
+          className="no-print rounded-lg border border-gray-200 overflow-hidden"
+          style={{ order: 6 }}
+        >
+          <div className="px-3 py-2 font-semibold text-sm sm:text-base bg-gray-50 text-gray-700">
+            Veldindeling
+          </div>
+          <div className="p-2">
+            <img
+              src={`${import.meta.env.BASE_URL}plattegrond/plattegrond-trainingschema.svg`}
+              alt="Veldindeling Sportpark Zonnegloren"
+              className="w-full h-auto"
+            />
+          </div>
+        </div>
       </div>
 
 
