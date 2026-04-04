@@ -31,7 +31,7 @@ export default function Layout() {
           />
         </Link>
       </header>
-      <main className="pt-60">
+      <main className="pt-72">
         <Outlet />
       </main>
       <div className="mt-12 pb-28 no-print" />
