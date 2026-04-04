@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
 import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
 import { useAuth } from '../context/AuthContext'
@@ -75,9 +74,6 @@ export default function SchedulePage({ isAdmin: isAdminProp, scheduleId: schedul
 
   const scheduleRef = useRef(null)
   const [exporting, setExporting] = useState(false)
-
-  // Register PDF export handler with parent TrainingschemaLayout
-  const { registerExportHandler } = useOutletContext() || {}
 
   const handleExportPdf = async () => {
     if (!scheduleRef.current || exporting) return
@@ -181,16 +177,6 @@ export default function SchedulePage({ isAdmin: isAdminProp, scheduleId: schedul
     }
   }
 
-  // Keep a ref to the latest export handler so the registration stays stable
-  const exportHandlerRef = useRef(handleExportPdf)
-  exportHandlerRef.current = handleExportPdf
-
-  useEffect(() => {
-    if (registerExportHandler) {
-      registerExportHandler((...args) => exportHandlerRef.current(...args))
-      return () => registerExportHandler(null)
-    }
-  }, [registerExportHandler])
 
   const today = useMemo(() => {
     const jsDay = new Date().getDay()
@@ -777,6 +763,16 @@ export default function SchedulePage({ isAdmin: isAdminProp, scheduleId: schedul
             Geldig: {formatValidityLabel(currentSchedule)}
           </span>
         )}
+        <button
+          onClick={handleExportPdf}
+          disabled={exporting}
+          className="ml-auto flex items-center gap-1.5 px-3 py-1 rounded-md text-sm font-medium bg-vvz-green text-white hover:bg-vvz-green/90 transition-colors disabled:opacity-50 no-print"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          {exporting ? 'Exporteren...' : 'PDF'}
+        </button>
       </div>
       <div ref={scheduleRef} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
