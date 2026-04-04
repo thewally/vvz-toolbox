@@ -96,7 +96,17 @@ export default function HomePage() {
         ])
 
         if (newsResult.data) setNewsItems(newsResult.data)
-        if (activitiesResult.data) setActivities(activitiesResult.data.slice(0, 5))
+        if (activitiesResult.data) {
+          // Groepeer lijst-items op group_id en toon alleen de eerste (eerstvolgende) datum
+          const seen = new Set()
+          const deduped = activitiesResult.data.filter(item => {
+            if (!item.group_id) return true
+            if (seen.has(item.group_id)) return false
+            seen.add(item.group_id)
+            return true
+          })
+          setActivities(deduped.slice(0, 5))
+        }
 
         if (qlResult.error || !qlResult.data) {
           setCards(undefined)
