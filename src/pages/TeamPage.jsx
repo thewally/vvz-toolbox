@@ -614,7 +614,7 @@ export default function TeamPage() {
           {/* Poule informatie kaart */}
           {teamInfo && (teamInfo.klassenaam || teamInfo.poulenaam || teamInfo.competitienaam) && (
             <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 mb-4 text-sm text-gray-600">
-              <div className="flex flex-wrap gap-x-6 gap-y-1">
+              <div className="flex flex-col gap-1">
                 {teamInfo.competitienaam && (
                   <span><span className="font-medium text-gray-700">Competitie:</span> {teamInfo.competitienaam}</span>
                 )}
