@@ -220,8 +220,8 @@ export default function HomePage() {
                 const weekdag = dateObj ? dateObj.toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '') : null
                 const day = dateObj ? dateObj.toLocaleDateString('nl-NL', { day: 'numeric' }) : null
                 const month = dateObj ? dateObj.toLocaleDateString('nl-NL', { month: 'short' }) : null
-                return (
-                  <div key={item.id} className="flex bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                const inner = (
+                  <>
                     {dateObj && (
                       <div className="flex flex-col items-center justify-center w-14 shrink-0 bg-vvz-green/10 text-vvz-green px-2 py-2">
                         <span className="text-[10px] font-normal opacity-70 leading-none">{weekdag}</span>
@@ -235,7 +235,17 @@ export default function HomePage() {
                         <p className="text-[11px] text-gray-500 mt-0.5">{item.time_start.slice(0, 5)} uur</p>
                       )}
                     </div>
-                  </div>
+                  </>
+                )
+                const cardClass = "flex bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+                return item.url ? (
+                  item.url.startsWith('/') ? (
+                    <Link key={item.id} to={item.url} className={cardClass}>{inner}</Link>
+                  ) : (
+                    <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer" className={cardClass}>{inner}</a>
+                  )
+                ) : (
+                  <div key={item.id} className={cardClass}>{inner}</div>
                 )
               })}
               <Link to="/activiteiten" className="inline-block mt-1 text-sm text-vvz-green hover:underline">
