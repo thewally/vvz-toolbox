@@ -222,9 +222,9 @@ export default function HomePage() {
                 return (
                   <div key={item.id} className="flex gap-3 items-start border-b border-gray-100 pb-2 last:border-0">
                     {date && (
-                      <div className="bg-vvz-green/10 text-vvz-green text-xs font-semibold rounded-lg px-2 py-1 shrink-0 text-center min-w-[44px]">
-                        {weekdag && <div className="text-[10px] font-normal opacity-70">{weekdag}</div>}
-                        {date}
+                      <div className="bg-vvz-green/10 text-vvz-green text-xs font-semibold rounded-lg shrink-0 text-center w-12 h-12 flex flex-col items-center justify-center">
+                        {weekdag && <div className="text-[10px] font-normal opacity-70 leading-none">{weekdag}</div>}
+                        <div className="leading-tight">{date}</div>
                       </div>
                     )}
                     <div className="min-w-0">
