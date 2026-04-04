@@ -223,16 +223,16 @@ export default function HomePage() {
                 return (
                   <div key={item.id} className="flex bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     {dateObj && (
-                      <div className="flex flex-col items-center justify-center w-16 shrink-0 bg-vvz-green/10 text-vvz-green px-2 py-3">
-                        <span className="text-[11px] font-normal opacity-70 leading-none">{weekdag}</span>
-                        <span className="text-2xl font-bold leading-tight">{day}</span>
-                        <span className="text-[11px] font-medium opacity-80 uppercase leading-none">{month}</span>
+                      <div className="flex flex-col items-center justify-center w-14 shrink-0 bg-vvz-green/10 text-vvz-green px-2 py-2">
+                        <span className="text-[10px] font-normal opacity-70 leading-none">{weekdag}</span>
+                        <span className="text-lg font-bold leading-tight">{day}</span>
+                        <span className="text-[10px] font-medium opacity-80 uppercase leading-none">{month}</span>
                       </div>
                     )}
                     <div className="flex-1 p-3 min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 leading-snug">{item.title}</p>
+                      <p className="text-xs font-semibold text-gray-800 leading-snug">{item.title}</p>
                       {item.time_start && (
-                        <p className="text-xs text-gray-500 mt-0.5">{item.time_start.slice(0, 5)} uur</p>
+                        <p className="text-[11px] text-gray-500 mt-0.5">{item.time_start.slice(0, 5)} uur</p>
                       )}
                     </div>
                   </div>
