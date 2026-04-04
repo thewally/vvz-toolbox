@@ -220,7 +220,7 @@ export default function TopNav() {
         </div>
 
         {/* Twee kolommen */}
-        <div className="flex-1 overflow-y-auto flex justify-center px-6 py-2 sm:py-6">
+        <div className="flex-1 min-h-0 overflow-y-auto flex justify-center px-6 py-2 sm:py-6">
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-16 w-full max-w-2xl items-start">
 
             {/* Kolom 1: quick links + inloggen */}
