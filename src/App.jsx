@@ -43,6 +43,11 @@ import NieuwsPage from './pages/NieuwsPage'
 import NieuwsDetailPage from './pages/NieuwsDetailPage'
 import NieuwsBeheerPage from './pages/NieuwsBeheerPage'
 import NieuwsEditPage from './pages/NieuwsEditPage'
+import RegistrerenPage from './pages/RegistrerenPage'
+import EmailBevestigdPage from './pages/EmailBevestigdPage'
+import ProfielPage from './pages/ProfielPage'
+import WachtwoordVergetenPage from './pages/WachtwoordVergetenPage'
+import WachtwoordResettenPage from './pages/WachtwoordResettenPage'
 
 export default function App() {
   return (
@@ -60,7 +65,7 @@ export default function App() {
           <Route index element={<ActiviteitenPage />} />
         </Route>
         <Route path="beheer" element={
-          <ProtectedRoute>
+          <ProtectedRoute adminOnly>
             <BeheerLayout />
           </ProtectedRoute>
         }>
@@ -110,7 +115,7 @@ export default function App() {
           <Route path="sponsor-worden" element={<SponsorWordenPage />} />
           <Route path="acties" element={<PlaceholderPage title="Sponsor Acties" />} />
           <Route path="beheer" element={
-            <ProtectedRoute>
+            <ProtectedRoute adminOnly>
               <SponsoringBeheerPage />
             </ProtectedRoute>
           } />
@@ -138,6 +143,15 @@ export default function App() {
         <Route path="plattegrond" element={<PlattegrondPage />} />
         <Route path="huistijl" element={<HuistijlPage />} />
         <Route path="login" element={<LoginPage />} />
+        <Route path="registreren" element={<RegistrerenPage />} />
+        <Route path="email-bevestigd" element={<EmailBevestigdPage />} />
+        <Route path="wachtwoord-vergeten" element={<WachtwoordVergetenPage />} />
+        <Route path="wachtwoord-resetten" element={<WachtwoordResettenPage />} />
+        <Route path="profiel" element={
+          <ProtectedRoute>
+            <ProfielPage />
+          </ProtectedRoute>
+        } />
       </Route>
     </Routes>
   )

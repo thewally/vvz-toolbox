@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bezig met inloggen...</title>
+  <style>
+    body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; color: #374151; }
+    .loader { text-align: center; }
+    .spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #16a34a; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="loader">
+    <div class="spinner"></div>
+    <p>Bezig met inloggen...</p>
+  </div>
+  <script>
+    // OAuth en e-mail verificatie callback handler voor HashRouter
+    // Supabase stuurt tokens als query params (?code=...) of fragment (#access_token=...)
+    const base = '/vvz-toolbox/'
+    const params = new URLSearchParams(window.location.search)
+    const hash = window.location.hash
+
+    // Bepaal de doelroute
+    const nextPath = params.get('next') || '/'
+
+    // Verwijder 'next' en 'type' uit de params die we doorsturen
+    params.delete('next')
+    const type = params.get('type')
+    params.delete('type')
+
+    // Bouw de redirect URL
+    // De resterende query params (code, etc.) moeten beschikbaar blijven
+    // zodat de Supabase client ze kan oppikken via onAuthStateChange
+    const remainingSearch = params.toString() ? '?' + params.toString() : ''
+    const hashFragment = hash ? '&' + hash.substring(1) : ''
+
+    window.location.replace(base + remainingSearch + '#' + nextPath + hashFragment)
+  </script>
+</body>
+</html>
