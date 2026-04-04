@@ -272,7 +272,7 @@ export async function deleteMenuItem(id) {
 /**
  * Maakt een nieuwe quick link aan.
  */
-export async function createQuickLink({ label, type, page_id, tool_route, external_url, position, is_visible, description, icon, show_on_home }) {
+export async function createQuickLink({ label, type, page_id, tool_route, external_url, position, is_visible }) {
   const { data, error } = await supabase
     .from('quick_links')
     .insert({
@@ -283,9 +283,6 @@ export async function createQuickLink({ label, type, page_id, tool_route, extern
       external_url: external_url || null,
       position: position ?? 0,
       is_visible: is_visible ?? true,
-      description: description || null,
-      icon: icon || null,
-      show_on_home: show_on_home ?? false,
     })
     .select()
     .single()

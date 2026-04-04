@@ -15,7 +15,6 @@ import {
 } from '../services/menu'
 import { fetchPageGroups } from '../services/pageGroups'
 import { supabase } from '../lib/supabaseClient'
-import { QUICK_LINK_ICONS, QUICK_LINK_ICON_KEYS } from '../lib/quickLinkIcons'
 import { NAV_SECTIONS, QUICK_LINKS } from '../lib/navigation'
 
 const TYPE_BADGES = {
@@ -275,9 +274,6 @@ export default function MenuBeheerPage() {
         tool_route: '',
         external_url: '',
         is_visible: true,
-        description: '',
-        icon: '',
-        show_on_home: false,
       },
     })
   }
@@ -298,9 +294,6 @@ export default function MenuBeheerPage() {
         tool_route: item.tool_route || '',
         external_url: item.external_url || '',
         is_visible: item.is_visible,
-        description: item.description || '',
-        icon: item.icon || '',
-        show_on_home: item.show_on_home ?? false,
       },
     })
   }
@@ -383,12 +376,6 @@ export default function MenuBeheerPage() {
         is_visible: item.is_visible,
       }
 
-      // Voeg quick-link-specifieke velden toe
-      if (isQuickLink) {
-        payload.description = item.description || null
-        payload.icon = item.icon || null
-        payload.show_on_home = item.show_on_home ?? false
-      }
 
       let result
       if (isQuickLink) {
@@ -559,20 +546,10 @@ export default function MenuBeheerPage() {
         <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
         </svg>
-        {item.icon && QUICK_LINK_ICONS[item.icon] && (
-          <span className="text-gray-400 flex-shrink-0 [&>svg]:w-5 [&>svg]:h-5">
-            {QUICK_LINK_ICONS[item.icon]}
-          </span>
-        )}
         <span className="font-medium text-gray-800 flex-1">{item.label}</span>
         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.className}`}>
           {badge.label}
         </span>
-        {item.show_on_home && (
-          <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium">
-            Homepage
-          </span>
-        )}
         <button
           onClick={() => handleToggleVisible(item, true)}
           className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none shrink-0 ${item.is_visible ? 'bg-vvz-green' : 'bg-gray-300'}`}
@@ -874,74 +851,6 @@ export default function MenuBeheerPage() {
                 </div>
               )}
 
-              {/* Quick Link extra velden */}
-              {editModal.isQuickLink && (
-                <>
-                  {/* Beschrijving */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Beschrijving</label>
-                    <input
-                      type="text"
-                      value={editModal.item.description}
-                      onChange={e => updateModalField('description', e.target.value)}
-                      maxLength={80}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green"
-                      placeholder="Korte beschrijving voor homepage kaartje"
-                    />
-                    <p className="text-xs text-gray-400 mt-1">
-                      {editModal.item.description.length}/80 tekens
-                    </p>
-                  </div>
-
-                  {/* Icoon picker */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Icoon</label>
-                    <div className="grid grid-cols-5 gap-2">
-                      {QUICK_LINK_ICON_KEYS.map(key => (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => updateModalField('icon', key)}
-                          className={`flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-colors ${
-                            editModal.item.icon === key
-                              ? 'border-vvz-green bg-vvz-green/10'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                          title={key}
-                        >
-                          <span className="text-gray-700">{QUICK_LINK_ICONS[key]}</span>
-                          <span className="text-[10px] text-gray-500">{key}</span>
-                        </button>
-                      ))}
-                    </div>
-                    {editModal.item.icon && (
-                      <button
-                        type="button"
-                        onClick={() => updateModalField('icon', '')}
-                        className="mt-1 text-xs text-gray-500 hover:text-gray-700"
-                      >
-                        Icoon verwijderen
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Toon op homepage */}
-                  <div>
-                    <label className="flex items-center gap-2 text-sm text-gray-700">
-                      <input
-                        type="checkbox"
-                        checked={editModal.item.show_on_home}
-                        onChange={e => updateModalField('show_on_home', e.target.checked)}
-                        className="rounded border-gray-300 text-vvz-green focus:ring-vvz-green"
-                      />
-                      Toon als kaartje op de homepage
-                    </label>
-                    <p className="text-xs text-gray-400 mt-1 ml-6">
-                      Wordt zichtbaar als snelkoppeling op de startpagina voor alle bezoekers.
-                    </p>
-                  </div>
-                </>
-              )}
 
               {/* Knoppen */}
               <div className="flex justify-end gap-2 pt-2">
