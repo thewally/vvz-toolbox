@@ -47,17 +47,17 @@ export default function NieuwsPage() {
 
       <div className="space-y-6">
         {visible.map(item => (
-          <article key={item.id} className="flex gap-4 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <article key={item.id} className="flex bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             {item.image_url && (
               <Link to={`/nieuws/${item.slug}`} className="shrink-0">
                 <img
                   src={item.image_url}
                   alt=""
-                  className="w-24 h-24 object-cover rounded-lg"
+                  className="w-36 sm:w-48 h-full object-contain bg-white aspect-[2/1]"
                 />
               </Link>
             )}
-            <div className="min-w-0">
+            <div className="p-4 min-w-0">
               <Link to={`/nieuws/${item.slug}`} className="text-lg font-semibold text-gray-800 hover:text-vvz-green transition-colors">
                 {item.title}
               </Link>

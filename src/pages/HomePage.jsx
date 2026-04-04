@@ -177,15 +177,15 @@ export default function HomePage() {
           {newsItems.length > 0 ? (
             <div className="space-y-4">
               {newsItems.map(item => (
-                <Link key={item.id} to={`/nieuws/${item.slug}`} className="flex gap-4 group bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+                <Link key={item.id} to={`/nieuws/${item.slug}`} className="flex group bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
                   {item.image_url && (
                     <img
                       src={item.image_url}
                       alt=""
-                      className="w-24 h-24 object-cover rounded-lg shrink-0"
+                      className="w-36 sm:w-48 shrink-0 object-contain bg-white aspect-[2/1]"
                     />
                   )}
-                  <div className="min-w-0">
+                  <div className="p-4 min-w-0">
                     <p className="text-xs text-gray-400 mb-1">
                       {new Date(item.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
