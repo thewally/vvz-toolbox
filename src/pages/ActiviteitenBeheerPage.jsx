@@ -284,10 +284,10 @@ function AdminActivityCard({
   if (isDeleteConfirm) {
     return (
       <div className="flex bg-red-50 rounded-xl shadow-sm border border-red-200 overflow-hidden">
-        <div className="flex flex-col items-center justify-center w-20 shrink-0 bg-red-600 text-white px-2 py-3">
-          <span className="text-xs uppercase font-medium opacity-80">{badge.weekday}</span>
+        <div className="flex flex-col items-center justify-center w-16 shrink-0 bg-red-100 text-red-600 px-2 py-3">
+          <span className="text-[11px] font-normal opacity-70 leading-none">{badge.weekday}</span>
           <span className="text-2xl font-bold leading-tight">{badge.day}</span>
-          <span className="text-xs uppercase font-medium opacity-80">{badge.month}</span>
+          <span className="text-[11px] font-medium opacity-80 uppercase leading-none">{badge.month}</span>
         </div>
         <div className="flex-1 p-4 min-w-0">
           <p className="text-sm text-gray-700 mb-3">
@@ -316,10 +316,10 @@ function AdminActivityCard({
   return (
     <div className="group/card relative flex bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
       {/* Date badge */}
-      <div className="flex flex-col items-center justify-center w-20 shrink-0 bg-vvz-green text-white px-2 py-3">
-        <span className="text-xs uppercase font-medium opacity-80">{badge.weekday}</span>
+      <div className="flex flex-col items-center justify-center w-16 shrink-0 bg-vvz-green/10 text-vvz-green px-2 py-3">
+        <span className="text-[11px] font-normal opacity-70 leading-none">{badge.weekday}</span>
         <span className="text-2xl font-bold leading-tight">{badge.day}</span>
-        <span className="text-xs uppercase font-medium opacity-80">{badge.month}</span>
+        <span className="text-[11px] font-medium opacity-80 uppercase leading-none">{badge.month}</span>
       </div>
 
       {/* Content */}
