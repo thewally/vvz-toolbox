@@ -8,6 +8,7 @@ import {
   deleteActivityGroup,
   formDataToRows,
 } from '../services/activities'
+import ActivityUrlField, { detectUrlType } from '../components/ActivityUrlField'
 
 const DUTCH_MONTHS_LONG = [
   'januari', 'februari', 'maart', 'april', 'mei', 'juni',
@@ -94,6 +95,7 @@ const EMPTY_FORM = {
   timeStart: '',
   timeEnd: '',
   url: '',
+  urlType: 'none',
 }
 
 function ActivityForm({ form, setForm, onSubmit, onCancel, saving, isEditing }) {
@@ -204,16 +206,12 @@ function ActivityForm({ form, setForm, onSubmit, onCancel, saving, isEditing }) 
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">URL</label>
-        <input
-          type="url"
-          value={form.url}
-          onChange={e => setForm({ ...form, url: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
-          placeholder="https://..."
-        />
-      </div>
+      <ActivityUrlField
+        url={form.url}
+        urlType={form.urlType}
+        onChange={(url, urlType) => setForm({ ...form, url, urlType })}
+        inputClass="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
+      />
 
       <div className="flex gap-2 pt-2">
         <button
@@ -327,9 +325,15 @@ function AdminActivityCard({
         <div className="flex items-start gap-2">
           <h3 className="font-semibold text-gray-800 leading-snug">
             {activity.url ? (
-              <a href={activity.url} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">
-                {activity.title}
-              </a>
+              activity.url.startsWith('/') ? (
+                <Link to={activity.url} className="text-vvz-green hover:underline">
+                  {activity.title}
+                </Link>
+              ) : (
+                <a href={activity.url} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">
+                  {activity.title}
+                </a>
+              )
             ) : (
               activity.title
             )}
@@ -449,6 +453,7 @@ export default function ActiviteitenBeheerPage() {
         timeStart: activity.time_start?.slice(0, 5) || '',
         timeEnd: activity.time_end?.slice(0, 5) || '',
         url: activity.url || '',
+        urlType: detectUrlType(activity.url),
       })
       setEditingId(null)
       setEditingGroupId(activity.group_id)
@@ -475,6 +480,7 @@ export default function ActiviteitenBeheerPage() {
         timeStart: activity.time_start?.slice(0, 5) || '',
         timeEnd: activity.time_end?.slice(0, 5) || '',
         url: activity.url || '',
+        urlType: detectUrlType(activity.url),
       })
       setEditingId(activity.id)
       setEditingGroupId(null)

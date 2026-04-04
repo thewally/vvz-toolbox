@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   fetchActivities,
@@ -8,6 +9,7 @@ import {
   deleteActivityGroup,
   formDataToRows,
 } from '../services/activities'
+import ActivityUrlField, { detectUrlType } from '../components/ActivityUrlField'
 
 const DUTCH_MONTHS_LONG = [
   'januari', 'februari', 'maart', 'april', 'mei', 'juni',
@@ -94,6 +96,7 @@ const EMPTY_FORM = {
   timeStart: '',
   timeEnd: '',
   url: '',
+  urlType: 'none',
 }
 
 const INPUT_CLASS = 'w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none'
@@ -113,6 +116,7 @@ function buildFormFromActivity(activity) {
       timeStart: activity.time_start?.slice(0, 5) || '',
       timeEnd: activity.time_end?.slice(0, 5) || '',
       url: activity.url || '',
+      urlType: detectUrlType(activity.url),
     }
   }
 
@@ -138,6 +142,7 @@ function buildFormFromActivity(activity) {
     timeStart: activity.time_start?.slice(0, 5) || '',
     timeEnd: activity.time_end?.slice(0, 5) || '',
     url: activity.url || '',
+    urlType: detectUrlType(activity.url),
   }
 }
 
@@ -258,16 +263,12 @@ function InlineForm({ form, setForm, onSubmit, onCancel, onDelete, saving, error
         />
       </div>
 
-      <div>
-        <label className="block text-xs font-medium text-gray-500 mb-1">URL</label>
-        <input
-          type="url"
-          value={form.url}
-          onChange={e => setForm({ ...form, url: e.target.value })}
-          className={INPUT_CLASS}
-          placeholder="https://..."
-        />
-      </div>
+      <ActivityUrlField
+        url={form.url}
+        urlType={form.urlType}
+        onChange={(url, urlType) => setForm({ ...form, url, urlType })}
+        inputClass={INPUT_CLASS}
+      />
 
       <div className="flex items-center gap-2 pt-1">
         <button
@@ -390,9 +391,15 @@ function ActivityCard({ activity, user, isEditing, onStartEdit, onSave, onCancel
         <div className="flex items-start gap-2">
           <h3 className="font-semibold text-gray-800 leading-snug">
             {activity.url && !user ? (
-              <a href={activity.url} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">
-                {activity.title}
-              </a>
+              activity.url.startsWith('/') ? (
+                <Link to={activity.url} className="text-vvz-green hover:underline">
+                  {activity.title}
+                </Link>
+              ) : (
+                <a href={activity.url} target="_blank" rel="noopener noreferrer" className="text-vvz-green hover:underline">
+                  {activity.title}
+                </a>
+              )
             ) : (
               activity.title
             )}
