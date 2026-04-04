@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { QUICK_LINKS, NAV_SECTIONS } from '../lib/navigation'
@@ -195,8 +196,8 @@ export default function TopNav() {
         </div>
       </div>
 
-      {/* Schermvullend menu */}
-      <div className={`fixed inset-0 z-[60] bg-vvz-green text-white flex flex-col transition-transform duration-300 ease-in-out ${menuOpen ? 'translate-y-0 pointer-events-auto' : '-translate-y-full pointer-events-none'}`}>
+      {/* Schermvullend menu — via portal zodat het buiten elke stacking context valt */}
+      {createPortal(<div className={`fixed inset-0 z-[9999] bg-vvz-green text-white flex flex-col transition-transform duration-300 ease-in-out ${menuOpen ? 'translate-y-0 pointer-events-auto' : '-translate-y-full pointer-events-none'}`}>
 
         {/* Topbalk: logo links, sluiten rechts */}
         <div className="flex items-start justify-between px-6 py-2 sm:py-4 shrink-0">
@@ -333,7 +334,7 @@ export default function TopNav() {
             Er is maar één club en dat is vvz!
           </p>
         </div>
-      </div>
+      </div>, document.body)}
     </nav>
   )
 }
