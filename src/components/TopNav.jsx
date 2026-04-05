@@ -201,21 +201,13 @@ export default function TopNav() {
               )}
             </div>
           ) : (
-            <>
-              <Link
-                to="/registreren"
-                className="text-white/80 font-medium text-sm hover:text-white transition-colors"
-              >
-                Registreren
-              </Link>
-              <Link
-                to="/login"
-                state={{ from: { pathname: location.pathname } }}
-                className="text-white/80 font-medium text-sm hover:text-white transition-colors"
-              >
-                Inloggen
-              </Link>
-            </>
+            <Link
+              to="/login"
+              state={{ from: { pathname: location.pathname } }}
+              className="text-white/80 font-medium text-sm hover:text-white transition-colors"
+            >
+              Inloggen
+            </Link>
           )}
           {!menuOpen && (
             <button

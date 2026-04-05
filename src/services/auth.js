@@ -35,6 +35,93 @@ export function hasEmailProvider(user) {
 }
 
 /**
+ * Nodig een gebruiker uit via e-mail (via Edge Function met service role key).
+ * @param {string} email
+ * @returns {{ data: object | null, error: object | null }}
+ */
+export async function inviteUser(email, displayName) {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.access_token) {
+    return { data: null, error: { message: 'Geen actieve sessie gevonden.' } }
+  }
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-user`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ email, display_name: displayName }),
+      }
+    )
+    const result = await response.json()
+    if (!response.ok) return { data: null, error: result }
+    return { data: result, error: null }
+  } catch (err) {
+    return { data: null, error: { message: err.message } }
+  }
+}
+
+/**
+ * Haal alle gebruikers op via Edge Function (vereist admin).
+ * @returns {{ data: Array | null, error: object | null }}
+ */
+export async function fetchUsers() {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.access_token) {
+    return { data: null, error: { message: 'Geen actieve sessie gevonden.' } }
+  }
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/list-users`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      }
+    )
+    const result = await response.json()
+    if (!response.ok) return { data: null, error: result }
+    return { data: result, error: null }
+  } catch (err) {
+    return { data: null, error: { message: err.message } }
+  }
+}
+
+/**
+ * Verwijder een gebruiker via Edge Function (vereist admin).
+ * @param {string} userId
+ * @returns {{ data: object | null, error: object | null }}
+ */
+export async function deleteUser(userId) {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.access_token) {
+    return { data: null, error: { message: 'Geen actieve sessie gevonden.' } }
+  }
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ user_id: userId }),
+      }
+    )
+    const result = await response.json()
+    if (!response.ok) return { data: null, error: result }
+    return { data: result, error: null }
+  } catch (err) {
+    return { data: null, error: { message: err.message } }
+  }
+}
+
+/**
  * Verwijder het account van de ingelogde gebruiker via de Supabase Edge Function.
  * @returns {{ data: { success: boolean } | null, error: Error | null }}
  */

@@ -52,27 +52,6 @@ export function AuthProvider({ children }) {
     return { data, error }
   }
 
-  const signUp = async (email, password, displayName) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { display_name: displayName },
-        emailRedirectTo: 'https://thewally.github.io/vvz-toolbox/auth/callback?next=/email-bevestigd',
-      },
-    })
-    return { data, error }
-  }
-
-  const signInWithProvider = async (provider) => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: 'https://thewally.github.io/vvz-toolbox/auth/callback',
-      },
-    })
-    return { data, error }
-  }
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
@@ -86,7 +65,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signInWithProvider, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )

@@ -43,8 +43,8 @@ import NieuwsPage from './pages/NieuwsPage'
 import NieuwsDetailPage from './pages/NieuwsDetailPage'
 import NieuwsBeheerPage from './pages/NieuwsBeheerPage'
 import NieuwsEditPage from './pages/NieuwsEditPage'
-import RegistrerenPage from './pages/RegistrerenPage'
 import EmailBevestigdPage from './pages/EmailBevestigdPage'
+import GebruikersBeheerPage from './pages/GebruikersBeheerPage'
 import ProfielPage from './pages/ProfielPage'
 import WachtwoordVergetenPage from './pages/WachtwoordVergetenPage'
 import WachtwoordResettenPage from './pages/WachtwoordResettenPage'
@@ -79,6 +79,7 @@ export default function App() {
           <Route path="club">
             <Route path="ereleden" element={<EreledenBeheerPage />} />
           </Route>
+          <Route path="gebruikers" element={<GebruikersBeheerPage />} />
           <Route path="menu" element={<MenuBeheerPage />} />
           <Route path="nieuws" element={<NieuwsBeheerPage />} />
           <Route path="nieuws/nieuw" element={<NieuwsEditPage />} />
@@ -143,7 +144,6 @@ export default function App() {
         <Route path="plattegrond" element={<PlattegrondPage />} />
         <Route path="huistijl" element={<HuistijlPage />} />
         <Route path="login" element={<LoginPage />} />
-        <Route path="registreren" element={<RegistrerenPage />} />
         <Route path="email-bevestigd" element={<EmailBevestigdPage />} />
         <Route path="wachtwoord-vergeten" element={<WachtwoordVergetenPage />} />
         <Route path="wachtwoord-resetten" element={<WachtwoordResettenPage />} />
