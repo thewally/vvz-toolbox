@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { updatePassword } from '../services/auth'
+import { markPasswordSet } from '../services/profiles'
 
 export default function WachtwoordInstellenPage() {
   const [newPassword, setNewPassword] = useState('')
@@ -10,6 +11,9 @@ export default function WachtwoordInstellenPage() {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
   const [hasSession, setHasSession] = useState(null) // null = laden, true/false
+  // Sla sessie-tokens op zodat we de gebruiker kunnen uitloggen tot het wachtwoord is ingesteld
+  const [savedSession, setSavedSession] = useState(null)
+  const [savedUserId, setSavedUserId] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -26,8 +30,13 @@ export default function WachtwoordInstellenPage() {
     }
 
     // Wacht op SIGNED_IN event vanuit de invite-link
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // Sla de tokens op voor later gebruik bij het opslaan van het wachtwoord
+        setSavedSession({ access_token: session.access_token, refresh_token: session.refresh_token })
+        setSavedUserId(session.user.id)
+        // Log de gebruiker meteen uit zodat ze pas ingelogd zijn na het instellen van het wachtwoord
+        await supabase.auth.signOut()
         setHasSession(true)
       }
     })
@@ -56,16 +65,39 @@ export default function WachtwoordInstellenPage() {
       return
     }
 
+    if (!savedSession) {
+      setError('Sessie verlopen. Gebruik de link uit de uitnodigingsmail opnieuw.')
+      return
+    }
+
     setLoading(true)
+
+    // Herstel de sessie tijdelijk om het wachtwoord in te stellen
+    const { error: sessionError } = await supabase.auth.setSession(savedSession)
+    if (sessionError) {
+      setLoading(false)
+      setError('Sessie verlopen. Gebruik de link uit de uitnodigingsmail opnieuw.')
+      return
+    }
+
     const { error } = await updatePassword(newPassword)
-    setLoading(false)
 
     if (error) {
+      await supabase.auth.signOut()
+      setLoading(false)
       setError(error.message)
-    } else {
-      setSuccess(true)
-      setTimeout(() => navigate('/profiel'), 2000)
+      return
     }
+
+    // Markeer wachtwoord als ingesteld
+    if (savedUserId) {
+      await markPasswordSet(savedUserId)
+    }
+
+    // Log de gebruiker uit — ze moeten opnieuw inloggen met hun nieuwe wachtwoord
+    await supabase.auth.signOut()
+    setLoading(false)
+    setSuccess(true)
   }
 
   // Laden
@@ -95,8 +127,14 @@ export default function WachtwoordInstellenPage() {
       <div className="max-w-sm mx-auto mt-20 p-6 bg-white rounded-xl shadow-lg text-center">
         <div className="bg-green-50 text-green-700 p-4 rounded-lg mb-4">
           <p className="font-medium">Je wachtwoord is ingesteld!</p>
-          <p className="text-sm mt-1">Je wordt doorgestuurd naar je profiel...</p>
+          <p className="text-sm mt-1">Je kunt nu inloggen met je e-mailadres en wachtwoord.</p>
         </div>
+        <button
+          onClick={() => navigate('/login')}
+          className="inline-block bg-vvz-green text-white px-6 py-2 rounded-lg font-medium hover:bg-vvz-green-dark transition-colors"
+        >
+          Naar inloggen
+        </button>
       </div>
     )
   }
