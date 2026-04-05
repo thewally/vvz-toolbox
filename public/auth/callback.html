@@ -16,7 +16,7 @@
     <p>Bezig met inloggen...</p>
   </div>
   <script>
-    // OAuth en e-mail verificatie callback handler voor HashRouter
+    // OAuth en e-mail verificatie callback handler voor BrowserRouter
     // Supabase stuurt tokens als query params (?code=...) of fragment (#access_token=...)
     const base = '/vvz-toolbox/'
     const params = new URLSearchParams(window.location.search)
@@ -28,20 +28,18 @@
 
     // Verwijder routing-params uit query string
     params.delete('next')
-    params.delete('type')
 
     // Voeg Supabase-tokens uit de hash samen met resterende query params
-    // Tokens worden als ?-deel binnen de hash geplaatst zodat:
-    //   - React Router de hash gebruikt voor routing (#/route)
-    //   - Supabase de tokens vindt via regex [?&#]access_token= in window.location.href
     if (hash && hash.length > 1) {
       const hashParams = new URLSearchParams(hash.substring(1))
       hashParams.forEach((value, key) => params.set(key, value))
     }
 
     const tokenSearch = params.toString()
-    // Resultaat: /vvz-toolbox/#/wachtwoord-instellen?access_token=xxx&type=invite&...
-    window.location.replace(base + '#' + nextPath + (tokenSearch ? '?' + tokenSearch : ''))
+    // Resultaat: /vvz-toolbox/wachtwoord-instellen?access_token=xxx&type=invite&...
+    // Strip leading slash van nextPath want base eindigt al op /
+    const route = nextPath.startsWith('/') ? nextPath.substring(1) : nextPath
+    window.location.replace(base + route + (tokenSearch ? '?' + tokenSearch : ''))
   </script>
 </body>
 </html>
