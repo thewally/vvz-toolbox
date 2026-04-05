@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { updatePassword } from '../services/auth'
@@ -11,46 +11,53 @@ export default function WachtwoordInstellenPage() {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
   const [hasSession, setHasSession] = useState(null) // null = laden, true/false
-  // Sla sessie-tokens op zodat we de gebruiker kunnen uitloggen tot het wachtwoord is ingesteld
+
+  // Invite flow: sla sessie-tokens op zodat we tijdelijk kunnen inloggen bij submit
   const [savedSession, setSavedSession] = useState(null)
   const [savedUserId, setSavedUserId] = useState(null)
+  const isInviteFlowRef = useRef(false)
+  const inviteHandledRef = useRef(false) // voorkomt dubbele SIGNED_IN verwerking
+
   const navigate = useNavigate()
 
   useEffect(() => {
     const hash = window.location.hash
     const search = window.location.search
-    const isInviteFlow = hash.includes('access_token=') || hash.includes('type=invite') ||
-                         search.includes('access_token=') || search.includes('type=invite')
+    const isInvite = hash.includes('access_token=') || hash.includes('type=invite') ||
+                     search.includes('access_token=') || search.includes('type=invite')
+    isInviteFlowRef.current = isInvite
 
-    if (!isInviteFlow) {
-      // Geen invite-link — redirect op basis van bestaande sessie
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) navigate('/profiel', { replace: true })
-        else navigate('/login', { replace: true })
+    if (isInvite) {
+      // Invite flow: wacht op SIGNED_IN, sla tokens op en log direct uit
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session && !inviteHandledRef.current) {
+          inviteHandledRef.current = true
+          setSavedSession({ access_token: session.access_token, refresh_token: session.refresh_token })
+          setSavedUserId(session.user.id)
+          await supabase.auth.signOut()
+          setHasSession(true)
+        }
       })
-      return
-    }
 
-    // Wacht op SIGNED_IN event vanuit de invite-link
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        // Sla de tokens op voor later gebruik bij het opslaan van het wachtwoord
-        setSavedSession({ access_token: session.access_token, refresh_token: session.refresh_token })
-        setSavedUserId(session.user.id)
-        // Log de gebruiker meteen uit zodat ze pas ingelogd zijn na het instellen van het wachtwoord
-        await supabase.auth.signOut()
-        setHasSession(true)
+      const timeout = setTimeout(() => {
+        setHasSession(prev => prev === null ? false : prev)
+      }, 3000)
+
+      return () => {
+        subscription.unsubscribe()
+        clearTimeout(timeout)
       }
-    })
-
-    // Als er na 3 seconden nog geen sessie is, toon foutmelding
-    const timeout = setTimeout(() => {
-      setHasSession(prev => prev === null ? false : prev)
-    }, 3000)
-
-    return () => {
-      subscription.unsubscribe()
-      clearTimeout(timeout)
+    } else {
+      // Geen invite-link: check of gebruiker al ingelogd is (bijv. via password_set=false redirect)
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          // Gebruiker is ingelogd maar heeft nog geen wachtwoord ingesteld
+          setSavedUserId(session.user.id)
+          setHasSession(true)
+        } else {
+          navigate('/login', { replace: true })
+        }
+      })
     }
   }, [navigate])
 
@@ -67,37 +74,46 @@ export default function WachtwoordInstellenPage() {
       return
     }
 
-    if (!savedSession) {
-      setError('Sessie verlopen. Gebruik de link uit de uitnodigingsmail opnieuw.')
-      return
-    }
-
     setLoading(true)
 
-    // Herstel de sessie tijdelijk om het wachtwoord in te stellen
-    const { error: sessionError } = await supabase.auth.setSession(savedSession)
-    if (sessionError) {
-      setLoading(false)
-      setError('Sessie verlopen. Gebruik de link uit de uitnodigingsmail opnieuw.')
-      return
-    }
+    if (isInviteFlowRef.current) {
+      // Invite flow: herstel sessie tijdelijk, stel wachtwoord in, log uit
+      if (!savedSession) {
+        setLoading(false)
+        setError('Sessie verlopen. Gebruik de link uit de uitnodigingsmail opnieuw.')
+        return
+      }
 
-    const { error } = await updatePassword(newPassword)
+      const { error: sessionError } = await supabase.auth.setSession(savedSession)
+      if (sessionError) {
+        setLoading(false)
+        setError('Sessie verlopen. Gebruik de link uit de uitnodigingsmail opnieuw.')
+        return
+      }
 
-    if (error) {
+      const { error: pwError } = await updatePassword(newPassword)
+      if (pwError) {
+        await supabase.auth.signOut()
+        setLoading(false)
+        setError(pwError.message)
+        return
+      }
+
+      if (savedUserId) await markPasswordSet(savedUserId)
       await supabase.auth.signOut()
-      setLoading(false)
-      setError(error.message)
-      return
+    } else {
+      // Bestaande sessie: stel wachtwoord direct in
+      const { error: pwError } = await updatePassword(newPassword)
+      if (pwError) {
+        setLoading(false)
+        setError(pwError.message)
+        return
+      }
+
+      if (savedUserId) await markPasswordSet(savedUserId)
+      await supabase.auth.signOut()
     }
 
-    // Markeer wachtwoord als ingesteld
-    if (savedUserId) {
-      await markPasswordSet(savedUserId)
-    }
-
-    // Log de gebruiker uit — ze moeten opnieuw inloggen met hun nieuwe wachtwoord
-    await supabase.auth.signOut()
     setLoading(false)
     setSuccess(true)
   }
