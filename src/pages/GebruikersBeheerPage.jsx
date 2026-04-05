@@ -90,7 +90,7 @@ export default function GebruikersBeheerPage() {
     const { error } = await setUserRole(targetUser.id, newRole)
     setRoleLoading(null)
     if (error) {
-      setError('Rol wijzigen mislukt. Probeer het opnieuw.')
+      setError(`Rol wijzigen mislukt: ${error.message || JSON.stringify(error)}`)
     } else {
       loadUsers()
     }
