@@ -16,37 +16,50 @@ export default function WachtwoordInstellenPage() {
   const [savedSession, setSavedSession] = useState(null)
   const [savedUserId, setSavedUserId] = useState(null)
   const isInviteFlowRef = useRef(false)
-  const inviteHandledRef = useRef(false) // voorkomt dubbele SIGNED_IN verwerking
 
   const navigate = useNavigate()
 
   useEffect(() => {
-    const hash = window.location.hash
     const search = window.location.search
-    const isInvite = hash.includes('access_token=') || hash.includes('type=invite') ||
-                     search.includes('access_token=') || search.includes('type=invite')
+    const params = new URLSearchParams(search)
+    const accessToken = params.get('access_token')
+    const refreshToken = params.get('refresh_token')
+    const isInvite = !!accessToken && !!refreshToken
     isInviteFlowRef.current = isInvite
 
     if (isInvite) {
-      // Invite flow: wacht op SIGNED_IN, sla tokens op en log direct uit
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session && !inviteHandledRef.current) {
-          inviteHandledRef.current = true
-          setSavedSession({ access_token: session.access_token, refresh_token: session.refresh_token })
-          setSavedUserId(session.user.id)
-          await supabase.auth.signOut()
-          setHasSession(true)
+      // Invite flow: parse tokens direct uit de URL query string
+      // callback.html zet de tokens als query params, niet als hash fragment,
+      // dus Supabase detecteert ze niet automatisch. We verwerken ze handmatig.
+      ;(async () => {
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        })
+        if (error || !data.session) {
+          setHasSession(false)
+          return
         }
-      })
+        setSavedSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        })
+        setSavedUserId(data.session.user.id)
+        await supabase.auth.signOut()
+        setHasSession(true)
 
-      const timeout = setTimeout(() => {
-        setHasSession(prev => prev === null ? false : prev)
-      }, 3000)
-
-      return () => {
-        subscription.unsubscribe()
-        clearTimeout(timeout)
-      }
+        // Verwijder tokens uit de URL voor de veiligheid
+        const cleanParams = new URLSearchParams(search)
+        cleanParams.delete('access_token')
+        cleanParams.delete('refresh_token')
+        cleanParams.delete('token_type')
+        cleanParams.delete('expires_in')
+        cleanParams.delete('expires_at')
+        cleanParams.delete('type')
+        const cleanSearch = cleanParams.toString()
+        const cleanUrl = window.location.pathname + (cleanSearch ? '?' + cleanSearch : '')
+        window.history.replaceState(null, '', cleanUrl)
+      })()
     } else {
       // Geen invite-link: check of gebruiker al ingelogd is (bijv. via password_set=false redirect)
       supabase.auth.getSession().then(({ data: { session } }) => {
