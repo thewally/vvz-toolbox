@@ -48,6 +48,7 @@ import GebruikersBeheerPage from './pages/GebruikersBeheerPage'
 import ProfielPage from './pages/ProfielPage'
 import WachtwoordVergetenPage from './pages/WachtwoordVergetenPage'
 import WachtwoordResettenPage from './pages/WachtwoordResettenPage'
+import WachtwoordInstellenPage from './pages/WachtwoordInstellenPage'
 
 export default function App() {
   return (
@@ -147,6 +148,7 @@ export default function App() {
         <Route path="email-bevestigd" element={<EmailBevestigdPage />} />
         <Route path="wachtwoord-vergeten" element={<WachtwoordVergetenPage />} />
         <Route path="wachtwoord-resetten" element={<WachtwoordResettenPage />} />
+        <Route path="wachtwoord-instellen" element={<WachtwoordInstellenPage />} />
         <Route path="profiel" element={
           <ProtectedRoute>
             <ProfielPage />
