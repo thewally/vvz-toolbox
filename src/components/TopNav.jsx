@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { QUICK_LINKS, NAV_SECTIONS } from '../lib/navigation'
 import { fetchMenu, fetchQuickLinks } from '../services/menu'
@@ -72,6 +72,7 @@ function normalizeQuickLink(item) {
 
 export default function TopNav() {
   const { user, profile, signOut } = useAuth()
+  const navigate = useNavigate()
   const [userDropdownOpen, setUserDropdownOpen] = useState(false)
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -214,7 +215,7 @@ export default function TopNav() {
                     </Link>
                   )}
                   <button
-                    onClick={() => { setUserDropdownOpen(false); signOut() }}
+                    onClick={() => { setUserDropdownOpen(false); signOut().then(() => navigate('/')) }}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     Uitloggen
