@@ -18,7 +18,9 @@ export default function WachtwoordInstellenPage() {
 
   useEffect(() => {
     const hash = window.location.hash
-    const isInviteFlow = hash.includes('access_token=') || hash.includes('type=invite')
+    const search = window.location.search
+    const isInviteFlow = hash.includes('access_token=') || hash.includes('type=invite') ||
+                         search.includes('access_token=') || search.includes('type=invite')
 
     if (!isInviteFlow) {
       // Geen invite-link — redirect op basis van bestaande sessie
