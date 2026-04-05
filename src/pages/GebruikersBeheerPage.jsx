@@ -106,7 +106,7 @@ export default function GebruikersBeheerPage() {
               <tr>
                 <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Naam</th>
                 <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">E-mail</th>
-                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Aangemaakt</th>
+                <th className="hidden sm:table-cell px-4 py-3 text-xs font-medium text-gray-500 uppercase">Aangemaakt</th>
                 <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase"></th>
               </tr>
             </thead>
@@ -116,11 +116,11 @@ export default function GebruikersBeheerPage() {
                   <td className="px-4 py-3 text-sm text-gray-800">
                     {u.user_metadata?.display_name || u.display_name || '-'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{u.email}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
+                  <td className="px-4 py-3 text-sm text-gray-600 max-w-[150px] sm:max-w-none truncate">{u.email}</td>
+                  <td className="hidden sm:table-cell px-4 py-3 text-sm text-gray-500">
                     {u.created_at ? new Date(u.created_at).toLocaleDateString('nl-NL') : '-'}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
                     {u.app_metadata?.role === 'admin' ? (
                       <span className="text-xs text-gray-400 italic">Beheerder</span>
                     ) : (
