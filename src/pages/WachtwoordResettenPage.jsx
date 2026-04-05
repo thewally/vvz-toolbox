@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { updatePassword } from '../services/auth'
+import { useAuth } from '../context/AuthContext'
 
 export default function WachtwoordResettenPage() {
   const [newPassword, setNewPassword] = useState('')
@@ -10,19 +11,24 @@ export default function WachtwoordResettenPage() {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
   const [hasSession, setHasSession] = useState(null) // null = laden, true/false
+  const { pendingPasswordRecovery } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Luister uitsluitend naar het PASSWORD_RECOVERY event
-    // Een gewone sessie is niet voldoende — alleen een recovery-link is geldig
+    // AuthContext vangt PASSWORD_RECOVERY op vóór deze pagina laadt (race condition).
+    // Controleer eerst of het event al verwerkt is via context.
+    if (pendingPasswordRecovery) {
+      setHasSession(true)
+      return
+    }
+
+    // Fallback: luister zelf ook voor het geval de pagina sneller laadt dan AuthContext
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setHasSession(true)
       }
     })
 
-    // Als het event al gefired is voordat de listener actief was,
-    // toon na een korte timeout de foutmelding
     const timeout = setTimeout(() => {
       setHasSession(prev => prev === null ? false : prev)
     }, 3000)
@@ -31,7 +37,7 @@ export default function WachtwoordResettenPage() {
       subscription.unsubscribe()
       clearTimeout(timeout)
     }
-  }, [])
+  }, [pendingPasswordRecovery])
 
   async function handleSubmit(e) {
     e.preventDefault()
