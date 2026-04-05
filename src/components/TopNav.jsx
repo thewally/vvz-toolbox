@@ -167,7 +167,7 @@ export default function TopNav() {
             <Link
               to="/login"
               state={{ from: { pathname: location.pathname } }}
-              className="text-white/80 font-medium text-sm hover:text-white transition-colors"
+              className="sm:hidden text-white/80 font-medium text-sm hover:text-white transition-colors"
             >
               Inloggen
             </Link>
@@ -175,6 +175,15 @@ export default function TopNav() {
         </div>
 
         <div className="flex items-center gap-3">
+          {!user && (
+            <Link
+              to="/login"
+              state={{ from: { pathname: location.pathname } }}
+              className="hidden sm:inline text-white/80 font-medium text-sm hover:text-white transition-colors"
+            >
+              Inloggen
+            </Link>
+          )}
           {user && (
             <div className="relative">
               <button
