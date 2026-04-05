@@ -30,7 +30,7 @@ export default function WachtwoordInstellenPage() {
     if (isInvite) {
       // Invite flow: wacht op SIGNED_IN, sla tokens op en log direct uit
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session && !inviteHandledRef.current) {
+        if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session && !inviteHandledRef.current) {
           inviteHandledRef.current = true
           setSavedSession({ access_token: session.access_token, refresh_token: session.refresh_token })
           setSavedUserId(session.user.id)
