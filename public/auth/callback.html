@@ -31,13 +31,16 @@
     const type = params.get('type')
     params.delete('type')
 
-    // Bouw de redirect URL
-    // De resterende query params (code, etc.) moeten beschikbaar blijven
-    // zodat de Supabase client ze kan oppikken via onAuthStateChange
-    const remainingSearch = params.toString() ? '?' + params.toString() : ''
-    const hashFragment = hash ? '&' + hash.substring(1) : ''
+    // Verplaats Supabase-tokens uit de hash naar de query string zodat React Router
+    // de hash uitsluitend gebruikt voor routing (#/wachtwoord-instellen).
+    // De Supabase client zoekt tokens in window.location.href en vindt ze ook in query params.
+    if (hash && hash.length > 1) {
+      const hashParams = new URLSearchParams(hash.substring(1))
+      hashParams.forEach((value, key) => params.set(key, value))
+    }
 
-    window.location.replace(base + remainingSearch + '#' + nextPath + hashFragment)
+    const search = params.toString() ? '?' + params.toString() : ''
+    window.location.replace(base + search + '#' + nextPath)
   </script>
 </body>
 </html>
