@@ -186,13 +186,6 @@ export default function TopNav() {
               </button>
               {userDropdownOpen && (
                 <div className="absolute left-0 mt-1 w-44 bg-white rounded-lg shadow-lg py-1 z-50">
-                  <Link
-                    to="/profiel"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Mijn profiel
-                  </Link>
                   {user.app_metadata?.role === 'admin' && (
                     <Link
                       to="/beheer"
@@ -237,13 +230,6 @@ export default function TopNav() {
               </button>
               {userDropdownOpen && (
                 <div className="absolute right-0 mt-1 w-44 bg-white rounded-lg shadow-lg py-1 z-50">
-                  <Link
-                    to="/profiel"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Mijn profiel
-                  </Link>
                   {user.app_metadata?.role === 'admin' && (
                     <Link
                       to="/beheer"

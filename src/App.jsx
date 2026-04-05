@@ -45,7 +45,6 @@ import NieuwsBeheerPage from './pages/NieuwsBeheerPage'
 import NieuwsEditPage from './pages/NieuwsEditPage'
 import EmailBevestigdPage from './pages/EmailBevestigdPage'
 import GebruikersBeheerPage from './pages/GebruikersBeheerPage'
-import ProfielPage from './pages/ProfielPage'
 import WachtwoordVergetenPage from './pages/WachtwoordVergetenPage'
 import WachtwoordResettenPage from './pages/WachtwoordResettenPage'
 import WachtwoordInstellenPage from './pages/WachtwoordInstellenPage'
@@ -149,11 +148,6 @@ export default function App() {
         <Route path="wachtwoord-vergeten" element={<WachtwoordVergetenPage />} />
         <Route path="wachtwoord-resetten" element={<WachtwoordResettenPage />} />
         <Route path="wachtwoord-instellen" element={<WachtwoordInstellenPage />} />
-        <Route path="profiel" element={
-          <ProtectedRoute>
-            <ProfielPage />
-          </ProtectedRoute>
-        } />
       </Route>
     </Routes>
   )
