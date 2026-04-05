@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { inviteUser, fetchUsers, deleteUser } from '../services/auth'
+import { inviteUser, fetchUsers, deleteUser, setUserRole } from '../services/auth'
 
 function mapInviteError(message) {
   if (!message) return 'Uitnodiging versturen mislukt. Probeer het opnieuw.'
@@ -27,6 +27,9 @@ export default function GebruikersBeheerPage() {
   // Delete state
   const [deleteConfirm, setDeleteConfirm] = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+
+  // Role state
+  const [roleLoading, setRoleLoading] = useState(null)
 
   useEffect(() => {
     if (user && user.app_metadata?.role !== 'admin') {
@@ -79,6 +82,20 @@ export default function GebruikersBeheerPage() {
     }
   }
 
+  async function handleToggleRole(targetUser) {
+    const isAdmin = targetUser.app_metadata?.role === 'admin'
+    const newRole = isAdmin ? null : 'admin'
+    setRoleLoading(targetUser.id)
+    setError(null)
+    const { error } = await setUserRole(targetUser.id, newRole)
+    setRoleLoading(null)
+    if (error) {
+      setError('Rol wijzigen mislukt. Probeer het opnieuw.')
+    } else {
+      loadUsers()
+    }
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-4 pt-8">
       <div className="flex items-center justify-between mb-6">
@@ -107,6 +124,7 @@ export default function GebruikersBeheerPage() {
                 <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Naam</th>
                 <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">E-mail</th>
                 <th className="hidden sm:table-cell px-4 py-3 text-xs font-medium text-gray-500 uppercase">Aangemaakt</th>
+                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Rol</th>
                 <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase"></th>
               </tr>
             </thead>
@@ -120,16 +138,38 @@ export default function GebruikersBeheerPage() {
                   <td className="hidden sm:table-cell px-4 py-3 text-sm text-gray-500">
                     {u.created_at ? new Date(u.created_at).toLocaleDateString('nl-NL') : '-'}
                   </td>
-                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                  <td className="px-4 py-3 text-sm whitespace-nowrap">
                     {u.app_metadata?.role === 'admin' ? (
-                      <span className="text-xs text-gray-400 italic">Beheerder</span>
+                      <span className="inline-block bg-vvz-green/10 text-vvz-green text-xs font-medium px-2 py-0.5 rounded">Beheerder</span>
                     ) : (
-                      <button
-                        onClick={() => setDeleteConfirm(u)}
-                        className="text-xs text-red-500 hover:text-red-700 hover:underline"
-                      >
-                        Verwijderen
-                      </button>
+                      <span className="text-xs text-gray-400">Gebruiker</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap space-x-3">
+                    {u.id === user?.id ? (
+                      <span className="text-xs text-gray-300 italic">Jijzelf</span>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleToggleRole(u)}
+                          disabled={roleLoading === u.id}
+                          className="text-xs text-blue-600 hover:text-blue-800 hover:underline disabled:opacity-50"
+                        >
+                          {roleLoading === u.id
+                            ? 'Bezig...'
+                            : u.app_metadata?.role === 'admin'
+                              ? 'Verwijder beheerder'
+                              : 'Maak beheerder'}
+                        </button>
+                        {u.app_metadata?.role !== 'admin' && (
+                          <button
+                            onClick={() => setDeleteConfirm(u)}
+                            className="text-xs text-red-500 hover:text-red-700 hover:underline"
+                          >
+                            Verwijderen
+                          </button>
+                        )}
+                      </>
                     )}
                   </td>
                 </tr>

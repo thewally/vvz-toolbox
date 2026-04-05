@@ -122,6 +122,37 @@ export async function deleteUser(userId) {
 }
 
 /**
+ * Wijzig de rol van een gebruiker via Edge Function (vereist admin).
+ * @param {string} userId
+ * @param {string|null} role - 'admin' of null om de rol te verwijderen
+ * @returns {{ data: object | null, error: object | null }}
+ */
+export async function setUserRole(userId, role) {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.access_token) {
+    return { data: null, error: { message: 'Geen actieve sessie gevonden.' } }
+  }
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/set-user-role`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ user_id: userId, role }),
+      }
+    )
+    const result = await response.json()
+    if (!response.ok) return { data: null, error: result }
+    return { data: result, error: null }
+  } catch (err) {
+    return { data: null, error: { message: err.message } }
+  }
+}
+
+/**
  * Verwijder het account van de ingelogde gebruiker via de Supabase Edge Function.
  * @returns {{ data: { success: boolean } | null, error: Error | null }}
  */
