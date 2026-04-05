@@ -8,9 +8,22 @@ import { supabase } from '../lib/supabaseClient'
 export async function fetchProfile(userId) {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, display_name, favorite_team_id, teams(id, name)')
+    .select('id, display_name, favorite_team_id, password_set, teams(id, name)')
     .eq('id', userId)
     .single()
+  return { data, error }
+}
+
+/**
+ * Markeer dat de gebruiker een wachtwoord heeft ingesteld.
+ * @param {string} userId
+ * @returns {{ data, error }}
+ */
+export async function markPasswordSet(userId) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ password_set: true })
+    .eq('id', userId)
   return { data, error }
 }
 
