@@ -26,21 +26,22 @@
     const rawNext = params.get('next') || '/'
     const nextPath = (rawNext.startsWith('/') && !rawNext.startsWith('//')) ? rawNext : '/'
 
-    // Verwijder 'next' en 'type' uit de params die we doorsturen
+    // Verwijder routing-params uit query string
     params.delete('next')
-    const type = params.get('type')
     params.delete('type')
 
-    // Verplaats Supabase-tokens uit de hash naar de query string zodat React Router
-    // de hash uitsluitend gebruikt voor routing (#/wachtwoord-instellen).
-    // De Supabase client zoekt tokens in window.location.href en vindt ze ook in query params.
+    // Voeg Supabase-tokens uit de hash samen met resterende query params
+    // Tokens worden als ?-deel binnen de hash geplaatst zodat:
+    //   - React Router de hash gebruikt voor routing (#/route)
+    //   - Supabase de tokens vindt via regex [?&#]access_token= in window.location.href
     if (hash && hash.length > 1) {
       const hashParams = new URLSearchParams(hash.substring(1))
       hashParams.forEach((value, key) => params.set(key, value))
     }
 
-    const search = params.toString() ? '?' + params.toString() : ''
-    window.location.replace(base + search + '#' + nextPath)
+    const tokenSearch = params.toString()
+    // Resultaat: /vvz-toolbox/#/wachtwoord-instellen?access_token=xxx&type=invite&...
+    window.location.replace(base + '#' + nextPath + (tokenSearch ? '?' + tokenSearch : ''))
   </script>
 </body>
 </html>
