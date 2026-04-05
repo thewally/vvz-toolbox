@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Link, Outlet } from 'react-router-dom'
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import TopNav from './TopNav'
 import SponsorSlider from './SponsorSlider'
+import { useAuth } from '../context/AuthContext'
+
+const PASSWORD_ROUTES = ['/wachtwoord-instellen', '/wachtwoord-resetten', '/wachtwoord-vergeten', '/login']
 
 export default function Layout() {
   const [scrolled, setScrolled] = useState(false)
+  const { user, profile, pendingPasswordRecovery } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     function handleScroll() {
@@ -13,6 +19,21 @@ export default function Layout() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Globale redirect: ingelogde gebruiker zonder wachtwoord → /wachtwoord-instellen
+  // Actieve password recovery sessie → /wachtwoord-resetten
+  useEffect(() => {
+    if (PASSWORD_ROUTES.includes(location.pathname)) return
+
+    if (pendingPasswordRecovery) {
+      navigate('/wachtwoord-resetten', { replace: true })
+      return
+    }
+
+    if (user && profile !== undefined && profile !== null && profile.password_set === false) {
+      navigate('/wachtwoord-instellen', { replace: true })
+    }
+  }, [user, profile, pendingPasswordRecovery, location.pathname, navigate])
 
   return (
     <div className="min-h-screen bg-gray-50">
