@@ -163,15 +163,19 @@ export default function TopNav() {
       {/* Hamburgerbalk */}
       <div className="flex items-center justify-between px-4 py-2">
         <div>
-          {user?.app_metadata?.role === 'admin' && (
-            <Link to="/beheer" className="inline-flex items-center text-white font-medium text-sm px-3 py-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors">
-              Beheer
+          {!user && (
+            <Link
+              to="/login"
+              state={{ from: { pathname: location.pathname } }}
+              className="text-white/80 font-medium text-sm hover:text-white transition-colors"
+            >
+              Inloggen
             </Link>
           )}
         </div>
 
         <div className="flex items-center gap-3">
-          {user ? (
+          {user && (
             <div className="relative">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
@@ -191,6 +195,15 @@ export default function TopNav() {
                   >
                     Mijn profiel
                   </Link>
+                  {user.app_metadata?.role === 'admin' && (
+                    <Link
+                      to="/beheer"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Beheer
+                    </Link>
+                  )}
                   <button
                     onClick={() => { setUserDropdownOpen(false); signOut() }}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -200,14 +213,6 @@ export default function TopNav() {
                 </div>
               )}
             </div>
-          ) : (
-            <Link
-              to="/login"
-              state={{ from: { pathname: location.pathname } }}
-              className="text-white/80 font-medium text-sm hover:text-white transition-colors"
-            >
-              Inloggen
-            </Link>
           )}
           {!menuOpen && (
             <button
