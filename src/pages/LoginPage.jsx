@@ -10,8 +10,9 @@ export default function LoginPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const AUTH_PAGES = ['/login', '/wachtwoord-vergeten', '/wachtwoord-resetten', '/wachtwoord-instellen']
   const rawFrom = location.state?.from?.pathname || '/'
-  const from = (rawFrom.startsWith('/') && !rawFrom.startsWith('//')) ? rawFrom : '/'
+  const from = (rawFrom.startsWith('/') && !rawFrom.startsWith('//') && !AUTH_PAGES.includes(rawFrom)) ? rawFrom : '/'
 
   function mapLoginError(msg) {
     if (msg?.includes('Invalid login credentials')) return 'Ongeldig e-mailadres of wachtwoord.'
