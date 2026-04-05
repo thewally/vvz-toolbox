@@ -11,7 +11,15 @@ export default function LoginPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location.state?.from?.pathname || '/'
+  const rawFrom = location.state?.from?.pathname || '/'
+  const from = (rawFrom.startsWith('/') && !rawFrom.startsWith('//')) ? rawFrom : '/'
+
+  function mapLoginError(msg) {
+    if (msg?.includes('Invalid login credentials')) return 'Ongeldig e-mailadres of wachtwoord.'
+    if (msg?.includes('Email not confirmed')) return 'Je e-mailadres is nog niet bevestigd. Controleer je inbox.'
+    if (msg?.includes('Too many requests') || msg?.includes('rate limit')) return 'Te veel pogingen. Probeer het later opnieuw.'
+    return 'Er ging iets mis bij het inloggen. Probeer het opnieuw.'
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -20,7 +28,7 @@ export default function LoginPage() {
     const { error } = await signIn(email, password)
     setLoading(false)
     if (error) {
-      setError(error.message)
+      setError(mapLoginError(error.message))
     } else {
       navigate(from, { replace: true })
     }

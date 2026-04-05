@@ -13,24 +13,24 @@ export default function WachtwoordResettenPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Controleer of er een recovery-sessie actief is
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        setHasSession(false)
-        return
-      }
-      // Luister naar PASSWORD_RECOVERY event (kan al gefired zijn)
-      // Als er een sessie is, gaan we ervan uit dat de gebruiker via een recovery-link kwam
-      setHasSession(true)
-    })
-
+    // Luister uitsluitend naar het PASSWORD_RECOVERY event
+    // Een gewone sessie is niet voldoende — alleen een recovery-link is geldig
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setHasSession(true)
       }
     })
 
-    return () => subscription.unsubscribe()
+    // Als het event al gefired is voordat de listener actief was,
+    // toon na een korte timeout de foutmelding
+    const timeout = setTimeout(() => {
+      setHasSession(prev => prev === null ? false : prev)
+    }, 3000)
+
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timeout)
+    }
   }, [])
 
   async function handleSubmit(e) {

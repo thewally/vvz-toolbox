@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { fetchPageBySlug } from '../services/pages'
 import { useAuth } from '../context/AuthContext'
 import { makeIframesResponsive } from '../lib/htmlUtils'
+import DOMPurify from 'dompurify'
 
 export default function ContentPage() {
   const { slug } = useParams()
@@ -60,7 +61,10 @@ export default function ContentPage() {
       )}
       <div
         className="prose max-w-none"
-        dangerouslySetInnerHTML={{ __html: makeIframesResponsive(page.content) }}
+        dangerouslySetInnerHTML={{ __html: makeIframesResponsive(DOMPurify.sanitize(page.content, {
+          ADD_TAGS: ['iframe'],
+          ADD_ATTR: ['allowfullscreen', 'frameborder', 'allow', 'src', 'loading']
+        })) }}
       />
     </div>
   )

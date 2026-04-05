@@ -37,9 +37,10 @@ export async function updateFavoriteTeam(userId, favoriteTeamId) {
  * @returns {{ data, error }}
  */
 export async function updateProfile(userId, updates) {
+  const { display_name, favorite_team_id } = updates
   const { data, error } = await supabase
     .from('profiles')
-    .update(updates)
+    .update({ display_name, favorite_team_id })
     .eq('id', userId)
     .select('id, display_name, favorite_team_id, teams(id, name)')
     .single()

@@ -22,8 +22,9 @@
     const params = new URLSearchParams(window.location.search)
     const hash = window.location.hash
 
-    // Bepaal de doelroute
-    const nextPath = params.get('next') || '/'
+    // Bepaal de doelroute (valideer dat het een intern pad is)
+    const rawNext = params.get('next') || '/'
+    const nextPath = (rawNext.startsWith('/') && !rawNext.startsWith('//')) ? rawNext : '/'
 
     // Verwijder 'next' en 'type' uit de params die we doorsturen
     params.delete('next')

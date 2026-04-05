@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { fetchNewsItemBySlug } from '../services/news'
 import { useAuth } from '../context/AuthContext'
 import { makeIframesResponsive } from '../lib/htmlUtils'
+import DOMPurify from 'dompurify'
 
 export default function NieuwsDetailPage() {
   const { slug } = useParams()
@@ -72,7 +73,10 @@ export default function NieuwsDetailPage() {
 
       <div
         className="prose max-w-none"
-        dangerouslySetInnerHTML={{ __html: makeIframesResponsive(item.content) }}
+        dangerouslySetInnerHTML={{ __html: makeIframesResponsive(DOMPurify.sanitize(item.content, {
+          ADD_TAGS: ['iframe'],
+          ADD_ATTR: ['allowfullscreen', 'frameborder', 'allow', 'src', 'loading']
+        })) }}
       />
     </div>
   )

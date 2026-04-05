@@ -13,6 +13,14 @@ export default function RegistrerenPage() {
   const [success, setSuccess] = useState(false)
   const { signUp } = useAuth()
 
+  function mapRegisterError(msg) {
+    if (msg?.includes('already registered') || msg?.includes('already been registered')) return 'Dit e-mailadres is al in gebruik.'
+    if (msg?.includes('valid email') || msg?.includes('invalid')) return 'Voer een geldig e-mailadres in.'
+    if (msg?.includes('password') && msg?.includes('at least')) return 'Het wachtwoord voldoet niet aan de vereisten.'
+    if (msg?.includes('Too many requests') || msg?.includes('rate limit')) return 'Te veel pogingen. Probeer het later opnieuw.'
+    return 'Er ging iets mis bij het registreren. Probeer het opnieuw.'
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
@@ -31,7 +39,7 @@ export default function RegistrerenPage() {
     setLoading(false)
 
     if (error) {
-      setError(error.message)
+      setError(mapRegisterError(error.message))
     } else {
       setSuccess(true)
     }
