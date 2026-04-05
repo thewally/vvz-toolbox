@@ -8,6 +8,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [pendingPasswordRecovery, setPendingPasswordRecovery] = useState(false)
 
   async function loadProfile(userId) {
     if (!userId) {
@@ -34,9 +35,14 @@ export function AuthProvider({ children }) {
       }
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       const u = session?.user ?? null
       setUser(u)
+      if (event === 'PASSWORD_RECOVERY') {
+        setPendingPasswordRecovery(true)
+      } else if (event === 'USER_UPDATED' || event === 'SIGNED_OUT') {
+        setPendingPasswordRecovery(false)
+      }
       if (u) {
         loadProfile(u.id)
       } else {
@@ -65,7 +71,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signOut, refreshProfile, pendingPasswordRecovery }}>
       {children}
     </AuthContext.Provider>
   )
