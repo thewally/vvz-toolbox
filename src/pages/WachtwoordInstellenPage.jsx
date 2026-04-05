@@ -13,16 +13,23 @@ export default function WachtwoordInstellenPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Luister op het SIGNED_IN event — dit wordt getriggerd na het accepteren van een invite
+    const hash = window.location.hash
+    const isInviteFlow = hash.includes('access_token=') || hash.includes('type=invite')
+
+    if (!isInviteFlow) {
+      // Geen invite-link — redirect op basis van bestaande sessie
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) navigate('/profiel', { replace: true })
+        else navigate('/login', { replace: true })
+      })
+      return
+    }
+
+    // Wacht op SIGNED_IN event vanuit de invite-link
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
         setHasSession(true)
       }
-    })
-
-    // Check of er al een sessie is (kan al bestaan als het event eerder gefired is)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setHasSession(true)
     })
 
     // Als er na 3 seconden nog geen sessie is, toon foutmelding
@@ -34,7 +41,7 @@ export default function WachtwoordInstellenPage() {
       subscription.unsubscribe()
       clearTimeout(timeout)
     }
-  }, [])
+  }, [navigate])
 
   async function handleSubmit(e) {
     e.preventDefault()

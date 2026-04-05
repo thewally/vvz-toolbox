@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { inviteUser, fetchUsers, deleteUser } from '../services/auth'
 
+function mapInviteError(message) {
+  if (!message) return 'Uitnodiging versturen mislukt. Probeer het opnieuw.'
+  if (message.toLowerCase().includes('user already registered')) return 'Dit e-mailadres is al uitgenodigd.'
+  return 'Uitnodiging versturen mislukt. Probeer het opnieuw.'
+}
+
 export default function GebruikersBeheerPage() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -18,12 +28,18 @@ export default function GebruikersBeheerPage() {
   const [deleteConfirm, setDeleteConfirm] = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
+  useEffect(() => {
+    if (user && user.app_metadata?.role !== 'admin') {
+      navigate('/', { replace: true })
+    }
+  }, [user, navigate])
+
   async function loadUsers() {
     setLoading(true)
     setError(null)
     const { data, error } = await fetchUsers()
     if (error) {
-      setError(error.message || 'Kon gebruikers niet ophalen.')
+      setError('Kon gebruikerslijst niet ophalen. Probeer het opnieuw.')
     } else {
       setUsers(data?.users || [])
     }
@@ -42,7 +58,7 @@ export default function GebruikersBeheerPage() {
     const { error } = await inviteUser(inviteEmail, inviteName)
     setInviteLoading(false)
     if (error) {
-      setInviteError(error.message || 'Uitnodiging versturen mislukt.')
+      setInviteError(mapInviteError(error.message))
     } else {
       setInviteSuccess(`Uitnodiging verstuurd naar ${inviteEmail}.`)
       setInviteEmail('')
@@ -56,7 +72,7 @@ export default function GebruikersBeheerPage() {
     const { error } = await deleteUser(deleteConfirm.id)
     setDeleteLoading(false)
     if (error) {
-      setError(error.message || 'Verwijderen mislukt.')
+      setError('Verwijderen mislukt. Probeer het opnieuw.')
     } else {
       setDeleteConfirm(null)
       loadUsers()
