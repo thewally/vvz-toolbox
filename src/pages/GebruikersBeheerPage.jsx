@@ -63,9 +63,9 @@ export default function GebruikersBeheerPage() {
     if (error) {
       setInviteError(mapInviteError(error.message))
     } else {
-      setInviteSuccess(`Uitnodiging verstuurd naar ${inviteEmail}.`)
       setInviteEmail('')
       setInviteName('')
+      setShowInvite(false)
       loadUsers()
     }
   }
