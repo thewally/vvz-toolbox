@@ -84,6 +84,7 @@ export default function HomePage() {
   const [cards, setCards] = useState(undefined)
   const [newsItems, setNewsItems] = useState([])
   const [activities, setActivities] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function loadHomeCards() {
@@ -161,11 +162,19 @@ export default function HomePage() {
       }
     }
 
-    loadHomeCards()
+    loadHomeCards().finally(() => setLoading(false))
   }, [])
 
   // undefined = laden/fout -> fallback, null = DB leeg -> geen kaartjes, array = data
   const displayCards = cards === undefined ? FALLBACK_CARDS : cards
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-vvz-green"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
