@@ -142,16 +142,21 @@ export default function GebruikersBeheerPage() {
                     {u.id === user?.id ? (
                       <span className="text-xs text-gray-300 italic">Jijzelf</span>
                     ) : (
-                      <button
-                        role="switch"
-                        aria-checked={u.app_metadata?.role === 'admin'}
-                        aria-label={`Beheerder toggle voor ${u.user_metadata?.display_name || u.email}`}
-                        onClick={() => handleToggleRole(u)}
-                        disabled={roleLoading === u.id}
-                        className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-200 ease-in-out ${u.app_metadata?.role === 'admin' ? 'bg-vvz-green' : 'bg-gray-200'} disabled:opacity-50 disabled:cursor-not-allowed`}
-                      >
-                        <span className={`inline-block h-4 w-4 mt-0.5 rounded-full bg-white shadow transition-transform duration-200 ease-in-out ${u.app_metadata?.role === 'admin' ? 'translate-x-4' : 'translate-x-0.5'}`} />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          role="switch"
+                          aria-checked={u.app_metadata?.role === 'admin'}
+                          aria-label={`Beheerder toggle voor ${u.user_metadata?.display_name || u.email}`}
+                          onClick={() => handleToggleRole(u)}
+                          disabled={roleLoading === u.id}
+                          className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-200 ease-in-out ${u.app_metadata?.role === 'admin' ? 'bg-vvz-green' : 'bg-gray-200'} disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          <span className={`inline-block h-4 w-4 mt-0.5 rounded-full bg-white shadow transition-transform duration-200 ease-in-out ${u.app_metadata?.role === 'admin' ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                        </button>
+                        <span className={u.app_metadata?.role === 'admin' ? 'text-xs font-medium text-vvz-green' : 'text-xs text-gray-400'}>
+                          {u.app_metadata?.role === 'admin' ? 'Beheerder' : 'Gebruiker'}
+                        </span>
+                      </div>
                     )}
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
