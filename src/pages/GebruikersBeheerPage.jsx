@@ -122,7 +122,7 @@ export default function GebruikersBeheerPage() {
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Naam</th>
-                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">E-mail</th>
+                <th className="hidden sm:table-cell px-4 py-3 text-xs font-medium text-gray-500 uppercase">E-mail</th>
                 <th className="hidden sm:table-cell px-4 py-3 text-xs font-medium text-gray-500 uppercase">Aangemaakt</th>
                 <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Rol</th>
                 <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase"></th>
@@ -132,9 +132,10 @@ export default function GebruikersBeheerPage() {
               {users.map(u => (
                 <tr key={u.id}>
                   <td className="px-4 py-3 text-sm text-gray-800">
-                    {u.user_metadata?.display_name || u.display_name || '-'}
+                    <div>{u.user_metadata?.display_name || u.display_name || '-'}</div>
+                    <div className="sm:hidden text-xs text-gray-400 truncate max-w-[160px]">{u.email}</div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 max-w-[150px] sm:max-w-none truncate">{u.email}</td>
+                  <td className="hidden sm:table-cell px-4 py-3 text-sm text-gray-600">{u.email}</td>
                   <td className="hidden sm:table-cell px-4 py-3 text-sm text-gray-500">
                     {u.created_at ? new Date(u.created_at).toLocaleDateString('nl-NL') : '-'}
                   </td>
