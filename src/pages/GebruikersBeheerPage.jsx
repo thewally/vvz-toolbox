@@ -153,7 +153,11 @@ export default function GebruikersBeheerPage() {
                         <button
                           onClick={() => handleToggleRole(u)}
                           disabled={roleLoading === u.id}
-                          className="text-xs text-blue-600 hover:text-blue-800 hover:underline disabled:opacity-50"
+                          className={`text-sm px-3 py-1 rounded-md border font-medium transition-colors disabled:opacity-50 ${
+                            u.app_metadata?.role === 'admin'
+                              ? 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                              : 'border-vvz-green text-vvz-green hover:bg-green-50'
+                          }`}
                         >
                           {roleLoading === u.id
                             ? 'Bezig...'
@@ -164,7 +168,7 @@ export default function GebruikersBeheerPage() {
                         {u.app_metadata?.role !== 'admin' && (
                           <button
                             onClick={() => setDeleteConfirm(u)}
-                            className="text-xs text-red-500 hover:text-red-700 hover:underline"
+                            className="text-sm px-3 py-1 rounded-md border border-red-200 text-red-600 font-medium hover:bg-red-50 hover:border-red-300 transition-colors"
                           >
                             Verwijderen
                           </button>
