@@ -4,66 +4,90 @@ Deze documentatie beschrijft de technische architectuur van de VVZ'49 Toolbox vo
 
 ---
 
-## Projectstructuur
-
-```
-vvz-toolbox/
-  public/
-    logo-vvz.png                        # VVZ'49 logo
-    plattegrond/
-      plattegrond.svg                   # Volledige plattegrond
-      plattegrond-trainingschema.svg    # Vereenvoudigde veldindeling
-      plattegrond-a4.pdf
-      plattegrond-a3.pdf
-      plattegrond.eps
-    huistijl/
-      logo-vvz.png
-      logo-vvz.ai
-  src/
-    components/
-      Layout.jsx                        # Globale header + footer
-      AgendaLayout.jsx                  # Sub-nav Agenda | Beheer
-      TrainingschemaLayout.jsx          # Sub-nav Schema | Veldindeling | Beheer
-      ProtectedRoute.jsx
-    pages/
-      HomePage.jsx
-      AgendaPage.jsx                    # Publieke agendaweergave
-      AgendaBeheerPage.jsx              # Admin: activiteiten beheren
-      SchedulePage.jsx                  # Publiek trainingsschema
-      VeldindelingPage.jsx              # Veldindeling SVG
-      AdminPage.jsx                     # Admin: tijdslots, teams, velden
-      PlattegrondPage.jsx
-      HuistijlPage.jsx
-      LoginPage.jsx
-    services/
-      activities.js                     # Agenda CRUD
-      trainingSlots.js                  # Trainingsschema CRUD
-      fields.js                         # Velden CRUD
-      teams.js                          # Teams CRUD
-    lib/
-      supabaseClient.js                 # Supabase client initialisatie
-      constants.js
-    context/
-      AuthContext.jsx                   # Globale auth state
-  .github/workflows/
-    deploy.yml                          # GitHub Actions deployment
-  vite.config.js
-```
-
----
-
 ## Tech Stack
 
 | Onderdeel | Technologie |
 |---|---|
 | Frontend framework | React 18 |
-| Build tool | Vite |
-| Routing | React Router v6 (HashRouter) |
+| Build tool | Vite 5 |
+| Routing | React Router v6 (BrowserRouter met `basename="/vvz-toolbox"`) |
 | Styling | Tailwind CSS |
-| Backend | Supabase (PostgreSQL + Auth + RLS) |
+| Rich text editor | TipTap |
+| PDF export | jsPDF + html2canvas |
+| Backend | Supabase (PostgreSQL + Auth + RLS + Edge Functions) |
 | Deployment | GitHub Pages via GitHub Actions |
 
-**Belangrijk:** de app gebruikt `HashRouter` (URL's met `#`), omdat GitHub Pages geen server-side routing ondersteunt.
+---
+
+## Projectstructuur
+
+```
+vvz-toolbox/
+  public/
+    logo-vvz.png
+    plattegrond/                         # SVG, PDF, EPS bestanden
+    huistijl/                            # Logo PNG + AI
+  src/
+    components/
+      Layout.jsx                         # Globale header + footer
+      BeheerLayout.jsx                   # Beheer-omgeving layout met zijnavigatie
+      AgendaLayout.jsx                   # Sub-nav activiteiten
+      TrainingschemaLayout.jsx           # Sub-nav schema | veldindeling
+      WedstrijdenLayout.jsx              # Sub-nav wedstrijden
+      ProtectedRoute.jsx                 # Auth + rolcheck guard
+    pages/
+      HomePage.jsx
+      ActiviteitenPage.jsx               # Publieke agendaweergave
+      ActiviteitenBeheerPage.jsx         # Admin: activiteiten beheren
+      SchedulePage.jsx                   # Publiek trainingsschema
+      TrainingschemaBeheerPage.jsx       # Admin: schema beheren
+      VeldindelingPage.jsx               # Veldindeling SVG
+      AdminPage.jsx                      # Admin: tijdslots, teams, velden
+      GebruikersBeheerPage.jsx           # Admin: gebruikers en rollen
+      SponsoringBeheerPage.jsx           # Admin: sponsors beheren
+      EreledenBeheerPage.jsx             # Admin: ereleden beheren
+      ContactBeheerPage.jsx              # Admin: contactgegevens
+      WieDoetWatBeheerPage.jsx           # Admin: wie doet wat
+      MenuBeheerPage.jsx                 # Admin: menu-items
+      ContentBeheerPage.jsx              # Admin: pagina's
+      ContentEditPage.jsx                # Admin: pagina bewerken (TipTap)
+      NieuwsBeheerPage.jsx               # Admin: nieuwsberichten
+      NieuwsEditPage.jsx                 # Admin: nieuwsbericht bewerken
+      LoginPage.jsx
+      WachtwoordVergetenPage.jsx
+      WachtwoordResettenPage.jsx
+      WachtwoordInstellenPage.jsx
+      EmailBevestigdPage.jsx
+      PlattegrondPage.jsx
+      HuistijlPage.jsx
+    services/
+      activities.js                      # Agenda CRUD
+      auth.js                            # Invite, rollen, wachtwoord
+      roles.js                           # Rolbeheer (user_roles)
+      trainingSlots.js                   # Trainingsschema CRUD
+      fields.js                          # Velden CRUD
+      teams.js                           # Teams CRUD
+    lib/
+      supabaseClient.js                  # Supabase client initialisatie
+      constants.js
+    context/
+      AuthContext.jsx                    # Globale auth + rollen state
+  supabase/
+    migration.sql                        # Basistabellen
+    sponsors.sql                         # Sponsortabel
+    migration_rolbeheer.sql              # user_roles + RLS + functies
+  .github/workflows/
+    deploy.yml                           # GitHub Actions deployment
+  vite.config.js
+```
+
+---
+
+## Routing
+
+De app gebruikt `BrowserRouter` met `basename="/vvz-toolbox"`. URL's zijn clean paths (geen hash-fragment).
+
+GitHub Pages heeft geen server-side routing. De deploy workflow bevat een `404.html` die doorverwijst naar `index.html`, zodat client-side routing werkt.
 
 ---
 
@@ -80,18 +104,71 @@ Lokaal: sla op in `.env` in de projectroot. In productie: GitHub Secrets.
 
 ---
 
-## Authenticatie
+## Authenticatie en autorisatie
 
-De admin-omgeving gebruikt **Supabase Auth** met e-mail/wachtwoord-login. Er is geen zelfregistratie — accounts worden aangemaakt via het Supabase dashboard.
+### Auth-flows
 
-### Beheerders toevoegen
+De app ondersteunt de volgende auth-flows:
 
-1. Ga naar het [Supabase dashboard](https://supabase.com/dashboard) en open je project
-2. Navigeer naar **Authentication → Users**
-3. Klik op **Add user → Create new user**
-4. Vul e-mailadres en wachtwoord in
+1. **Uitnodiging** — Een beheerder nodigt een gebruiker uit via `/beheer/gebruikers`. De gebruiker ontvangt een e-mail en wordt na bevestiging doorgestuurd naar `/wachtwoord-instellen` om een wachtwoord te kiezen.
+2. **Wachtwoord vergeten** — Via `/wachtwoord-vergeten` kan een gebruiker een reset-link aanvragen. Na klikken op de link wordt de gebruiker doorgestuurd naar `/wachtwoord-resetten`.
+3. **Login/logout** — Via `/login` met e-mail en wachtwoord.
 
-De auth-state wordt globaal beheerd via `src/context/AuthContext.jsx`. Beveiligde routes zijn gewikkeld in `ProtectedRoute`.
+### Rolsysteem
+
+Het autorisatiesysteem werkt op twee niveaus:
+
+**Niveau 1: Admin (Supabase Auth)**
+Gebruikers met `app_metadata.role = 'admin'` hebben volledige toegang tot alle beheeronderdelen. Dit wordt ingesteld via de Edge Function `set-user-role`.
+
+**Niveau 2: Granulaire rollen (user_roles tabel)**
+Niet-admin gebruikers krijgen toegang via specifieke rollen in de `user_roles` tabel:
+
+| Rol-slug | Geeft toegang tot |
+|---|---|
+| `activiteiten` | Activiteitenbeheer |
+| `trainingsschema` | Trainingsschemabeheer |
+| `sponsoring` | Sponsoringbeheer |
+| `ereleden` | Ereledenbeheer |
+| `contact` | Contact en wie-doet-wat beheer |
+| `content` | Pagina's, nieuws en menubeheer |
+| `gebruikers` | Gebruikers- en rollenbeheer |
+
+### Database functies
+
+- `user_has_role(check_slug TEXT)` — Controleert of de huidige gebruiker de opgegeven rol heeft. Admin-gebruikers passeren automatisch.
+- `user_has_any_role()` — Controleert of de huidige gebruiker enige rol heeft (voor toegang tot het beheerdashboard).
+- `get_user_roles_for_management()` — Haalt alle user-rol koppelingen op (voor de gebruikersbeheerpagina).
+
+### ProtectedRoute
+
+Routes in de beheeromgeving zijn gewikkeld in `<ProtectedRoute>`:
+
+```jsx
+// Toegang voor elke gebruiker met een rol
+<ProtectedRoute adminOnly>
+  <BeheerLayout />
+</ProtectedRoute>
+
+// Toegang alleen met specifieke rol (of admin)
+<ProtectedRoute requiredRole="activiteiten">
+  <ActiviteitenBeheerPage />
+</ProtectedRoute>
+```
+
+De guard handelt ook af:
+- Doorsturen naar login als niet ingelogd
+- Verplicht wachtwoord instellen na uitnodiging
+- Verplicht wachtwoord resetten na recovery-link
+
+### Edge Functions
+
+| Functie | Doel |
+|---|---|
+| `invite-user` | Stuurt een uitnodigingsmail naar een nieuw e-mailadres. Maakt de Auth-user aan in Supabase. |
+| `set-user-role` | Stelt `app_metadata.role` in op `admin` of verwijdert deze. Vereist service role key server-side. |
+
+Deze functies moeten gedeployd worden naar je Supabase project. Ze worden aangeroepen vanuit `src/services/auth.js`.
 
 ---
 
@@ -126,7 +203,7 @@ Datumtypen worden bepaald door welke kolommen gevuld zijn:
 | Kolom | Type | Omschrijving |
 |---|---|---|
 | `id` | uuid | Primaire sleutel |
-| `day_of_week` | integer | 1=maandag … 5=vrijdag |
+| `day_of_week` | integer | 1=maandag ... 5=vrijdag |
 | `start_time` | time | Begintijd (bijv. `16:00`) |
 | `end_time` | time | Eindtijd |
 | `description` | text | Optionele omschrijving |
@@ -153,12 +230,25 @@ Via junction tables:
 | `name` | text | Teamnaam (bijv. `JO11-1`, `Selectie`) |
 | `category` | text | Categorie: `Pupillen`, `Junioren`, `Senioren`, `Veteranen` of `null` |
 
+### Tabel: `user_roles` (Rolbeheer)
+
+| Kolom | Type | Omschrijving |
+|---|---|---|
+| `id` | uuid | Primaire sleutel |
+| `user_id` | uuid | Verwijzing naar `auth.users(id)` |
+| `role_slug` | text | Rolnaam (zie constraint hieronder) |
+| `assigned_by` | uuid | Wie de rol heeft toegekend |
+| `created_at` | timestamptz | Aanmaakdatum |
+
+CHECK constraint op `role_slug`: `activiteiten`, `trainingsschema`, `sponsoring`, `ereleden`, `contact`, `content`, `gebruikers`. UNIQUE op `(user_id, role_slug)`.
+
 ### Row Level Security
 
 RLS is ingeschakeld op alle tabellen:
 
-- **Publiek lezen**: `SELECT` voor de `anon`-rol
-- **Schrijven**: `INSERT`, `UPDATE`, `DELETE` alleen voor geauthenticeerde gebruikers (`auth.uid() IS NOT NULL`)
+- **Publiek lezen**: `SELECT` voor de `anon`-rol (activities, training_slots, fields, teams, sponsors, etc.)
+- **Schrijven**: `INSERT`, `UPDATE`, `DELETE` alleen voor geauthenticeerde gebruikers met de juiste rol
+- **user_roles**: eigen rollen lezen, beheerders en gebruikers met rol `gebruikers` mogen alles lezen/toekennen/verwijderen
 
 ---
 
@@ -211,5 +301,3 @@ In het Supabase dashboard onder **Authentication → URL Configuration**:
 ### Live URL
 
 **[https://thewally.github.io/vvz-toolbox/](https://thewally.github.io/vvz-toolbox/)**
-
-Routes gebruiken hash-based URLs, bijv. `https://thewally.github.io/vvz-toolbox/#/trainingsschema`.
