@@ -8,3 +8,4 @@
 - [Content-verbeteringen spec](project_content_verbeteringen_spec.md) — 12 verbeteringen aan pagina's/nieuws CMS in .claude/specs/content-verbeteringen.md
 - [Pagina Groepen spec](project_pagina_groepen_spec.md) — page_groups tabel, gegroepeerde beheer-UI, dynamische menu integratie
 - [Gebruikersregistratie spec](project_gebruikers_registratie_spec.md) — zelfregistratie, e-mailverificatie, profiles tabel, profielpagina
+- [Vrijwilliger Worden spec](project_vrijwilliger_worden_spec.md) — vacatures met groepen, contactpersoon-koppeling, drag-and-drop
