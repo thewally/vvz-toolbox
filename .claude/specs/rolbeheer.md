@@ -39,8 +39,8 @@ Beheerders blijven zoals ze zijn — volledige toegang. Daarnaast krijgen indivi
 - **Rolcontrole per beheer-onderdeel**: gebruikers zonder de juiste rol zien een "Geen toegang" melding
 - **Beheerder-bypass**: `app_metadata.role === 'admin'` passeert elke rolcheck automatisch
 - **Beheerknop zichtbaarheid**: de "Beheer" link in TopNav is zichtbaar als de gebruiker beheerder is OF minstens één rol heeft
-- **Roltoekenning in gebruikersbeheer**: op `/beheer/gebruikers` kan de beheerder per gebruiker rollen aan/uit zetten via checkboxes
-- **Rolweergave in gebruikerslijst**: per gebruiker zijn de toegekende rollen zichtbaar als badges
+- **Roltoekenning in gebruikersbeheer**: op `/beheer/gebruikers` opent een modal per gebruiker met 7 toggle-sliders (zelfde stijl als beheerder-toggle) voor het aan/uit zetten van rollen. Touch targets ≥ 44px, mobiel-vriendelijk.
+- **Rolweergave in gebruikerslijst**: per gebruiker toont een compacte teller ("3 rollen") of "Geen rollen" — details via de modal
 - **Bestaande flows intact**: login/logout en ProtectedRoute blijven werken
 
 ### Nice-to-have
@@ -335,43 +335,86 @@ Het beheerdashboard toont alleen de kaartjes waarvoor de gebruiker een rol heeft
 
 ### GebruikersBeheerPage: rollen toekennen
 
-De bestaande pagina `/beheer/gebruikers` wordt uitgebreid:
+De bestaande pagina `/beheer/gebruikers` wordt uitgebreid.
 
-**Rolweergave in gebruikerslijst:**
-- Per gebruiker worden de toegekende rollen getoond als kleine badges (Tailwind: `bg-vvz-green/10 text-vvz-green text-xs px-2 py-0.5 rounded-full`)
-- Beheerders krijgen een speciale "Beheerder" badge
-- Gebruikers zonder rollen tonen "Geen rollen"
+#### Gekozen UI-patroon: Modal met toggles (optie D)
 
-**Rollen bewerken:**
-- Klik op een gebruiker opent een uitklappanel of modal met checkboxes voor elke beschikbare rol
-- Elke checkbox togglet direct de rol (insert/delete in `user_roles`)
-- Beheerder-toggle (`app_metadata.role`) blijft apart, zoals nu
-- Loading state per checkbox tijdens opslaan
+**Afweging van alternatieven:**
 
-**Wireframe gebruikerslijst:**
+| Optie | Voordeel | Nadeel | Oordeel |
+|---|---|---|---|
+| A. Uitklapbare rijen (accordion) | Alles op één pagina | Tabel al krap op mobiel; 7 toggles in een uitklaprij wordt rommelig | Afgewezen |
+| B. Slide-over / drawer | Ruim, clean scheiding | Nieuw UI-patroon, complexer te bouwen | Te veel overhead |
+| C. Aparte detailpagina | Maximale ruimte | Navigatie heen-en-terug voor 7 toggles is overkill | Afgewezen |
+| **D. Modal met toggles** | **Consistent met bestaande modals (verwijder, uitnodig), mobiel-vriendelijk, toggles passen bij beheerder-slider** | Extra UI-laag | **Gekozen** |
+
+#### Trigger: "Rollen bewerken" icoon in de tabelrij
+
+Per gebruiker komt een **tandwiel-icoon** (of `PencilSquareIcon`) naast het verwijder-icoon in de actiekolom. Dit icoon opent de rollen-modal. Het icoon is alleen zichtbaar als:
+- De gebruiker NIET "Jijzelf" is (je kunt je eigen rollen niet bewerken)
+- De gebruiker GEEN beheerder is (beheerders hebben automatisch alle toegang, rollen zijn irrelevant)
+
+Voor beheerders toont de rij in plaats van het icoon niets extra — de tekst "Beheerder" bij de toggle is voldoende.
+
+#### Rollen-modal: layout
+
+De modal volgt exact het bestaande patroon (`fixed inset-0 z-50 flex items-center justify-center bg-black/40` + `bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4`):
 
 ```
-┌──────────────────────────────────────────────────────┐
-│ E-mail              │ Type       │ Rollen             │
-├──────────────────────────────────────────────────────┤
-│ jan@vvz.nl          │ Beheerder  │ (alle toegang)     │
-│ piet@vvz.nl         │ Gebruiker  │ [Activiteiten]     │
-│                     │            │ [Trainingsschema]  │
-│ kees@vvz.nl         │ Gebruiker  │ Geen rollen        │
-└──────────────────────────────────────────────────────┘
-
-Klik op gebruiker → uitklap:
-┌──────────────────────────────────────────────────────┐
-│ Rollen voor piet@vvz.nl:                             │
-│ ☑ Activiteiten                                       │
-│ ☑ Trainingsschema                                    │
-│ ☐ Sponsoring                                         │
-│ ☐ Ereleden                                           │
-│ ☐ Contact                                            │
-│ ☐ Pagina's & Nieuws                                  │
-│ ☐ Gebruikers                                         │
-└──────────────────────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ Rollen voor Piet Jansen             │
+│ piet@vvz.nl                         │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ Activiteiten          [====○ ] │ │
+│ ├─────────────────────────────────┤ │
+│ │ Trainingsschema       [ ○====] │ │
+│ ├─────────────────────────────────┤ │
+│ │ Sponsoring            [====○ ] │ │
+│ ├─────────────────────────────────┤ │
+│ │ Ereleden              [====○ ] │ │
+│ ├─────────────────────────────────┤ │
+│ │ Contact               [====○ ] │ │
+│ ├─────────────────────────────────┤ │
+│ │ Pagina's & Nieuws     [====○ ] │ │
+│ ├─────────────────────────────────┤ │
+│ │ Gebruikers            [====○ ] │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│                          [Sluiten]  │
+└─────────────────────────────────────┘
 ```
+
+**Toggle-stijl:** Dezelfde slider-component als de beheerder-toggle (`relative inline-flex h-5 w-9 shrink-0 rounded-full` met `bg-vvz-green` actief / `bg-gray-200` inactief). Dit zorgt voor visuele consistentie.
+
+**Elke rij is een `flex items-center justify-between` met:**
+- Linker: rol-label (tekst, `text-sm text-gray-700`)
+- Rechts: toggle-slider
+- Minimale rijhoogte: `min-h-[44px]` (touch target ≥ 44px)
+- Gescheiden door `divide-y divide-gray-100`
+
+**Gedrag:**
+- Elke toggle slaat direct op (geen "Opslaan" knop) — `assignRole()` of `removeRole()` per klik
+- Loading state per individuele toggle: toggle wordt `disabled` + `opacity-50` tijdens de API call
+- Error: rode tekst boven de toggles ("Rol wijzigen mislukt, probeer het opnieuw")
+- Geen "Annuleren" knop nodig — er is alleen "Sluiten" want wijzigingen zijn direct opgeslagen
+
+#### Rolweergave in de gebruikerslijst (op een oogopslag)
+
+Onder de beheerder-toggle in de "Rol" kolom wordt een compacte samenvatting getoond:
+
+- **Beheerder**: alleen "Beheerder" label (geen rollen nodig)
+- **Gebruiker met rollen**: tellersbadge, bijv. `3 rollen` — Tailwind: `text-xs text-gray-500`
+- **Gebruiker zonder rollen**: `Geen rollen` in `text-xs text-gray-300 italic`
+- **Jijzelf**: "Jijzelf" label blijft zoals nu; geen rolbadge of tellersbadge
+
+De volledige rolnamen worden NIET in de tabel getoond — dat is precies waarom de modal bestaat. De teller geeft voldoende inzicht. Op mobiel blijft de tabel compact.
+
+#### "Jijzelf" (huidige gebruiker)
+
+- Je kunt je eigen rollen NIET bewerken (geen tandwiel-icoon)
+- Je kunt je eigen beheerder-toggle NIET wijzigen (bestaand gedrag)
+- Reden: voorkomt dat je jezelf per ongeluk buiten sluit
 
 ---
 
@@ -389,8 +432,8 @@ Klik op gebruiker → uitklap:
 | 8 | TopNav: Beheerknop zichtbaarheid op `hasAnyRole()` | 6 | S |
 | 9 | Routes aanpassen: `requiredRole` per beheerroute | 7 | M |
 | 10 | BeheerDashboardPage: conditionele kaartjes | 6 | S |
-| 11 | GebruikersBeheerPage: rolweergave als badges | 5, 6 | M |
-| 12 | GebruikersBeheerPage: rol-checkboxes per gebruiker | 11 | M |
+| 11 | GebruikersBeheerPage: roltellersbadge per gebruiker in tabelrij | 5, 6 | S |
+| 12 | GebruikersBeheerPage: rollen-modal met toggles (zelfde slider-stijl als beheerder-toggle) | 11 | M |
 | 13 | RLS policies op bestaande tabellen updaten (optioneel, fase 2) | 2 | L |
 
 ### Migratiestrategie
