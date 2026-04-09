@@ -20,6 +20,7 @@ const LEEG_VACATURE = {
   contact_member_id: '',
   contact_naam: '',
   contact_email: '',
+  contact_telefoon: '',
   actief: true,
 }
 
@@ -116,6 +117,7 @@ export default function VrijwilligersBeheerPage() {
       contact_member_id: v.contact_member_id || '',
       contact_naam: v.contact_naam || '',
       contact_email: v.contact_email || '',
+      contact_telefoon: v.contact_telefoon || '',
       actief: v.actief,
     })
     setFout(null)
@@ -134,6 +136,7 @@ export default function VrijwilligersBeheerPage() {
       contact_member_id: vacatureForm.contactType === 'member' ? vacatureForm.contact_member_id || null : null,
       contact_naam: vacatureForm.contactType === 'vrij' ? vacatureForm.contact_naam || null : null,
       contact_email: vacatureForm.contactType === 'vrij' ? vacatureForm.contact_email || null : null,
+      contact_telefoon: vacatureForm.contactType === 'vrij' ? vacatureForm.contact_telefoon || null : null,
       actief: vacatureForm.actief,
     }
     const { error } = vacatureModal.mode === 'nieuw'
@@ -436,6 +439,13 @@ export default function VrijwilligersBeheerPage() {
                     placeholder="E-mailadres"
                     value={vacatureForm.contact_email}
                     onChange={e => setVacatureForm(f => ({ ...f, contact_email: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green/50 focus:border-vvz-green"
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Telefoonnummer"
+                    value={vacatureForm.contact_telefoon}
+                    onChange={e => setVacatureForm(f => ({ ...f, contact_telefoon: e.target.value }))}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green/50 focus:border-vvz-green"
                   />
                 </div>

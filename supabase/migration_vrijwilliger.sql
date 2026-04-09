@@ -29,6 +29,7 @@ CREATE TABLE volunteer_vacancies (
   contact_member_id UUID REFERENCES committee_members(id) ON DELETE SET NULL,
   contact_naam TEXT,
   contact_email TEXT,
+  contact_telefoon TEXT,
   sort_order INTEGER NOT NULL DEFAULT 0,
   actief BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()

@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabaseClient'
 export async function fetchVolunteerGroups() {
   const { data, error } = await supabase
     .from('volunteer_groups')
-    .select('*, volunteer_vacancies(*, committee_members(naam, emailadres))')
+    .select('*, volunteer_vacancies(*, committee_members(naam, emailadres, telefoonnummer))')
     .order('sort_order')
     .order('sort_order', { referencedTable: 'volunteer_vacancies' })
   return { data, error }
@@ -40,10 +40,10 @@ export async function deleteVolunteerGroup(id) {
 
 // --- Vacatures ---
 
-export async function createVolunteerVacancy({ group_id, titel, beschrijving, contact_member_id, contact_naam, contact_email, sort_order, actief }) {
+export async function createVolunteerVacancy({ group_id, titel, beschrijving, contact_member_id, contact_naam, contact_email, contact_telefoon, sort_order, actief }) {
   const { data, error } = await supabase
     .from('volunteer_vacancies')
-    .insert({ group_id, titel, beschrijving, contact_member_id, contact_naam, contact_email, sort_order, actief })
+    .insert({ group_id, titel, beschrijving, contact_member_id, contact_naam, contact_email, contact_telefoon, sort_order, actief })
     .select()
     .single()
   return { data, error }
@@ -98,7 +98,7 @@ export async function updateVolunteerVacancyOrder(updates) {
 export async function fetchCommitteeMembersFlat() {
   const { data, error } = await supabase
     .from('committee_members')
-    .select('id, naam, emailadres')
+    .select('id, naam, emailadres, telefoonnummer')
     .order('naam')
   return { data, error }
 }
