@@ -107,6 +107,17 @@ const TILES = [
     ),
   },
   {
+    title: 'Vrijwilligers',
+    description: 'Vrijwilligersvacatures beheren',
+    to: '/beheer/vrijwilligers',
+    role: 'vrijwilligers',
+    icon: (
+      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10.05 4.575a1.575 1.575 0 10-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 013.15 0v1.5m-3.15 0l.075 5.925m3.075-5.925v3m0-3a1.575 1.575 0 013.15 0v3m-3.15 0l.075 5.925M14.1 7.575v3a1.575 1.575 0 013.15 0v1.5m-3.15-4.5l.075 5.925m3.075-1.425v1.5a1.575 1.575 0 01-1.575 1.575h-.844a2.002 2.002 0 01-1.845-1.225L12.6 16.35a2.002 2.002 0 00-1.845-1.225H9.375a1.575 1.575 0 01-1.575-1.575V10.5m0 0H6.75a1.575 1.575 0 01-1.575-1.575V7.5a1.575 1.575 0 011.575-1.575h.6" />
+      </svg>
+    ),
+  },
+  {
     title: 'Contact',
     description: 'Contactgegevens en locatie beheren',
     to: '/beheer/contact',
