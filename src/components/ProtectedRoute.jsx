@@ -1,8 +1,8 @@
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-export default function ProtectedRoute({ children, adminOnly = false }) {
-  const { user, profile, loading, pendingPasswordRecovery } = useAuth()
+export default function ProtectedRoute({ children, adminOnly = false, requiredRole }) {
+  const { user, profile, loading, pendingPasswordRecovery, hasRole, hasAnyRole } = useAuth()
   const location = useLocation()
 
   if (loading) {
@@ -27,7 +27,26 @@ export default function ProtectedRoute({ children, adminOnly = false }) {
     return <Navigate to="/wachtwoord-instellen" replace />
   }
 
-  if (adminOnly && user.app_metadata?.role !== 'admin') {
+  // Specifieke rol vereist: check via hasRole (beheerder passeert automatisch)
+  if (requiredRole && !hasRole(requiredRole)) {
+    return (
+      <div className="max-w-md mx-auto p-4 pt-16 text-center">
+        <h1 className="text-xl font-bold text-gray-800 mb-2">Geen toegang</h1>
+        <p className="text-sm text-gray-500 mb-6">
+          Je hebt niet de juiste rol om deze pagina te bekijken.
+        </p>
+        <Link
+          to="/beheer"
+          className="inline-block bg-vvz-green text-white px-4 py-2 rounded-lg font-medium hover:bg-vvz-green-dark transition-colors"
+        >
+          Terug naar beheer
+        </Link>
+      </div>
+    )
+  }
+
+  // adminOnly zonder requiredRole: legacy gedrag, alleen beheerder
+  if (adminOnly && !hasAnyRole()) {
     return <Navigate to="/" replace />
   }
 

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchProfile } from '../services/profiles'
+import { getMyRoles } from '../services/roles'
 
 const AuthContext = createContext(null)
 
@@ -9,6 +10,7 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [pendingPasswordRecovery, setPendingPasswordRecovery] = useState(false)
+  const [userRoles, setUserRoles] = useState([])
 
   async function loadProfile(userId) {
     if (!userId) {
@@ -24,12 +26,17 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function loadRoles() {
+    const { data } = await getMyRoles()
+    setUserRoles(data ?? [])
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const u = session?.user ?? null
       setUser(u)
       if (u) {
-        loadProfile(u.id).then(() => setLoading(false))
+        Promise.all([loadProfile(u.id), loadRoles()]).then(() => setLoading(false))
       } else {
         setLoading(false)
       }
@@ -45,8 +52,10 @@ export function AuthProvider({ children }) {
       }
       if (u) {
         loadProfile(u.id)
+        loadRoles()
       } else {
         setProfile(null)
+        setUserRoles([])
       }
     })
 
@@ -70,8 +79,12 @@ export function AuthProvider({ children }) {
     }
   }
 
+  const isAdmin = user?.app_metadata?.role === 'admin'
+  const hasRole = (slug) => isAdmin || userRoles.includes(slug)
+  const hasAnyRole = () => isAdmin || userRoles.length > 0
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signOut, refreshProfile, pendingPasswordRecovery }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signOut, refreshProfile, pendingPasswordRecovery, userRoles, hasRole, hasAnyRole }}>
       {children}
     </AuthContext.Provider>
   )

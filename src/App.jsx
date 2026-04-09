@@ -70,28 +70,28 @@ export default function App() {
           </ProtectedRoute>
         }>
           <Route index element={<BeheerDashboardPage />} />
-          <Route path="activiteiten" element={<ActiviteitenBeheerPage />} />
-          <Route path="trainingsschema" element={<TrainingschemaLayout />}>
+          <Route path="activiteiten" element={<ProtectedRoute requiredRole="activiteiten"><ActiviteitenBeheerPage /></ProtectedRoute>} />
+          <Route path="trainingsschema" element={<ProtectedRoute requiredRole="trainingsschema"><TrainingschemaLayout /></ProtectedRoute>}>
             <Route path=":scheduleId" element={<TrainingschemaBeheerPage />} />
             <Route path="instellingen" element={<AdminPage />} />
           </Route>
-          <Route path="sponsoring" element={<SponsoringBeheerPage />} />
+          <Route path="sponsoring" element={<ProtectedRoute requiredRole="sponsoring"><SponsoringBeheerPage /></ProtectedRoute>} />
           <Route path="club">
-            <Route path="ereleden" element={<EreledenBeheerPage />} />
+            <Route path="ereleden" element={<ProtectedRoute requiredRole="ereleden"><EreledenBeheerPage /></ProtectedRoute>} />
           </Route>
-          <Route path="gebruikers" element={<GebruikersBeheerPage />} />
-          <Route path="menu" element={<MenuBeheerPage />} />
-          <Route path="nieuws" element={<NieuwsBeheerPage />} />
-          <Route path="nieuws/nieuw" element={<NieuwsEditPage />} />
-          <Route path="nieuws/:id" element={<NieuwsEditPage />} />
-          <Route path="content" element={<ContentBeheerPage />} />
-          <Route path="content/nieuw" element={<ContentEditPage />} />
-          <Route path="content/:id" element={<ContentEditPage />} />
+          <Route path="gebruikers" element={<ProtectedRoute requiredRole="gebruikers"><GebruikersBeheerPage /></ProtectedRoute>} />
+          <Route path="menu" element={<ProtectedRoute requiredRole="content"><MenuBeheerPage /></ProtectedRoute>} />
+          <Route path="nieuws" element={<ProtectedRoute requiredRole="content"><NieuwsBeheerPage /></ProtectedRoute>} />
+          <Route path="nieuws/nieuw" element={<ProtectedRoute requiredRole="content"><NieuwsEditPage /></ProtectedRoute>} />
+          <Route path="nieuws/:id" element={<ProtectedRoute requiredRole="content"><NieuwsEditPage /></ProtectedRoute>} />
+          <Route path="content" element={<ProtectedRoute requiredRole="content"><ContentBeheerPage /></ProtectedRoute>} />
+          <Route path="content/nieuw" element={<ProtectedRoute requiredRole="content"><ContentEditPage /></ProtectedRoute>} />
+          <Route path="content/:id" element={<ProtectedRoute requiredRole="content"><ContentEditPage /></ProtectedRoute>} />
           <Route path="contact">
-            <Route index element={<ContactBeheerPage />} />
+            <Route index element={<ProtectedRoute requiredRole="contact"><ContactBeheerPage /></ProtectedRoute>} />
             <Route path="gegevens" element={<Navigate to="/beheer/contact" replace />} />
             <Route path="locatie" element={<Navigate to="/beheer/contact" replace />} />
-            <Route path="wie-doet-wat" element={<WieDoetWatBeheerPage />} />
+            <Route path="wie-doet-wat" element={<ProtectedRoute requiredRole="contact"><WieDoetWatBeheerPage /></ProtectedRoute>} />
           </Route>
         </Route>
         <Route path="wedstrijden" element={<WedstrijdenLayout />}>

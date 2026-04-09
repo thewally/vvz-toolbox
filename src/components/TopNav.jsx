@@ -71,7 +71,7 @@ function normalizeQuickLink(item) {
 }
 
 export default function TopNav() {
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, signOut, hasAnyRole } = useAuth()
   const navigate = useNavigate()
   const [userDropdownOpen, setUserDropdownOpen] = useState(false)
   const location = useLocation()
@@ -186,7 +186,7 @@ export default function TopNav() {
               </button>
               {userDropdownOpen && (
                 <div className="absolute left-0 mt-1 w-44 bg-white rounded-lg shadow-lg py-1 z-50">
-                  {user.app_metadata?.role === 'admin' && (
+                  {hasAnyRole() && (
                     <Link
                       to="/beheer"
                       onClick={() => setUserDropdownOpen(false)}
@@ -230,7 +230,7 @@ export default function TopNav() {
               </button>
               {userDropdownOpen && (
                 <div className="absolute right-0 mt-1 w-44 bg-white rounded-lg shadow-lg py-1 z-50">
-                  {user.app_metadata?.role === 'admin' && (
+                  {hasAnyRole() && (
                     <Link
                       to="/beheer"
                       onClick={() => setUserDropdownOpen(false)}
