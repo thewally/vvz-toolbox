@@ -52,7 +52,7 @@ function addMinutes(dateStr: string, timeStr: string, minutes: number) {
 }
 
 function getWedstrijdDuur(w: any, teamNaam: string): number {
-  const comp = (w.competitienaam || w.poule || '').toLowerCase()
+  const comp = (w.competitie || w.competitienaam || w.poule || '').toLowerCase()
   const sport = (w.sportomschrijving || w.locatie || '').toLowerCase()
   const namen = `${w.thuisteam || ''} ${w.uitteam || ''} ${teamNaam}`.toLowerCase()
   const alles = `${comp} ${sport} ${namen}`
