@@ -1,6 +1,7 @@
-export default function AgendaAbonneerKnop({ teamSlug }) {
-  const httpsUrl = `https://thewally.github.io/vvz-toolbox/wedstrijden/ical/${teamSlug}.ics`
-  const webcalUrl = `webcal://thewally.github.io/vvz-toolbox/wedstrijden/ical/${teamSlug}.ics`
+export default function AgendaAbonneerKnop({ teamcode }) {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+  const httpsUrl = `${supabaseUrl}/functions/v1/team-ical?teamcode=${teamcode}`
+  const webcalUrl = httpsUrl.replace('https://', 'webcal://')
   const googleUrl = `https://www.google.com/calendar/render?cid=${encodeURIComponent(httpsUrl)}`
 
   const calendarIcon = (
