@@ -51,6 +51,26 @@ function addMinutes(dateStr: string, timeStr: string, minutes: number) {
   return `${year}${pad(month)}${pad(day)}T${pad(newH)}${pad(newM)}00`
 }
 
+function getWedstrijdDuur(teamNaam: string): number {
+  const naam = teamNaam.toLowerCase()
+  // Veteranen 7x7
+  if (/veteran|vet\./.test(naam) && /7\s*x\s*7/.test(naam)) return 20
+  // Senioren / veteranen 11x11
+  if (/veteran|vet\.|selectie|derde|zesde|30\+|35\+|45\+/.test(naam) || /vvz\s*'?49\s+\d/.test(naam)) return 105
+  // Jeugd o.b.v. leeftijdscategorie
+  const match = naam.match(/[jmo]o\s*(\d+)/)
+  if (match) {
+    const cat = parseInt(match[1], 10)
+    if (cat <= 7)  return 55
+    if (cat <= 9)  return 65
+    if (cat <= 13) return 75
+    if (cat <= 15) return 85
+    if (cat <= 17) return 95
+    return 105
+  }
+  return 105
+}
+
 function generateIcal(wedstrijden: any[], teamNaam: string, teamcode: string) {
   const dtstamp = formatICalDate(new Date().toISOString().slice(0, 10), '00:00')
   const teamUrl = `https://thewally.github.io/vvz-toolbox/teams/${teamcode}`
@@ -59,7 +79,8 @@ function generateIcal(wedstrijden: any[], teamNaam: string, teamcode: string) {
   for (const w of wedstrijden) {
     const dateStr = w.wedstrijddatum.slice(0, 10)
     const dtstart = formatICalDate(dateStr, w.aanvangstijd)
-    const dtend = w.aanvangstijd ? addMinutes(dateStr, w.aanvangstijd, 90) : dtstart
+    const duur = getWedstrijdDuur(teamNaam)
+    const dtend = w.aanvangstijd ? addMinutes(dateStr, w.aanvangstijd, duur) : dtstart
     const location = [w.accommodatie, w.plaats].filter(Boolean).join(', ')
     const uid = `${w.wedstrijdcode || dtstart}-${teamNaam.replace(/\s/g, '')}@vvz49`
 
