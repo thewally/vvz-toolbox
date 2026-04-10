@@ -2,7 +2,7 @@ import { isThuis, getAanwezigheidstijd, getWhatsAppLink } from '../services/weds
 import { CLUB_RELATIECODE } from '../services/sportlink'
 import AgendaAbonneerKnop from './AgendaAbonneerKnop'
 
-export default function WedstrijdUitgelicht({ wedstrijd, teamSlug }) {
+export default function WedstrijdUitgelicht({ wedstrijd, teamcode }) {
   if (!wedstrijd) return null
 
   const thuis = isThuis(wedstrijd)
@@ -64,7 +64,7 @@ export default function WedstrijdUitgelicht({ wedstrijd, teamSlug }) {
           </svg>
           Delen via WhatsApp
         </a>
-        <AgendaAbonneerKnop teamSlug={teamSlug} />
+        <AgendaAbonneerKnop teamcode={teamcode} />
       </div>
     </div>
   )
