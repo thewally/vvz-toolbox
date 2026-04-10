@@ -92,16 +92,16 @@ export default function AgendaAbonneerKnop({ teamcode }) {
 
       {toonInstructie && (
         <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
-          URL gekopieerd. Open{' '}
+          URL gekopieerd.{' '}
           <a
             href="https://calendar.google.com/calendar/r/settings/addbyurl"
             target="_blank"
             rel="noopener noreferrer"
             className="underline hover:text-gray-700"
           >
-            Google Agenda
+            Klik hier om naar Google Agenda te gaan
           </a>
-          {' '}→ <strong>Andere agenda's toevoegen</strong> → <strong>Via URL</strong> en plak de URL.
+          {' '}en plak de URL.
         </p>
       )}
     </div>
