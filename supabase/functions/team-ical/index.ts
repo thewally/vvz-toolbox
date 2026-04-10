@@ -56,22 +56,10 @@ function generateIcal(wedstrijden: any[], teamNaam: string, teamcode: string) {
       dtend = `${year}${pad(month)}${pad(day)}T${pad(endH)}${pad(endM)}00`
     }
 
-    let aanwezigheid = ''
-    if (w.aanvangstijd) {
-      const [h, m] = w.aanvangstijd.split(':').map(Number)
-      const totalMinutes = h * 60 + m - 45
-      const aanwH = Math.floor(totalMinutes / 60)
-      const aanwM = totalMinutes % 60
-      aanwezigheid = `Aanwezig: ${pad(aanwH)}:${pad(aanwM)}`
-    }
-
     const location = [w.accommodatie, w.plaats].filter(Boolean).join(', ')
     const uid = `${w.wedstrijdcode || dtstart}-${teamNaam.replace(/\s/g, '')}@vvz49`
     const teamUrl = `https://thewally.github.io/vvz-toolbox/teams/${teamcode}`
-    const description = [
-      aanwezigheid,
-      `Zie voor meer informatie: ${teamUrl}`,
-    ].filter(Boolean).join('\\n')
+    const description = `Zie voor meer informatie: ${teamUrl}`
 
     return [
       'BEGIN:VEVENT',
