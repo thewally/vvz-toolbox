@@ -2,7 +2,7 @@ export default function AgendaAbonneerKnop({ teamcode }) {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
   const httpsUrl = `${supabaseUrl}/functions/v1/team-ical?teamcode=${teamcode}`
   const webcalUrl = httpsUrl.replace('https://', 'webcal://')
-  const googleUrl = `https://www.google.com/calendar/render?cid=${encodeURIComponent(httpsUrl)}`
+  const googleUrl = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(httpsUrl)}`
 
   const calendarIcon = (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
