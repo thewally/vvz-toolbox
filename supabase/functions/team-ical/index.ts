@@ -51,14 +51,18 @@ function addMinutes(dateStr: string, timeStr: string, minutes: number) {
   return `${year}${pad(month)}${pad(day)}T${pad(newH)}${pad(newM)}00`
 }
 
-function getWedstrijdDuur(teamNaam: string): number {
-  const naam = teamNaam.toLowerCase()
-  // 7x7 (altijd 20 minuten)
-  if (/7\s*x\s*7/.test(naam)) return 20
-  // Senioren / veteranen 11x11
-  if (/veteran|vet\.|selectie|derde|zesde|30\+|35\+|45\+/.test(naam) || /vvz\s*'?49\s+\d/.test(naam)) return 105
-  // Jeugd o.b.v. leeftijdscategorie
-  const match = naam.match(/[jmo]o\s*(\d+)/)
+function getWedstrijdDuur(w: any): number {
+  const comp = (w.competitienaam || w.poule || '').toLowerCase()
+  const sport = (w.sportomschrijving || w.locatie || '').toLowerCase()
+
+  // Futsal / Zaalvoetbal
+  if (/futsal|zaal/.test(sport) || /futsal|zaal/.test(comp)) return 60
+
+  // 7x7
+  if (/7\s*x\s*7/.test(comp)) return 20
+
+  // Leeftijdscategorie uit competitienaam: "Onder 13", "O13", "JO13", etc.
+  const match = comp.match(/(?:onder|[jmv]?o)\s*(\d+)/)
   if (match) {
     const cat = parseInt(match[1], 10)
     if (cat <= 7)  return 55
@@ -68,6 +72,8 @@ function getWedstrijdDuur(teamNaam: string): number {
     if (cat <= 17) return 95
     return 105
   }
+
+  // Senioren / Veteranen (105 min)
   return 105
 }
 
@@ -79,7 +85,7 @@ function generateIcal(wedstrijden: any[], teamNaam: string, teamcode: string, cl
   for (const w of wedstrijden) {
     const dateStr = w.wedstrijddatum.slice(0, 10)
     const dtstart = formatICalDate(dateStr, w.aanvangstijd)
-    const duur = getWedstrijdDuur(teamNaam)
+    const duur = getWedstrijdDuur(w)
     const dtend = w.aanvangstijd ? addMinutes(dateStr, w.aanvangstijd, duur) : dtstart
     const location = [w.accommodatie, w.plaats].filter(Boolean).join(', ')
     const uid = `${w.wedstrijdcode || dtstart}-${teamNaam.replace(/\s/g, '')}@vvz49`
