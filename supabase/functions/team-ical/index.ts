@@ -76,15 +76,17 @@ function generateIcal(wedstrijden: any[], teamNaam: string, teamcode: string) {
       'END:VEVENT',
     ].filter(Boolean).join('\r\n'))
 
-    // Verzameltijd event (apart agenda-item van 30 min)
-    if (w.verzameltijd) {
-      const vzStart = formatICalDate(dateStr, w.verzameltijd)
-      const vzEnd = addMinutes(dateStr, w.verzameltijd, 30)
+    // Verzamel- of vertrektijd event (apart agenda-item van 30 min)
+    const verzamelTijd = w.verzameltijd || w.vertrektijd
+    const verzamelLabel = w.vertrektijd && !w.verzameltijd ? 'Vertrek' : 'Verzamelen'
+    if (verzamelTijd) {
+      const vzStart = formatICalDate(dateStr, verzamelTijd)
+      const vzEnd = addMinutes(dateStr, verzamelTijd, 30)
       events.push([
         'BEGIN:VEVENT',
         `DTSTART;TZID=Europe/Amsterdam:${vzStart}`,
         `DTEND;TZID=Europe/Amsterdam:${vzEnd}`,
-        `SUMMARY:Verzamelen: ${escapeIcal(`${w.thuisteam} - ${w.uitteam}`)}`,
+        `SUMMARY:${verzamelLabel}: ${escapeIcal(`${w.thuisteam} - ${w.uitteam}`)}`,
         location ? `LOCATION:${escapeIcal(location)}` : '',
         `UID:verzamel-${uid}`,
         `DTSTAMP:${dtstamp}`,
