@@ -13,22 +13,20 @@ const CLUB_RELATIECODE = process.env.SPORTLINK_CLUB_RELATIECODE
 const BASE_URL = 'https://data.sportlink.com'
 
 const TEAM_CONFIG = [
-  { slug: 'selectie',    sportlinkNaam: 'VVZ 1' },
-  { slug: 'veteranen',   sportlinkNaam: 'VVZ 2' },
-  { slug: 'derde',       sportlinkNaam: 'VVZ 3' },
-  { slug: 'zesde',       sportlinkNaam: 'VVZ 6' },
-  { slug: '30-vrouwen',  sportlinkNaam: 'VVZ VR30+1' },
-  { slug: '35-mannen',   sportlinkNaam: 'VVZ 35+1' },
-  { slug: '45-mannen',   sportlinkNaam: 'VVZ 45+1' },
-  { slug: 'jo19-1',      sportlinkNaam: 'VVZ JO19-1' },
-  { slug: 'jo17-1',      sportlinkNaam: 'VVZ JO17-1' },
-  { slug: 'jo15-1',      sportlinkNaam: 'VVZ JO15-1' },
-  { slug: 'jo14-1',      sportlinkNaam: 'VVZ JO14-1' },
-  { slug: 'jo13-1',      sportlinkNaam: 'VVZ JO13-1' },
-  { slug: 'jo12-1',      sportlinkNaam: 'VVZ JO12-1' },
-  { slug: 'jo11-1',      sportlinkNaam: 'VVZ JO11-1' },
-  { slug: 'jo10-1',      sportlinkNaam: 'VVZ JO10-1' },
-  { slug: 'jo9-1',       sportlinkNaam: 'VVZ JO9-1' },
+  { slug: 'selectie',    sportlinkNaam: "VVZ '49 1" },
+  { slug: 'veteranen',   sportlinkNaam: "VVZ '49 2" },
+  { slug: 'derde',       sportlinkNaam: "VVZ '49 3" },
+  { slug: '35-mannen',   sportlinkNaam: "VVZ '49 35+1" },
+  { slug: '45-mannen',   sportlinkNaam: "VVZ '49 45+1" },
+  { slug: 'jo19-1',      sportlinkNaam: "VVZ '49 JO19-1" },
+  { slug: 'jo16-1',      sportlinkNaam: "VVZ '49 JO16-1" },
+  { slug: 'jo15-1',      sportlinkNaam: "VVZ '49 JO15-1" },
+  { slug: 'jo14-1',      sportlinkNaam: "VVZ '49 JO14-1" },
+  { slug: 'jo13-1',      sportlinkNaam: "VVZ '49 JO13-1" },
+  { slug: 'jo12-1',      sportlinkNaam: "VVZ '49 JO12-1" },
+  { slug: 'jo11-1',      sportlinkNaam: "VVZ '49 JO11-1" },
+  { slug: 'jo10-1',      sportlinkNaam: "VVZ '49 JO10-1" },
+  { slug: 'jo9-1',       sportlinkNaam: "VVZ '49 JO9-1" },
 ]
 
 if (!CLIENT_ID || !CLUB_RELATIECODE) {
