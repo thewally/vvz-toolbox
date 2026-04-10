@@ -19,8 +19,9 @@ export default function AgendaAbonneerKnop({ teamcode }) {
 
   const os = detectOS()
   const toonApple = ['ios', 'mac'].includes(os)
-  const toonGoogle = ['android', 'mac', 'windows', 'other'].includes(os)
+  const toonGoogle = ['mac', 'windows', 'other'].includes(os)
   const toonOutlook = os === 'windows'
+  const toonAndroidKopieer = os === 'android'
   const toonAlles = os === 'other'
 
   async function kopieerUrl() {
@@ -69,6 +70,13 @@ export default function AgendaAbonneerKnop({ teamcode }) {
           <button onClick={kopieerUrl} className={btnClass}>
             {copyIcon}
             {gekopieerd ? 'Gekopieerd!' : 'Google Agenda'}
+          </button>
+        )}
+
+        {toonAndroidKopieer && (
+          <button onClick={kopieerUrl} className={btnClass}>
+            {copyIcon}
+            {gekopieerd ? 'Gekopieerd!' : 'Agenda-URL kopiëren'}
           </button>
         )}
 
