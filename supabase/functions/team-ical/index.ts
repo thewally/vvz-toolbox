@@ -42,7 +42,7 @@ function escapeIcal(str: string) {
   return (str || '').replace(/[\\;,]/g, (c) => `\\${c}`).replace(/\n/g, '\\n')
 }
 
-function generateIcal(wedstrijden: any[], teamNaam: string) {
+function generateIcal(wedstrijden: any[], teamNaam: string, teamcode: string) {
   const events = wedstrijden.map((w) => {
     const dtstart = formatICalDate(w.wedstrijddatum, w.aanvangstijd)
 
@@ -67,6 +67,11 @@ function generateIcal(wedstrijden: any[], teamNaam: string) {
 
     const location = [w.accommodatie, w.plaats].filter(Boolean).join(', ')
     const uid = `${w.wedstrijdcode || dtstart}-${teamNaam.replace(/\s/g, '')}@vvz49`
+    const teamUrl = `https://thewally.github.io/vvz-toolbox/teams/${teamcode}`
+    const description = [
+      aanwezigheid,
+      `Zie voor meer informatie: ${teamUrl}`,
+    ].filter(Boolean).join('\\n')
 
     return [
       'BEGIN:VEVENT',
@@ -74,7 +79,7 @@ function generateIcal(wedstrijden: any[], teamNaam: string) {
       `DTEND;TZID=Europe/Amsterdam:${dtend}`,
       `SUMMARY:${escapeIcal(`${w.thuisteam} - ${w.uitteam}`)}`,
       location ? `LOCATION:${escapeIcal(location)}` : '',
-      aanwezigheid ? `DESCRIPTION:${escapeIcal(aanwezigheid)}` : '',
+      `DESCRIPTION:${description}`,
       `UID:${uid}`,
       `DTSTAMP:${formatICalDate(new Date().toISOString().slice(0, 10), '00:00')}`,
       'END:VEVENT',
@@ -131,7 +136,7 @@ Deno.serve(async (req) => {
     if (!progRes.ok) throw new Error(`Sportlink programma error: ${progRes.status}`)
     const programma = await progRes.json()
 
-    const ical = generateIcal(programma || [], teamNaam)
+    const ical = generateIcal(programma || [], teamNaam, teamcode)
 
     return new Response(ical, {
       headers: {
