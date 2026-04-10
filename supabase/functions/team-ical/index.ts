@@ -53,8 +53,8 @@ function addMinutes(dateStr: string, timeStr: string, minutes: number) {
 
 function getWedstrijdDuur(teamNaam: string): number {
   const naam = teamNaam.toLowerCase()
-  // Veteranen 7x7
-  if (/veteran|vet\./.test(naam) && /7\s*x\s*7/.test(naam)) return 20
+  // 7x7 (altijd 20 minuten)
+  if (/7\s*x\s*7/.test(naam)) return 20
   // Senioren / veteranen 11x11
   if (/veteran|vet\.|selectie|derde|zesde|30\+|35\+|45\+/.test(naam) || /vvz\s*'?49\s+\d/.test(naam)) return 105
   // Jeugd o.b.v. leeftijdscategorie
