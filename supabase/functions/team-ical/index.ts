@@ -71,7 +71,7 @@ function getWedstrijdDuur(teamNaam: string): number {
   return 105
 }
 
-function generateIcal(wedstrijden: any[], teamNaam: string, teamcode: string) {
+function generateIcal(wedstrijden: any[], teamNaam: string, teamcode: string, clubRelatiecode?: string) {
   const dtstamp = formatICalDate(new Date().toISOString().slice(0, 10), '00:00')
   const teamUrl = `https://thewally.github.io/vvz-toolbox/teams/${teamcode}`
   const events: string[] = []
@@ -84,12 +84,19 @@ function generateIcal(wedstrijden: any[], teamNaam: string, teamcode: string) {
     const location = [w.accommodatie, w.plaats].filter(Boolean).join(', ')
     const uid = `${w.wedstrijdcode || dtstart}-${teamNaam.replace(/\s/g, '')}@vvz49`
 
+    const isThuis = clubRelatiecode
+      ? String(w.thuisteamclubrelatiecode) === String(clubRelatiecode)
+      : w.thuisteam?.toLowerCase().includes(teamNaam.toLowerCase())
+    const tegenstander = isThuis ? w.uitteam : w.thuisteam
+    const thuisUit = isThuis ? 'THUIS' : 'UIT'
+    const summary = `${escapeIcal(tegenstander)} (${thuisUit})`
+
     // Wedstrijd event
     events.push([
       'BEGIN:VEVENT',
       `DTSTART;TZID=Europe/Amsterdam:${dtstart}`,
       `DTEND;TZID=Europe/Amsterdam:${dtend}`,
-      `SUMMARY:${escapeIcal(`${w.thuisteam} - ${w.uitteam}`)}`,
+      `SUMMARY:${summary}`,
       location ? `LOCATION:${escapeIcal(location)}` : '',
       `DESCRIPTION:${teamUrl}`,
       `UID:${uid}`,
@@ -107,7 +114,7 @@ function generateIcal(wedstrijden: any[], teamNaam: string, teamcode: string) {
         'BEGIN:VEVENT',
         `DTSTART;TZID=Europe/Amsterdam:${vzStart}`,
         `DTEND;TZID=Europe/Amsterdam:${vzEnd}`,
-        `SUMMARY:${verzamelLabel}: ${escapeIcal(`${w.thuisteam} - ${w.uitteam}`)}`,
+        `SUMMARY:${verzamelLabel}: ${escapeIcal(tegenstander)} (${thuisUit})`,
         location ? `LOCATION:${escapeIcal(location)}` : '',
         `UID:verzamel-${uid}`,
         `DTSTAMP:${dtstamp}`,
@@ -171,7 +178,8 @@ Deno.serve(async (req) => {
     if (!progRes.ok) throw new Error(`Sportlink programma error: ${progRes.status}`)
     const programma = await progRes.json()
 
-    const ical = generateIcal(programma || [], teamNaam, teamcode)
+    const clubRelatiecode = Deno.env.get('SPORTLINK_CLUB_RELATIECODE')
+    const ical = generateIcal(programma || [], teamNaam, teamcode, clubRelatiecode)
 
     return new Response(ical, {
       headers: {
