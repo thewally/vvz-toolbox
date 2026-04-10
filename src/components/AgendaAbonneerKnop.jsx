@@ -76,7 +76,7 @@ export default function AgendaAbonneerKnop({ teamcode }) {
         {toonAndroidKopieer && (
           <button onClick={kopieerUrl} className={btnClass}>
             {copyIcon}
-            {gekopieerd ? 'Gekopieerd!' : 'Agenda-URL kopiëren'}
+            {gekopieerd ? 'Gekopieerd!' : 'Google Agenda'}
           </button>
         )}
 
@@ -92,7 +92,16 @@ export default function AgendaAbonneerKnop({ teamcode }) {
 
       {toonInstructie && (
         <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
-          URL gekopieerd. Open Google Agenda → <strong>Andere agenda's toevoegen</strong> → <strong>Via URL</strong> en plak de URL.
+          URL gekopieerd. Open{' '}
+          <a
+            href="https://calendar.google.com/calendar/r/settings/addbyurl"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-gray-700"
+          >
+            Google Agenda
+          </a>
+          {' '}→ <strong>Andere agenda's toevoegen</strong> → <strong>Via URL</strong> en plak de URL.
         </p>
       )}
     </div>
