@@ -355,7 +355,6 @@ export default function TeamPage() {
             </span>
           )}
         </div>
-        <AgendaAbonneerKnop teamcode={teamcode} />
       </div>
 
       {/* Uitgelichte wedstrijd */}
@@ -474,6 +473,12 @@ export default function TeamPage() {
           className="w-full rounded-xl mb-6"
         />
       )}
+
+      {/* Agenda abonneren */}
+      <section className="mb-8 bg-white rounded-xl border border-gray-200 p-5">
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Abonneer op het programma van {teamnaam}</h2>
+        <AgendaAbonneerKnop teamcode={teamcode} />
+      </section>
 
       {/* Programma — alle toekomstige wedstrijden */}
       <section className="mb-10">

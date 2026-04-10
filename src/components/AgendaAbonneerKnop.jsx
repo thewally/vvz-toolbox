@@ -1,14 +1,5 @@
 import { useState } from 'react'
 
-function detectOS() {
-  const ua = navigator.userAgent
-  if (/android/i.test(ua)) return 'android'
-  if (/iphone|ipad|ipod/i.test(ua)) return 'ios'
-  if (/macintosh|mac os x/i.test(ua)) return 'mac'
-  if (/windows/i.test(ua)) return 'windows'
-  return 'other'
-}
-
 export default function AgendaAbonneerKnop({ teamcode }) {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
   const httpsUrl = `${supabaseUrl}/functions/v1/team-ical?teamcode=${teamcode}`
@@ -16,13 +7,6 @@ export default function AgendaAbonneerKnop({ teamcode }) {
 
   const [gekopieerd, setGekopieerd] = useState(false)
   const [toonInstructie, setToonInstructie] = useState(false)
-
-  const os = detectOS()
-  const toonApple = ['ios', 'mac'].includes(os)
-  const toonGoogle = ['mac', 'windows', 'other'].includes(os)
-  const toonOutlook = os === 'windows'
-  const toonAndroidKopieer = os === 'android'
-  const toonAlles = os === 'other'
 
   async function kopieerUrl() {
     await navigator.clipboard.writeText(httpsUrl)
@@ -47,47 +31,31 @@ export default function AgendaAbonneerKnop({ teamcode }) {
     </svg>
   )
 
+  const downloadIcon = (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+    </svg>
+  )
+
   const btnClass = 'inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors'
 
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
-        {(toonApple || toonAlles) && (
-          <a href={webcalUrl} className={btnClass}>
-            {calendarIcon}
-            {os === 'ios' ? 'Abonneren' : os === 'mac' ? 'Apple Agenda' : 'Apple / Outlook'}
-          </a>
-        )}
+        <a href={webcalUrl} className={btnClass}>
+          {calendarIcon}
+          Apple / Outlook
+        </a>
 
-        {(toonOutlook || toonAlles) && (
-          <a href={webcalUrl} className={btnClass}>
-            {calendarIcon}
-            Outlook
-          </a>
-        )}
+        <button onClick={kopieerUrl} className={btnClass}>
+          {copyIcon}
+          {gekopieerd ? 'Gekopieerd!' : 'Google Agenda'}
+        </button>
 
-        {(toonGoogle || toonAlles) && (
-          <button onClick={kopieerUrl} className={btnClass}>
-            {copyIcon}
-            {gekopieerd ? 'Gekopieerd!' : 'Google Agenda'}
-          </button>
-        )}
-
-        {toonAndroidKopieer && (
-          <button onClick={kopieerUrl} className={btnClass}>
-            {copyIcon}
-            {gekopieerd ? 'Gekopieerd!' : 'Google Agenda'}
-          </button>
-        )}
-
-        {toonAlles && (
-          <a href={httpsUrl} download className={btnClass}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-            </svg>
-            Download .ics
-          </a>
-        )}
+        <a href={httpsUrl} download className={btnClass}>
+          {downloadIcon}
+          Download .ics
+        </a>
       </div>
 
       {toonInstructie && (
@@ -101,7 +69,7 @@ export default function AgendaAbonneerKnop({ teamcode }) {
           >
             Klik hier om naar Google Agenda te gaan
           </a>
-, plak de URL en klik op <strong>Agenda toevoegen</strong>.
+          , plak de URL en klik op <strong>Agenda toevoegen</strong>.
         </p>
       )}
     </div>
