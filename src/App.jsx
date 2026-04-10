@@ -49,6 +49,7 @@ import WachtwoordVergetenPage from './pages/WachtwoordVergetenPage'
 import WachtwoordResettenPage from './pages/WachtwoordResettenPage'
 import WachtwoordInstellenPage from './pages/WachtwoordInstellenPage'
 import VrijwilligerWordenPage from './pages/VrijwilligerWordenPage'
+import LidWordenPage from './pages/LidWordenPage'
 import VrijwilligersBeheerPage from './pages/VrijwilligersBeheerPage'
 
 export default function App() {
@@ -111,6 +112,7 @@ export default function App() {
           <Route path=":slug" element={<NieuwsDetailPage />} />
         </Route>
         <Route path="vrijwilliger" element={<VrijwilligerWordenPage />} />
+        <Route path="lid-worden" element={<LidWordenPage />} />
         <Route path="techniektrainingen" element={<PlaceholderPage title="Techniektrainingen" />} />
         <Route path="sponsors" element={<SponsorsPage />} />
         <Route path="sponsors/:slug" element={<SponsorDetailPage />} />
