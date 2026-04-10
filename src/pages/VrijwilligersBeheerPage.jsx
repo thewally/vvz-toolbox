@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import DOMPurify from 'dompurify'
 import {
   fetchVolunteerGroups,
   createVolunteerGroup,
@@ -237,9 +238,16 @@ export default function VrijwilligersBeheerPage() {
     setDropVacancyTarget(null)
   }
 
-  const DragHandle = () => (
-    <svg className="w-4 h-4 text-gray-300 cursor-grab" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" /></svg>
-  )
+  function getContactInfo(v) {
+    if (v.committee_members) {
+      return { naam: v.committee_members.naam, email: v.committee_members.emailadres, telefoon: v.committee_members.telefoonnummer }
+    }
+    const naam = v.contact_naam
+    const email = v.contact_email
+    const telefoon = v.contact_telefoon
+    if (!naam && !email && !telefoon) return null
+    return { naam, email, telefoon }
+  }
 
   if (loading) {
     return (
@@ -252,15 +260,11 @@ export default function VrijwilligersBeheerPage() {
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6">
       <Link to="/beheer" className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1 mb-4">&#8249; Terug naar Beheer</Link>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-gray-800">Vrijwilligersvacatures beheren</h1>
-        <button
-          onClick={openNieuweGroep}
-          className="bg-vvz-green text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-vvz-green/90 transition-colors"
-        >
-          + Groep toevoegen
-        </button>
-      </div>
+
+      <h1 className="text-2xl font-bold text-gray-800 mb-2">Vrijwilliger worden?</h1>
+      <p className="text-gray-600 mb-8">
+        VVZ'49 draait op vrijwilligers! Bekijk hieronder de openstaande vacatures en neem contact op als je wilt helpen.
+      </p>
 
       {fout && (
         <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 border border-red-200 text-red-700">
@@ -269,41 +273,46 @@ export default function VrijwilligersBeheerPage() {
       )}
 
       {groups.length === 0 && (
-        <p className="text-sm text-gray-500">Nog geen groepen aangemaakt.</p>
+        <div className="text-center py-12">
+          <p className="text-gray-500">Nog geen groepen aangemaakt.</p>
+        </div>
       )}
 
-      <div className="space-y-4">
-        {groups.map((g, gi) => (
-          <div
-            key={g.id}
-            draggable
-            onDragStart={e => onGroupDragStart(e, gi)}
-            onDragOver={e => onGroupDragOver(e, gi)}
-            onDragLeave={onGroupDragLeave}
-            onDrop={e => onGroupDrop(e, gi)}
-            onDragEnd={onGroupDragEnd}
-            className={`bg-white rounded-xl shadow-sm border border-gray-100 p-5 transition-all ${
-              dropGroupTarget === gi && dragGroup !== gi ? 'border-t-2 border-vvz-green' : ''
-            } ${dragGroup === gi ? 'opacity-40' : ''}`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 min-w-0">
-                <DragHandle />
-                <h2 className="text-base font-semibold text-gray-800">{g.naam}</h2>
-              </div>
-              <div className="flex gap-1 shrink-0">
-                <button onClick={() => openBewerkGroep(g)} className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors" title="Bewerken" aria-label={`${g.naam} bewerken`}>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                </button>
-                <button onClick={() => handleGroepVerwijderen(g.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Verwijderen" aria-label={`${g.naam} verwijderen`}>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
-              </div>
+      {groups.map((g, gi) => (
+        <div
+          key={g.id}
+          className={`mb-8 ${dragGroup === gi ? 'opacity-40' : ''}`}
+          draggable
+          onDragStart={e => onGroupDragStart(e, gi)}
+          onDragOver={e => onGroupDragOver(e, gi)}
+          onDragLeave={onGroupDragLeave}
+          onDrop={e => onGroupDrop(e, gi)}
+          onDragEnd={onGroupDragEnd}
+        >
+          {/* Group header — matches public style with admin controls */}
+          <div className={`flex items-center gap-2 mb-4 ${dropGroupTarget === gi && dragGroup !== gi ? 'border-t-2 border-vvz-green pt-2' : ''}`}>
+            {/* Drag handle */}
+            <svg className="w-5 h-5 text-gray-300 cursor-grab shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <circle cx="7" cy="4" r="1.5" /><circle cx="13" cy="4" r="1.5" />
+              <circle cx="7" cy="10" r="1.5" /><circle cx="13" cy="10" r="1.5" />
+              <circle cx="7" cy="16" r="1.5" /><circle cx="13" cy="16" r="1.5" />
+            </svg>
+            <h2 className="text-xl font-semibold text-gray-800 flex-1">{g.naam}</h2>
+            <div className="flex gap-1 shrink-0">
+              <button onClick={() => openBewerkGroep(g)} className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors" title="Groep bewerken" aria-label={`${g.naam} bewerken`}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+              </button>
+              <button onClick={() => handleGroepVerwijderen(g.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Groep verwijderen" aria-label={`${g.naam} verwijderen`}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </button>
             </div>
+          </div>
 
-            {/* Vacatures */}
-            <div className="border-t border-gray-100 pt-3 space-y-1">
-              {(g.volunteer_vacancies || []).map((v, vi) => (
+          {/* Vacancy cards — same layout as public page */}
+          <div className="grid gap-4">
+            {(g.volunteer_vacancies || []).map((v, vi) => {
+              const contact = getContactInfo(v)
+              return (
                 <div
                   key={v.id}
                   draggable
@@ -312,18 +321,22 @@ export default function VrijwilligersBeheerPage() {
                   onDragLeave={onVacancyDragLeave}
                   onDrop={e => { e.stopPropagation(); onVacancyDrop(e, g.id, vi) }}
                   onDragEnd={onVacancyDragEnd}
-                  className={`flex items-center justify-between gap-2 py-1.5 text-sm rounded transition-all ${
-                    dropVacancyTarget === `${g.id}-${vi}` && dragVacancy?.index !== vi ? 'border-t-2 border-vvz-green' : ''
+                  className={`bg-white rounded-xl shadow-sm border border-gray-100 p-5 relative transition-all ${
+                    !v.actief ? 'opacity-50' : ''
+                  } ${dropVacancyTarget === `${g.id}-${vi}` && dragVacancy?.index !== vi ? 'border-t-2 border-vvz-green' : ''
                   } ${dragVacancy?.groupId === g.id && dragVacancy?.index === vi ? 'opacity-40' : ''}`}
                 >
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <DragHandle />
-                    <span className="font-semibold text-gray-800 truncate">{v.titel}</span>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 ${v.actief ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                      {v.actief ? 'Actief' : 'Inactief'}
-                    </span>
+                  {/* Drag handle — left side */}
+                  <div className="absolute left-1.5 top-1/2 -translate-y-1/2">
+                    <svg className="w-4 h-4 text-gray-300 cursor-grab" viewBox="0 0 20 20" fill="currentColor">
+                      <circle cx="7" cy="5" r="1.5" /><circle cx="13" cy="5" r="1.5" />
+                      <circle cx="7" cy="10" r="1.5" /><circle cx="13" cy="10" r="1.5" />
+                      <circle cx="7" cy="15" r="1.5" /><circle cx="13" cy="15" r="1.5" />
+                    </svg>
                   </div>
-                  <div className="flex gap-1 shrink-0">
+
+                  {/* Admin controls — top right */}
+                  <div className="absolute top-3 right-3 flex gap-0.5">
                     <button onClick={() => handleToggleActief(v)} className="p-1.5 text-gray-400 hover:text-vvz-green hover:bg-vvz-green/10 rounded-lg transition-colors" title={v.actief ? 'Deactiveren' : 'Activeren'}>
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         {v.actief
@@ -339,15 +352,74 @@ export default function VrijwilligersBeheerPage() {
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     </button>
                   </div>
+
+                  {/* Inactief badge */}
+                  {!v.actief && (
+                    <span className="absolute top-3.5 right-28 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">
+                      Inactief
+                    </span>
+                  )}
+
+                  {/* Card content — matches public page exactly */}
+                  <div className="pl-5 pr-24">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{v.titel}</h3>
+                    {v.beschrijving && (
+                      <div
+                        className="text-sm text-gray-600 leading-relaxed mb-3 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-2 [&_h2]:mb-1 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1 [&_a]:text-vvz-green [&_a]:underline"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(v.beschrijving) }}
+                      />
+                    )}
+                    {contact && (
+                      <div className="flex flex-col gap-1 mt-3 text-sm text-gray-500">
+                        {contact.naam && (
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                            </svg>
+                            <span>{contact.naam}</span>
+                          </div>
+                        )}
+                        {contact.email && (
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                            </svg>
+                            <a href={`mailto:${contact.email}`} className="text-vvz-green hover:underline">{contact.email}</a>
+                          </div>
+                        )}
+                        {contact.telefoon && (
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                            </svg>
+                            <a href={`tel:${contact.telefoon}`} className="text-vvz-green hover:underline">{contact.telefoon}</a>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ))}
-              <button onClick={() => openNieuweVacature(g.id)} className="text-xs text-vvz-green hover:underline mt-1">
-                + Vacature toevoegen
-              </button>
-            </div>
+              )
+            })}
+
+            {/* Add vacancy button — dashed style */}
+            <button
+              onClick={() => openNieuweVacature(g.id)}
+              className="w-full py-3 rounded-xl border-2 border-dashed border-gray-200 text-gray-400 text-sm font-medium hover:border-vvz-green hover:text-vvz-green transition-colors"
+            >
+              + Vacature toevoegen
+            </button>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
+
+      {/* Add group button */}
+      <button
+        onClick={openNieuweGroep}
+        className="w-full py-3 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 text-sm font-medium hover:border-vvz-green hover:text-vvz-green transition-colors mt-2"
+      >
+        + Groep toevoegen
+      </button>
 
       {/* Groep Modal */}
       {groepModal && (
