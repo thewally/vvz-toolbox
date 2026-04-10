@@ -96,8 +96,9 @@ async function loadImage(url) {
 async function shareWedstrijdCard(w, teamnaam, teamcode) {
   const VVZ_GREEN = '#2E7D32'
   const SCALE = 2
-  const W = 540 * SCALE
-  const H = 720 * SCALE
+  const SIZE = 600
+  const W = SIZE * SCALE
+  const H = SIZE * SCALE
   const thuis = isThuis(w)
 
   const canvas = document.createElement('canvas')
@@ -106,8 +107,8 @@ async function shareWedstrijdCard(w, teamnaam, teamcode) {
   const ctx = canvas.getContext('2d')
   ctx.scale(SCALE, SCALE)
 
-  const CW = 540
-  const CH = 720
+  const CW = SIZE
+  const CH = SIZE
 
   // Laad logo's parallel
   const [logoThuis, logoUit] = await Promise.all([
