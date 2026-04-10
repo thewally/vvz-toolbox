@@ -27,12 +27,7 @@ jobs:
           SPORTLINK_CLIENT_ID: ${{ secrets.VITE_SPORTLINK_CLIENT_ID }}
           SPORTLINK_CLUB_RELATIECODE: ${{ secrets.VITE_SPORTLINK_CLUB_RELATIECODE }}
 
-      - name: Generate iCal files
-        run: node scripts/generate-ical.js
-        env:
-          SPORTLINK_CLIENT_ID: ${{ secrets.VITE_SPORTLINK_CLIENT_ID }}
-
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: update Sportlink cache en iCal-bestanden"
-          file_pattern: "public/data/** public/wedstrijden/ical/**"
+          commit_message: "chore: update Sportlink cache"
+          file_pattern: "public/data/**"
