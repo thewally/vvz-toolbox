@@ -83,106 +83,155 @@ function drawBadge(ctx, text, cx, cy, bgColor, textColor) {
   ctx.fillText(text, cx, cy)
 }
 
+async function loadImage(url) {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => resolve(img)
+    img.onerror = () => resolve(null)
+    img.src = url
+  })
+}
+
 async function shareWedstrijdCard(w, teamnaam, teamcode) {
   const VVZ_GREEN = '#2E7D32'
-  const WIDTH = 1200
-  const HEIGHT = 630
+  const SCALE = 2
+  const W = 540 * SCALE
+  const H = 720 * SCALE
   const thuis = isThuis(w)
 
   const canvas = document.createElement('canvas')
-  canvas.width = WIDTH
-  canvas.height = HEIGHT
+  canvas.width = W
+  canvas.height = H
   const ctx = canvas.getContext('2d')
-  ctx.textBaseline = 'alphabetic'
+  ctx.scale(SCALE, SCALE)
 
-  // Light gray background
+  const CW = 540
+  const CH = 720
+
+  // Laad logo's parallel
+  const [logoThuis, logoUit] = await Promise.all([
+    w.thuisteamlogo ? loadImage(w.thuisteamlogo) : Promise.resolve(null),
+    w.uitteamlogo ? loadImage(w.uitteamlogo) : Promise.resolve(null),
+  ])
+
+  // Achtergrond
   ctx.fillStyle = '#f3f4f6'
-  ctx.fillRect(0, 0, WIDTH, HEIGHT)
+  ctx.fillRect(0, 0, CW, CH)
 
-  // White card
-  const cardX = 60, cardY = 50, cardW = WIDTH - 120, cardH = HEIGHT - 100
+  // Card
+  const cx = 24, cy = 24, cw = CW - 48, ch = CH - 48, r = 20
   ctx.fillStyle = '#ffffff'
   ctx.beginPath()
-  ctx.roundRect(cardX, cardY, cardW, cardH, 24)
+  ctx.roundRect(cx, cy, cw, ch, r)
   ctx.fill()
 
-  // Green top bar on card
-  const barH = 90
+  // Groene header
+  const barH = 72
   ctx.save()
   ctx.beginPath()
-  ctx.roundRect(cardX, cardY, cardW, barH, [24, 24, 0, 0])
+  ctx.roundRect(cx, cy, cw, barH, [r, r, 0, 0])
   ctx.clip()
   ctx.fillStyle = VVZ_GREEN
-  ctx.fillRect(cardX, cardY, cardW, barH)
+  ctx.fillRect(cx, cy, cw, barH)
   ctx.restore()
 
-  // VVZ'49 label + teamnaam in bar
+  // Datum links in header
+  const dagLabel = formatDagLabel(w.wedstrijddatum)
+  const dagStr = dagLabel.charAt(0).toUpperCase() + dagLabel.slice(1)
   ctx.fillStyle = '#ffffff'
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'left'
-  ctx.font = 'bold 32px system-ui, sans-serif'
-  ctx.fillText("VVZ'49", cardX + 36, cardY + barH / 2 - 12)
-  ctx.font = '22px system-ui, sans-serif'
-  ctx.fillText(teamnaam, cardX + 36, cardY + barH / 2 + 16)
+  ctx.font = 'bold 22px system-ui, sans-serif'
+  ctx.fillText(dagStr, cx + 24, cy + barH / 2)
 
-  // Date + time right side of bar
-  const dagLabel = formatDagLabel(w.wedstrijddatum)
-  ctx.textAlign = 'right'
-  ctx.font = '22px system-ui, sans-serif'
-  ctx.fillText(dagLabel.charAt(0).toUpperCase() + dagLabel.slice(1), cardX + cardW - 36, cardY + barH / 2 - 12)
-  ctx.font = 'bold 28px system-ui, sans-serif'
-  ctx.fillText(w.aanvangstijd || '--:--', cardX + cardW - 36, cardY + barH / 2 + 18)
+  // Thuis/Uit pill rechts in header
+  const pillLabel = thuis ? 'Thuis' : 'Uit'
+  ctx.font = 'bold 18px system-ui, sans-serif'
+  const pillW = ctx.measureText(pillLabel).width + 28
+  const pillH = 34
+  const pillX = cx + cw - 20 - pillW
+  const pillY = cy + (barH - pillH) / 2
+  ctx.fillStyle = 'rgba(255,255,255,0.25)'
+  ctx.beginPath()
+  ctx.roundRect(pillX, pillY, pillW, pillH, pillH / 2)
+  ctx.fill()
+  ctx.fillStyle = '#ffffff'
+  ctx.textAlign = 'center'
+  ctx.fillText(pillLabel, pillX + pillW / 2, pillY + pillH / 2)
 
-  // Team names
-  const teamY = cardY + barH + 110
+  // Logo's + tijd
+  const logoSize = 80
+  const logoY = cy + barH + 28
+  const centerX = cx + cw / 2
+
+  if (logoThuis) {
+    ctx.drawImage(logoThuis, cx + 32, logoY, logoSize, logoSize)
+  }
+  if (logoUit) {
+    ctx.drawImage(logoUit, cx + cw - 32 - logoSize, logoY, logoSize, logoSize)
+  }
+
+  // Aanvangstijd gecentreerd
+  ctx.fillStyle = '#1f2937'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.font = 'bold 48px system-ui, sans-serif'
+  ctx.fillText(w.aanvangstijd || '--:--', centerX, logoY + logoSize / 2)
+
+  // Teamnamen
+  const nameY = logoY + logoSize + 36
   ctx.textBaseline = 'alphabetic'
 
-  const thuisSize = fitText(ctx, w.thuisteam, cardW * 0.38, 44)
+  const thuisSize = fitText(ctx, w.thuisteam, cw - 48, 28)
   ctx.font = `bold ${thuisSize}px system-ui, sans-serif`
   ctx.fillStyle = thuis ? VVZ_GREEN : '#1f2937'
   ctx.textAlign = 'center'
-  ctx.fillText(w.thuisteam, cardX + cardW * 0.28, teamY)
+  ctx.fillText(w.thuisteam, centerX, nameY)
 
-  // vs
   ctx.fillStyle = '#9ca3af'
-  ctx.font = 'bold 36px system-ui, sans-serif'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText('vs', WIDTH / 2, teamY - 16)
-  ctx.textBaseline = 'alphabetic'
+  ctx.font = '18px system-ui, sans-serif'
+  ctx.fillText('vs', centerX, nameY + 28)
 
-  const uitSize = fitText(ctx, w.uitteam, cardW * 0.38, 44)
+  const uitSize = fitText(ctx, w.uitteam, cw - 48, 28)
   ctx.font = `bold ${uitSize}px system-ui, sans-serif`
   ctx.fillStyle = !thuis ? VVZ_GREEN : '#1f2937'
+  ctx.fillText(w.uitteam, centerX, nameY + 60)
+
+  // Details
+  let detailY = nameY + 100
+  ctx.fillStyle = '#6b7280'
+  ctx.font = '18px system-ui, sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText(w.uitteam, cardX + cardW * 0.72, teamY)
 
-  // Badges
-  const badgeY = teamY + 70
-  const isZaal = (w.locatie || '').toLowerCase().includes('zaal') || (w.locatie || '').toLowerCase().includes('futsal')
-  drawBadge(ctx, thuis ? 'THUIS' : 'UIT',
-    WIDTH / 2 - 80, badgeY,
-    thuis ? '#dcfce7' : '#f3f4f6',
-    thuis ? '#15803d' : '#6b7280')
-  drawBadge(ctx, isZaal ? 'ZAAL' : 'VELD',
-    WIDTH / 2 + 80, badgeY,
-    isZaal ? '#f3f4f6' : '#d1fae5',
-    isZaal ? '#6b7280' : '#065f46')
-
-  // Accommodatie
-  if (w.accommodatie) {
-    ctx.fillStyle = '#6b7280'
-    ctx.font = '20px system-ui, sans-serif'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'alphabetic'
-    const loc = '📍 ' + w.accommodatie + (w.plaats ? `, ${w.plaats}` : '')
-    ctx.fillText(loc, WIDTH / 2, badgeY + 52)
+  const verzamelTijd = w.verzameltijd || w.vertrektijd
+  const verzamelLabel = w.vertrektijd && !w.verzameltijd ? 'Vertrek' : 'Verzamelen'
+  if (verzamelTijd) {
+    ctx.fillText(`${verzamelLabel} ${verzamelTijd}`, centerX, detailY)
+    detailY += 28
   }
-  if (w.verzameltijd) {
-    ctx.fillStyle = '#6b7280'
-    ctx.font = '20px system-ui, sans-serif'
-    ctx.textAlign = 'center'
-    ctx.fillText(`🕐 Verzamelen om ${w.verzameltijd}`, WIDTH / 2, badgeY + 80)
+
+  if (w.accommodatie) {
+    const loc = `📍 ${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}`
+    // Wrap lange locatienamen
+    const words = loc.split(' ')
+    let line = ''
+    const maxW = cw - 48
+    for (const word of words) {
+      const test = line ? `${line} ${word}` : word
+      if (ctx.measureText(test).width > maxW && line) {
+        ctx.fillText(line, centerX, detailY)
+        detailY += 26
+        line = word
+      } else {
+        line = test
+      }
+    }
+    if (line) { ctx.fillText(line, centerX, detailY); detailY += 26 }
+  }
+
+  if (w.kleedkamerthuisteam) {
+    ctx.fillText(`Kleedkamer: ${w.kleedkamerthuisteam}`, centerX, detailY + 4)
   }
 
   // Convert to blob and share
@@ -199,9 +248,9 @@ async function shareWedstrijdCard(w, teamnaam, teamcode) {
       try {
         const mapsQ = w.accommodatie ? encodeURIComponent(`${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}`) : null
         const shareText = [
-          `📅 ${formatDagLabel(w.wedstrijddatum)} om ${w.aanvangstijd || '?'}`,
+          `📅 ${dagStr} om ${w.aanvangstijd || '?'}`,
           mapsQ ? `Locatie: https://maps.google.com/?q=${mapsQ}` : null,
-          w.verzameltijd ? `🕐 Verzamelen om ${w.verzameltijd}` : null,
+          verzamelTijd ? `🕐 ${verzamelLabel} om ${verzamelTijd}` : null,
         ].filter(Boolean).join('\n')
         await navigator.share({
           files: [file],
