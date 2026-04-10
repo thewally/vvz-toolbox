@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'VVZ\'49 Toolbox <noreply@vvz49.nl>',
+          from: 'VVZ\'49 Toolbox <onboarding@resend.dev>',
           to: [notificatieEmail],
           subject: `Nieuwe proeftraining aanvraag: ${voornaam} ${achternaam}`,
           html: emailBody,
