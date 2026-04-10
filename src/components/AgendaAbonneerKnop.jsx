@@ -19,9 +19,8 @@ export default function AgendaAbonneerKnop({ teamcode }) {
 
   const os = detectOS()
   const toonApple = ['ios', 'mac'].includes(os)
-  const toonGoogle = os === 'android'
+  const toonGoogle = ['android', 'mac', 'windows', 'other'].includes(os)
   const toonOutlook = os === 'windows'
-  // Op onbekende OS alle opties tonen
   const toonAlles = os === 'other'
 
   async function kopieerUrl() {
