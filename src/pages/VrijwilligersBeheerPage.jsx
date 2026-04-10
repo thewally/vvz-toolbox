@@ -265,7 +265,7 @@ export default function VrijwilligersBeheerPage() {
         <h1 className="text-2xl font-bold text-gray-800">Vrijwilliger worden?</h1>
         <button
           onClick={openNieuweGroep}
-          className="px-4 py-2 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 text-sm font-medium hover:border-vvz-green hover:text-vvz-green transition-colors"
+          className="bg-vvz-green text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors"
         >
           + Groep toevoegen
         </button>
