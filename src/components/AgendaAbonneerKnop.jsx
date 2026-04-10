@@ -60,16 +60,9 @@ export default function AgendaAbonneerKnop({ teamcode }) {
 
       {toonInstructie && (
         <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
-          URL gekopieerd.{' '}
-          <a
-            href="https://calendar.google.com/calendar/r/settings/addbyurl"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-gray-700"
-          >
-            Klik hier om naar Google Agenda te gaan
-          </a>
-          , plak de URL en klik op <strong>Agenda toevoegen</strong>.
+          URL gekopieerd. Open je browser en ga naar{' '}
+          <span className="font-medium text-gray-700 select-all">calendar.google.com</span>
+          {' '}→ Instellingen → <strong>Agenda via URL toevoegen</strong>, plak de URL en klik op <strong>Agenda toevoegen</strong>.
         </p>
       )}
     </div>
