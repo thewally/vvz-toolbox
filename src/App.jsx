@@ -51,6 +51,7 @@ import WachtwoordInstellenPage from './pages/WachtwoordInstellenPage'
 import VrijwilligerWordenPage from './pages/VrijwilligerWordenPage'
 import LidWordenPage from './pages/LidWordenPage'
 import VrijwilligersBeheerPage from './pages/VrijwilligersBeheerPage'
+import LidWordenBeheerPage from './pages/LidWordenBeheerPage'
 
 export default function App() {
   return (
@@ -97,6 +98,7 @@ export default function App() {
             <Route path="wie-doet-wat" element={<ProtectedRoute requiredRole="contact"><WieDoetWatBeheerPage /></ProtectedRoute>} />
           </Route>
           <Route path="vrijwilligers" element={<ProtectedRoute requiredRole="vrijwilligers"><VrijwilligersBeheerPage /></ProtectedRoute>} />
+          <Route path="lid-worden" element={<ProtectedRoute requiredRole="lid-worden"><LidWordenBeheerPage /></ProtectedRoute>} />
         </Route>
         <Route path="wedstrijden" element={<WedstrijdenLayout />}>
           <Route index element={<Navigate to="programma" replace />} />
@@ -116,7 +118,6 @@ export default function App() {
         <Route path="techniektrainingen" element={<PlaceholderPage title="Techniektrainingen" />} />
         <Route path="sponsors" element={<SponsorsPage />} />
         <Route path="sponsors/:slug" element={<SponsorDetailPage />} />
-        <Route path="lid-worden" element={<PlaceholderPage title="Lid worden?" />} />
         <Route path="sponsoring">
           <Route path="sponsor-worden" element={<SponsorWordenPage />} />
           <Route path="acties" element={<PlaceholderPage title="Sponsor Acties" />} />

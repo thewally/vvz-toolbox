@@ -10,6 +10,7 @@ export const AVAILABLE_ROLES = [
   { slug: 'content', label: "Pagina's & Nieuws" },
   { slug: 'gebruikers', label: 'Gebruikers' },
   { slug: 'vrijwilligers', label: 'Vrijwilligers' },
+  { slug: 'lid-worden', label: 'Lid worden' },
 ]
 
 // Rollen van de huidige ingelogde gebruiker ophalen
