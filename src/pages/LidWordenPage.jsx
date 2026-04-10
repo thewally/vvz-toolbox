@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { fetchLidWordenSettings, submitProeftrainingAanvraag } from '../services/lidWorden'
 
 const LEEG_FORMULIER = {
-  voor_wie: 'mezelf',
   voornaam: '',
   achternaam: '',
   email: '',
@@ -102,34 +101,9 @@ export default function LidWordenPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Voor wie */}
-            <fieldset>
-              <legend className="block text-sm font-medium text-gray-700 mb-2">Voor wie is de proeftraining?</legend>
-              <div className="flex gap-6">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="voor_wie"
-                    value="mezelf"
-                    checked={form.voor_wie === 'mezelf'}
-                    onChange={handleChange}
-                    className="text-vvz-green focus:ring-vvz-green"
-                  />
-                  <span className="text-sm text-gray-700">Voor mezelf</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="voor_wie"
-                    value="kind"
-                    checked={form.voor_wie === 'kind'}
-                    onChange={handleChange}
-                    className="text-vvz-green focus:ring-vvz-green"
-                  />
-                  <span className="text-sm text-gray-700">Voor mijn kind</span>
-                </label>
-              </div>
-            </fieldset>
+            <p className="text-sm text-gray-500 bg-gray-50 rounded-lg p-3">
+              Indien u inschrijft voor uw kind, voer dan de naam, achternaam en geboortedatum van uw kind op en het e-mailadres en telefoonnummer van uzelf.
+            </p>
 
             {/* Naam */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
