@@ -58,7 +58,7 @@ export const NAV_SECTIONS = [
     label: 'LIDMAATSCHAP',
     children: [
       { label: 'Lid worden?', to: '/lid-worden' },
-      { label: 'Contributie', to: '/lidmaatschap/contributie' },
+      { label: 'Contributie', to: '/pagina/contributie' },
       { label: 'Vrijwilliger worden?', to: '/vrijwilliger' },
     ],
   },

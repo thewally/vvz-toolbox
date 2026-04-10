@@ -132,9 +132,7 @@ export default function App() {
           <Route path="ereleden" element={<EreledenPage />} />
           <Route path="reglementen" element={<ReglemenenPage />} />
         </Route>
-        <Route path="lidmaatschap">
-          <Route path="contributie" element={<PlaceholderPage title="Contributie" />} />
-        </Route>
+
         <Route path="contact">
           <Route index element={<PlaceholderPage title="Contact" />} />
           <Route path="gegevens" element={<ContactgegevensPage />} />

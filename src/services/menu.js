@@ -109,7 +109,7 @@ export const AVAILABLE_TOOLS = [
   { label: 'Ereleden', route: '/club/ereleden' },
   { label: 'Reglementen', route: '/club/reglementen' },
   { label: 'Lid worden?', route: '/lid-worden' },
-  { label: 'Contributie', route: '/lidmaatschap/contributie' },
+  { label: 'Contributie', route: '/pagina/contributie' },
   { label: 'Vrijwilliger worden?', route: '/vrijwilliger' },
   { label: 'Contactgegevens', route: '/contact/gegevens' },
   { label: 'Locatie & Routebeschrijving', route: '/contact/locatie' },
