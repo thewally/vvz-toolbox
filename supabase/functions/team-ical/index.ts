@@ -55,7 +55,7 @@ function getWedstrijdDuur(w: any, teamNaam: string): number {
   const comp = (w.competitienaam || w.poule || '').toLowerCase()
   const sport = (w.sportomschrijving || w.locatie || '').toLowerCase()
   const namen = `${w.thuisteam || ''} ${w.uitteam || ''} ${teamNaam}`.toLowerCase()
-  const alles = `${comp} ${namen}`
+  const alles = `${comp} ${sport} ${namen}`
 
   // Futsal / Zaalvoetbal
   if (/futsal|zaal/.test(sport) || /futsal|zaal/.test(alles)) return 60
