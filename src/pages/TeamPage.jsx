@@ -31,6 +31,7 @@ const CAT_LABELS = {
   zaalvoetbal: 'Zaalvoetbal',
 }
 const WEBCAL_BASE = 'webcal://thewally.github.io/vvz-toolbox/wedstrijden/ical'
+const HTTPS_BASE = 'https://thewally.github.io/vvz-toolbox/wedstrijden/ical'
 
 function isThuis(w) {
   return w.thuisteamclubrelatiecode === CLUB_RELATIECODE
@@ -354,16 +355,30 @@ export default function TeamPage() {
             </span>
           )}
         </div>
-        <a
-          href={`${WEBCAL_BASE}/${teamcode}.ics`}
-          className="shrink-0 inline-flex items-center gap-1.5 text-xs font-medium text-vvz-green border border-vvz-green/40 px-3 py-1.5 rounded-lg hover:bg-green-50 transition-colors"
-          title="Abonneer via Google Calendar / Apple Calendar"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5" />
-          </svg>
-          Agenda abonneren
-        </a>
+        <div className="shrink-0 flex gap-2">
+          <a
+            href={`${WEBCAL_BASE}/${teamcode}.ics`}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-vvz-green border border-vvz-green/40 px-3 py-1.5 rounded-lg hover:bg-green-50 transition-colors"
+            title="Abonneren via Apple Calendar / Outlook"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5" />
+            </svg>
+            Apple / Outlook
+          </a>
+          <a
+            href={`https://www.google.com/calendar/render?cid=${encodeURIComponent(`${HTTPS_BASE}/${teamcode}.ics`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-vvz-green border border-vvz-green/40 px-3 py-1.5 rounded-lg hover:bg-green-50 transition-colors"
+            title="Abonneren via Google Agenda"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5" />
+            </svg>
+            Google
+          </a>
+        </div>
       </div>
 
       {/* Uitgelichte wedstrijd */}

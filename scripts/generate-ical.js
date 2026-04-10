@@ -156,10 +156,17 @@ async function main() {
       const programma = await sportlinkFetch('programma', { teamcode: team.teamcode })
 
       const ical = generateIcal(programma || [], config.sportlinkNaam)
+
+      // Schrijf op slug (voor AgendaAbonneerKnop)
       const filePath = `public/wedstrijden/ical/${config.slug}.ics`
       ensureDir(filePath)
       writeFileSync(filePath, ical)
       console.log(`Geschreven: ${filePath}`)
+
+      // Schrijf ook op teamcode (voor TeamPage directe link)
+      const filePathCode = `public/wedstrijden/ical/${team.teamcode}.ics`
+      writeFileSync(filePathCode, ical)
+      console.log(`Geschreven: ${filePathCode}`)
     } catch (err) {
       console.error(`Fout bij iCal voor ${config.sportlinkNaam}: ${err.message}`)
     }
