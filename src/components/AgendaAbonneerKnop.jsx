@@ -101,7 +101,7 @@ export default function AgendaAbonneerKnop({ teamcode }) {
           >
             Klik hier om naar Google Agenda te gaan
           </a>
-          {' '}en plak de URL.
+          {' '}en plak de URL en klik op <strong>Agenda toevoegen</strong>.
         </p>
       )}
     </div>
