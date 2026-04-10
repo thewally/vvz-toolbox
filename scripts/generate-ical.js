@@ -49,14 +49,14 @@ function ensureDir(filePath) {
 }
 
 function formatICalDate(dateStr, timeStr) {
-  // dateStr = "YYYY-MM-DD" of iets parsebaars, timeStr = "HH:MM"
-  const d = new Date(dateStr)
+  // dateStr = "YYYY-MM-DD", timeStr = "HH:MM" (lokale tijd Amsterdam)
+  const pad = n => String(n).padStart(2, '0')
+  const [year, month, day] = dateStr.slice(0, 10).split('-').map(Number)
   if (timeStr) {
     const [h, m] = timeStr.split(':').map(Number)
-    d.setHours(h, m, 0, 0)
+    return `${year}${pad(month)}${pad(day)}T${pad(h)}${pad(m)}00`
   }
-  const pad = n => String(n).padStart(2, '0')
-  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`
+  return `${year}${pad(month)}${pad(day)}`
 }
 
 function escapeIcal(str) {
@@ -65,18 +65,21 @@ function escapeIcal(str) {
 
 function generateIcal(wedstrijden, teamNaam) {
   const events = wedstrijden.map(w => {
+    const pad = n => String(n).padStart(2, '0')
     const dtstart = formatICalDate(w.wedstrijddatum, w.aanvangstijd)
 
     // Eind = aanvang + 90 minuten
-    const startDate = new Date(w.wedstrijddatum)
+    let dtend
     if (w.aanvangstijd) {
       const [h, m] = w.aanvangstijd.split(':').map(Number)
-      startDate.setHours(h, m + 90, 0, 0)
+      const totalMinutes = h * 60 + m + 90
+      const endH = Math.floor(totalMinutes / 60) % 24
+      const endM = totalMinutes % 60
+      const [year, month, day] = w.wedstrijddatum.slice(0, 10).split('-').map(Number)
+      dtend = `${year}${pad(month)}${pad(day)}T${pad(endH)}${pad(endM)}00`
     } else {
-      startDate.setHours(startDate.getHours() + 2)
+      dtend = dtstart
     }
-    const pad = n => String(n).padStart(2, '0')
-    const dtend = `${startDate.getFullYear()}${pad(startDate.getMonth() + 1)}${pad(startDate.getDate())}T${pad(startDate.getHours())}${pad(startDate.getMinutes())}00`
 
     // Aanwezigheidstijd (45 min voor aanvang)
     let aanwezigheid = ''
@@ -92,8 +95,8 @@ function generateIcal(wedstrijden, teamNaam) {
 
     return [
       'BEGIN:VEVENT',
-      `DTSTART:${dtstart}`,
-      `DTEND:${dtend}`,
+      `DTSTART;TZID=Europe/Amsterdam:${dtstart}`,
+      `DTEND;TZID=Europe/Amsterdam:${dtend}`,
       `SUMMARY:${escapeIcal(`${w.thuisteam} - ${w.uitteam}`)}`,
       location ? `LOCATION:${escapeIcal(location)}` : '',
       aanwezigheid ? `DESCRIPTION:${escapeIcal(aanwezigheid)}` : '',
@@ -103,13 +106,35 @@ function generateIcal(wedstrijden, teamNaam) {
     ].filter(Boolean).join('\r\n')
   })
 
+  const vtimezone = [
+    'BEGIN:VTIMEZONE',
+    'TZID:Europe/Amsterdam',
+    'BEGIN:STANDARD',
+    'DTSTART:19701025T030000',
+    'TZOFFSETFROM:+0200',
+    'TZOFFSETTO:+0100',
+    'TZNAME:CET',
+    'RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10',
+    'END:STANDARD',
+    'BEGIN:DAYLIGHT',
+    'DTSTART:19700329T020000',
+    'TZOFFSETFROM:+0100',
+    'TZOFFSETTO:+0200',
+    'TZNAME:CEST',
+    'RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3',
+    'END:DAYLIGHT',
+    'END:VTIMEZONE',
+  ].join('\r\n')
+
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     `PRODID:-//VVZ49 Toolbox//${teamNaam}//NL`,
     `X-WR-CALNAME:${teamNaam} Wedstrijden`,
+    'X-WR-TIMEZONE:Europe/Amsterdam',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
+    vtimezone,
     ...events,
     'END:VCALENDAR',
   ].join('\r\n') + '\r\n'
