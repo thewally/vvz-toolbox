@@ -1,8 +1,19 @@
+import { useState } from 'react'
+
 export default function AgendaAbonneerKnop({ teamcode }) {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
   const httpsUrl = `${supabaseUrl}/functions/v1/team-ical?teamcode=${teamcode}`
   const webcalUrl = httpsUrl.replace('https://', 'webcal://')
-  const googleUrl = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(httpsUrl)}`
+
+  const [gekopieerd, setGekopieerd] = useState(false)
+  const [toonInstructie, setToonInstructie] = useState(false)
+
+  async function kopieerUrl() {
+    await navigator.clipboard.writeText(httpsUrl)
+    setGekopieerd(true)
+    setToonInstructie(true)
+    setTimeout(() => setGekopieerd(false), 2000)
+  }
 
   const calendarIcon = (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -11,38 +22,52 @@ export default function AgendaAbonneerKnop({ teamcode }) {
   )
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {/* iOS / macOS / Outlook: webcal */}
-      <a
-        href={webcalUrl}
-        className="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-      >
-        {calendarIcon}
-        Apple / Outlook
-      </a>
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
+        {/* iOS / macOS / Outlook */}
+        <a
+          href={webcalUrl}
+          className="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+        >
+          {calendarIcon}
+          Apple / Outlook
+        </a>
 
-      {/* Android: Google Agenda */}
-      <a
-        href={googleUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-      >
-        {calendarIcon}
-        Google Agenda
-      </a>
+        {/* Android / Google Agenda: kopieer URL */}
+        <button
+          onClick={kopieerUrl}
+          className="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+        >
+          {gekopieerd ? (
+            <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          )}
+          {gekopieerd ? 'Gekopieerd!' : 'Google Agenda'}
+        </button>
 
-      {/* Fallback: download */}
-      <a
-        href={httpsUrl}
-        download
-        className="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-      >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-        </svg>
-        Download .ics
-      </a>
+        {/* Download */}
+        <a
+          href={httpsUrl}
+          download
+          className="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+          </svg>
+          Download .ics
+        </a>
+      </div>
+
+      {toonInstructie && (
+        <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
+          URL gekopieerd. Open Google Agenda → <strong>Andere agenda's toevoegen</strong> → <strong>Via URL</strong> en plak de URL.
+        </p>
+      )}
     </div>
   )
 }
