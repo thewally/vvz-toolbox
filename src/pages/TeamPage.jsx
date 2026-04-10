@@ -346,9 +346,9 @@ export default function TeamPage() {
         <Link to={`/teams/${getTeamCategorie(teamInfo)}`} className="text-sm text-vvz-green hover:underline">&larr; {CAT_LABELS[getTeamCategorie(teamInfo)] || 'Teams'}</Link>
       </div>
 
-      <div className="flex items-center justify-between mb-4 gap-4">
-        <div className="flex items-center gap-2 min-w-0">
-          <h1 className="text-2xl font-bold text-gray-800 truncate">{teamnaam}</h1>
+      <div className="mb-4">
+        <div className="flex items-center gap-2 mb-2">
+          <h1 className="text-2xl font-bold text-gray-800">{teamnaam}</h1>
           {sportBadgeLabel && (
             <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${sportBadgeIsZaal ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>
               {sportBadgeLabel}
