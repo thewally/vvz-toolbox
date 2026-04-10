@@ -32,7 +32,6 @@ CREATE POLICY "Beheerders kunnen lid_worden_settings inserten"
 -- Requests table
 CREATE TABLE proeftraining_aanvragen (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  voor_wie text NOT NULL CHECK (voor_wie IN ('mezelf', 'kind')),
   voornaam text NOT NULL,
   achternaam text NOT NULL,
   email text NOT NULL,
@@ -50,6 +49,10 @@ CREATE POLICY "Iedereen kan proeftraining aanvragen"
 
 CREATE POLICY "Beheerders kunnen aanvragen lezen"
   ON proeftraining_aanvragen FOR SELECT
+  USING (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Beheerders kunnen aanvragen verwijderen"
+  ON proeftraining_aanvragen FOR DELETE
   USING (auth.uid() IS NOT NULL);
 
 -- Add 'lid-worden' to user_roles CHECK constraint

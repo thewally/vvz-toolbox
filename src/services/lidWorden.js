@@ -18,14 +18,19 @@ export async function updateLidWordenSettings(updates) {
   return { data, error }
 }
 
-export async function submitProeftrainingAanvraag(aanvraag) {
-  // TODO: Supabase Edge Function 'notify-proeftraining' nodig voor e-mailnotificatie
-  const { data, error } = await supabase
-    .from('proeftraining_aanvragen')
-    .insert(aanvraag)
-    .select()
-    .single()
+export async function submitProeftrainingAanvraag(aanvraag, captchaToken) {
+  const { data, error } = await supabase.functions.invoke('submit-proeftraining', {
+    body: { ...aanvraag, captchaToken },
+  })
   return { data, error }
+}
+
+export async function deleteProeftrainingAanvraag(id) {
+  const { error } = await supabase
+    .from('proeftraining_aanvragen')
+    .delete()
+    .eq('id', id)
+  return { error }
 }
 
 export async function fetchProeftrainingAanvragen() {

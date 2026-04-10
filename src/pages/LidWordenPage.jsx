@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import Turnstile from 'react-turnstile'
 import { fetchLidWordenSettings, submitProeftrainingAanvraag } from '../services/lidWorden'
 
 const LEEG_FORMULIER = {
@@ -16,6 +17,8 @@ export default function LidWordenPage() {
   const [verzenden, setVerzenden] = useState(false)
   const [succes, setSucces] = useState(false)
   const [fout, setFout] = useState(null)
+  const [captchaToken, setCaptchaToken] = useState(null)
+  const captchaRef = useRef(null)
 
   useEffect(() => {
     async function load() {
@@ -32,14 +35,20 @@ export default function LidWordenPage() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (!captchaToken) {
+      setFout('Bevestig eerst dat je geen robot bent.')
+      return
+    }
     setVerzenden(true)
     setFout(null)
 
-    const { error } = await submitProeftrainingAanvraag(form)
+    const { error } = await submitProeftrainingAanvraag(form, captchaToken)
     setVerzenden(false)
+    captchaRef.current?.resetCaptcha()
+    setCaptchaToken(null)
 
     if (error) {
-      setFout('Er ging iets mis bij het versturen. Probeer het opnieuw.')
+      setFout(error.message || 'Er ging iets mis bij het versturen. Probeer het opnieuw.')
     } else {
       setSucces(true)
       setForm(LEEG_FORMULIER)
@@ -55,7 +64,7 @@ export default function LidWordenPage() {
   }
 
   const knvbUrl = settings?.knvb_url || 'https://www.knvb.nl/ontdek-voetbal/inschrijven/BBCC89Q'
-  const introTekst = settings?.intro_tekst || 'Wil jij ook voetballen bij VVZ\'49? Meld je aan via het aanmeldformulier van de KNVB. Het invullen duurt maar een paar minuten!'
+  const introTekst = settings?.intro_tekst || ''
 
   return (
     <div className="max-w-2xl mx-auto p-4 pt-10">
@@ -73,12 +82,9 @@ export default function LidWordenPage() {
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
           </svg>
-          Aanmelden via KNVB
+          Aanmelden
         </a>
 
-        <p className="text-sm text-gray-400 mt-4">
-          Je wordt doorgestuurd naar de website van de KNVB.
-        </p>
       </div>
 
       {/* Proeftraining formulier */}
@@ -179,9 +185,16 @@ export default function LidWordenPage() {
               <p className="text-red-600 text-sm">{fout}</p>
             )}
 
+            <Turnstile
+              sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+              onVerify={token => setCaptchaToken(token)}
+              onExpire={() => setCaptchaToken(null)}
+              ref={captchaRef}
+            />
+
             <button
               type="submit"
-              disabled={verzenden}
+              disabled={verzenden || !captchaToken}
               className="bg-vvz-green text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-vvz-green-dark transition-colors disabled:opacity-50"
             >
               {verzenden ? 'Versturen...' : 'Proeftraining aanvragen'}
