@@ -42,37 +42,56 @@ function escapeIcal(str: string) {
   return (str || '').replace(/[\\;,]/g, (c) => `\\${c}`).replace(/\n/g, '\\n')
 }
 
+function addMinutes(dateStr: string, timeStr: string, minutes: number) {
+  const [year, month, day] = dateStr.slice(0, 10).split('-').map(Number)
+  const [h, m] = timeStr.split(':').map(Number)
+  const total = h * 60 + m + minutes
+  const newH = Math.floor(total / 60) % 24
+  const newM = total % 60
+  return `${year}${pad(month)}${pad(day)}T${pad(newH)}${pad(newM)}00`
+}
+
 function generateIcal(wedstrijden: any[], teamNaam: string, teamcode: string) {
-  const events = wedstrijden.map((w) => {
-    const dtstart = formatICalDate(w.wedstrijddatum, w.aanvangstijd)
+  const dtstamp = formatICalDate(new Date().toISOString().slice(0, 10), '00:00')
+  const teamUrl = `https://thewally.github.io/vvz-toolbox/teams/${teamcode}`
+  const events: string[] = []
 
-    let dtend = dtstart
-    if (w.aanvangstijd) {
-      const [h, m] = w.aanvangstijd.split(':').map(Number)
-      const totalMinutes = h * 60 + m + 90
-      const endH = Math.floor(totalMinutes / 60) % 24
-      const endM = totalMinutes % 60
-      const [year, month, day] = w.wedstrijddatum.slice(0, 10).split('-').map(Number)
-      dtend = `${year}${pad(month)}${pad(day)}T${pad(endH)}${pad(endM)}00`
-    }
-
+  for (const w of wedstrijden) {
+    const dateStr = w.wedstrijddatum.slice(0, 10)
+    const dtstart = formatICalDate(dateStr, w.aanvangstijd)
+    const dtend = w.aanvangstijd ? addMinutes(dateStr, w.aanvangstijd, 90) : dtstart
     const location = [w.accommodatie, w.plaats].filter(Boolean).join(', ')
     const uid = `${w.wedstrijdcode || dtstart}-${teamNaam.replace(/\s/g, '')}@vvz49`
-    const teamUrl = `https://thewally.github.io/vvz-toolbox/teams/${teamcode}`
-    const description = `Zie voor meer informatie: ${teamUrl}`
 
-    return [
+    // Wedstrijd event
+    events.push([
       'BEGIN:VEVENT',
       `DTSTART;TZID=Europe/Amsterdam:${dtstart}`,
       `DTEND;TZID=Europe/Amsterdam:${dtend}`,
       `SUMMARY:${escapeIcal(`${w.thuisteam} - ${w.uitteam}`)}`,
       location ? `LOCATION:${escapeIcal(location)}` : '',
-      `DESCRIPTION:${description}`,
+      `DESCRIPTION:${teamUrl}`,
       `UID:${uid}`,
-      `DTSTAMP:${formatICalDate(new Date().toISOString().slice(0, 10), '00:00')}`,
+      `DTSTAMP:${dtstamp}`,
       'END:VEVENT',
-    ].filter(Boolean).join('\r\n')
-  })
+    ].filter(Boolean).join('\r\n'))
+
+    // Verzameltijd event (apart agenda-item van 30 min)
+    if (w.verzameltijd) {
+      const vzStart = formatICalDate(dateStr, w.verzameltijd)
+      const vzEnd = addMinutes(dateStr, w.verzameltijd, 30)
+      events.push([
+        'BEGIN:VEVENT',
+        `DTSTART;TZID=Europe/Amsterdam:${vzStart}`,
+        `DTEND;TZID=Europe/Amsterdam:${vzEnd}`,
+        `SUMMARY:Verzamelen: ${escapeIcal(`${w.thuisteam} - ${w.uitteam}`)}`,
+        location ? `LOCATION:${escapeIcal(location)}` : '',
+        `UID:verzamel-${uid}`,
+        `DTSTAMP:${dtstamp}`,
+        'END:VEVENT',
+      ].filter(Boolean).join('\r\n'))
+    }
+  }
 
   return [
     'BEGIN:VCALENDAR',
