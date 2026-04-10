@@ -1,0 +1,53 @@
+[
+  {
+    "relatiecode": "BDCH11A",
+    "naam": "Boshuizen, Raimond",
+    "voornaam": "Raimond",
+    "achternaam": "Boshuizen",
+    "tussenvoegsel": null,
+    "geslacht": null,
+    "rol": "Overige staf",
+    "functie": "Teammanager",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  },
+  {
+    "relatiecode": "BCTC98M",
+    "naam": "Hilhorst, Martin",
+    "voornaam": "Martin",
+    "achternaam": "Hilhorst",
+    "tussenvoegsel": null,
+    "geslacht": "man",
+    "rol": "Overige staf",
+    "functie": "Assistent-scheidsrechter(club)",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  },
+  {
+    "relatiecode": "BDCJ00M",
+    "naam": "Jong, Jochum de",
+    "voornaam": "Jochum",
+    "achternaam": "Jong",
+    "tussenvoegsel": "de",
+    "geslacht": "man",
+    "rol": "Overige staf",
+    "functie": "Teammanager",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  }
+]

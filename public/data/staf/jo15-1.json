@@ -1,0 +1,53 @@
+[
+  {
+    "relatiecode": "QTYQ47H",
+    "naam": "Adamson, Dimitrie",
+    "voornaam": "Dimitrie",
+    "achternaam": "Adamson",
+    "tussenvoegsel": null,
+    "geslacht": null,
+    "rol": "Technische staf",
+    "functie": "Assistent-trainer/coach",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  },
+  {
+    "relatiecode": "PKJN91W",
+    "naam": "Harrison, Miquél",
+    "voornaam": "Miquél",
+    "achternaam": "Harrison",
+    "tussenvoegsel": null,
+    "geslacht": "man",
+    "rol": "Technische staf",
+    "functie": "Trainer/coach",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  },
+  {
+    "relatiecode": "TNBX757",
+    "naam": "Jansen, Stefanie",
+    "voornaam": "Stefanie",
+    "achternaam": "Jansen",
+    "tussenvoegsel": null,
+    "geslacht": null,
+    "rol": "Overige staf",
+    "functie": "Teammanager",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  }
+]

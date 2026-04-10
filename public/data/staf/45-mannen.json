@@ -1,0 +1,53 @@
+[
+  {
+    "relatiecode": "BMZC22B",
+    "naam": "Bouman, Joris",
+    "voornaam": "Joris",
+    "achternaam": "Bouman",
+    "tussenvoegsel": null,
+    "geslacht": "man",
+    "rol": "Overige staf",
+    "functie": "Teammanager",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  },
+  {
+    "relatiecode": "NLTW67R",
+    "naam": "Hoeben, Tom",
+    "voornaam": "Tom",
+    "achternaam": "Hoeben",
+    "tussenvoegsel": null,
+    "geslacht": "man",
+    "rol": "Overige staf",
+    "functie": "Teammanager",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  },
+  {
+    "relatiecode": "CDQF77X",
+    "naam": "Hordijk, Erik",
+    "voornaam": "Erik",
+    "achternaam": "Hordijk",
+    "tussenvoegsel": null,
+    "geslacht": "man",
+    "rol": "Overige staf",
+    "functie": "",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  }
+]

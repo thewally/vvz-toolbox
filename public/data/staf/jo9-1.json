@@ -1,0 +1,53 @@
+[
+  {
+    "relatiecode": "QSYK447",
+    "naam": "Angela, Aimar",
+    "voornaam": "Aimar",
+    "achternaam": "Angela",
+    "tussenvoegsel": null,
+    "geslacht": "man",
+    "rol": "Technische staf",
+    "functie": "Trainer",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  },
+  {
+    "relatiecode": "CFTM562",
+    "naam": "Balkenende, Roel",
+    "voornaam": "Roel",
+    "achternaam": "Balkenende",
+    "tussenvoegsel": null,
+    "geslacht": null,
+    "rol": "Overige staf",
+    "functie": "Teammanager",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  },
+  {
+    "relatiecode": "CCML56H",
+    "naam": "Brouwer, Roland",
+    "voornaam": "Roland",
+    "achternaam": "Brouwer",
+    "tussenvoegsel": null,
+    "geslacht": null,
+    "rol": "Overige staf",
+    "functie": "Teammanager",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  }
+]

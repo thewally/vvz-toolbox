@@ -1,0 +1,36 @@
+[
+  {
+    "relatiecode": "BDCK524",
+    "naam": "Bayrakdar, Enes",
+    "voornaam": "Enes",
+    "achternaam": "Bayrakdar",
+    "tussenvoegsel": null,
+    "geslacht": "man",
+    "rol": "Technische staf",
+    "functie": "Trainer/coach",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  },
+  {
+    "relatiecode": "TDSQ68F",
+    "naam": "Veen-Dekker, Janneke Van der",
+    "voornaam": "Janneke",
+    "achternaam": "Veen-Dekker",
+    "tussenvoegsel": "Van der",
+    "geslacht": "vrouw",
+    "rol": "Overige staf",
+    "functie": "Teammanager",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  }
+]

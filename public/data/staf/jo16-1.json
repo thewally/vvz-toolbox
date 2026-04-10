@@ -1,0 +1,53 @@
+[
+  {
+    "relatiecode": "FGDW20J",
+    "naam": "Bots, Albert",
+    "voornaam": "Albert",
+    "achternaam": "Bots",
+    "tussenvoegsel": null,
+    "geslacht": "man",
+    "rol": "Technische staf",
+    "functie": "Trainer/coach",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  },
+  {
+    "relatiecode": "STKC64E",
+    "naam": "Kroes, Michiel de",
+    "voornaam": "Michiel",
+    "achternaam": "Kroes",
+    "tussenvoegsel": "de",
+    "geslacht": "man",
+    "rol": "Overige staf",
+    "functie": "Teammanager",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  },
+  {
+    "relatiecode": "STKC64E",
+    "naam": "Kroes, Michiel de",
+    "voornaam": "Michiel",
+    "achternaam": "Kroes",
+    "tussenvoegsel": "de",
+    "geslacht": "man",
+    "rol": "Overige staf",
+    "functie": "Assistent-scheidsrechter(club)",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  }
+]

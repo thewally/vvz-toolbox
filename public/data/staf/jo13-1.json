@@ -1,0 +1,53 @@
+[
+  {
+    "relatiecode": "FJSQ40V",
+    "naam": "Berg, Frans van den",
+    "voornaam": "Frans",
+    "achternaam": "Berg",
+    "tussenvoegsel": "van den",
+    "geslacht": "man",
+    "rol": "Overige staf",
+    "functie": "Teammanager",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  },
+  {
+    "relatiecode": "BDCG91T",
+    "naam": "Renes, Hans",
+    "voornaam": "Hans",
+    "achternaam": "Renes",
+    "tussenvoegsel": null,
+    "geslacht": null,
+    "rol": "Technische staf",
+    "functie": "Trainer/coach",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  },
+  {
+    "relatiecode": "NKTG49Y",
+    "naam": "Voskuil, Jurgen",
+    "voornaam": "Jurgen",
+    "achternaam": "Voskuil",
+    "tussenvoegsel": null,
+    "geslacht": "man",
+    "rol": "Technische staf",
+    "functie": "Assistent-trainer/coach",
+    "einddatum": null,
+    "email": null,
+    "email2": null,
+    "telefoon": null,
+    "telefoon2": null,
+    "mobiel": null,
+    "foto": null
+  }
+]
