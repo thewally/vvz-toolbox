@@ -11,7 +11,8 @@ export default function WedstrijdenProgrammaPage() {
   const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [filter, setFilter] = useState('alles')
+  const [filterLocatie, setFilterLocatie] = useState('alles')
+  const [filterCategorie, setFilterCategorie] = useState('alles')
 
   useEffect(() => {
     load()
@@ -51,38 +52,53 @@ export default function WedstrijdenProgrammaPage() {
     )
   }
 
+  function getCategorie(teamnaam) {
+    const naam = (teamnaam || '').toLowerCase()
+    // Veteranen: 35+, 45+, 30+, of "veteranen"/"vet."
+    if (/35\+|45\+|30\+|veteran|vet\./.test(naam)) return 'veteranen'
+    // Jeugd: JO8 t/m JO12 = pupillen, JO13 t/m JO19 = junioren
+    const joMatch = naam.match(/[jm]o\s*(\d+)/)
+    if (joMatch) {
+      const n = parseInt(joMatch[1], 10)
+      return n <= 12 ? 'pupillen' : 'junioren'
+    }
+    // Senioren: VVZ '49 1, VVZ '49 2, etc.
+    return 'senioren'
+  }
+
   const vandaag = new Date().toISOString().slice(0, 10)
   const toekomst = wedstrijden
     .filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) >= vandaag)
     .filter(w => {
-      if (filter === 'alles') return true
+      if (filterLocatie === 'alles') return true
       const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
-      return filter === 'thuis' ? isThuis : !isThuis
+      return filterLocatie === 'thuis' ? isThuis : !isThuis
+    })
+    .filter(w => {
+      if (filterCategorie === 'alles') return true
+      const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
+      const vvzTeam = isThuis ? w.thuisteam : w.uitteam
+      return getCategorie(vvzTeam) === filterCategorie
     })
   const perDag = groepeerPerDag(toekomst)
 
-  const leegTekst = filter === 'thuis' ? 'Geen thuiswedstrijden gevonden.' : filter === 'uit' ? 'Geen uitwedstrijden gevonden.' : 'Geen wedstrijden gevonden.'
+  const leegTekst = 'Geen wedstrijden gevonden voor deze filters.'
 
-  const filterKnoppen = [
-    { key: 'alles', label: 'Alles' },
-    { key: 'thuis', label: 'Thuis' },
-    { key: 'uit', label: 'Uit' },
-  ]
+  const pillClass = (active) => `px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${active ? 'bg-vvz-green text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
 
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6">
       <AfgelastingenIndicator />
-      <div className="flex gap-2 mb-6">
-        {filterKnoppen.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setFilter(key)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              filter === key
-                ? 'bg-vvz-green text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
+      <div className="flex flex-wrap gap-2 mb-3">
+        {['alles', 'thuis', 'uit'].map(key => (
+          <button key={key} onClick={() => setFilterLocatie(key)} className={pillClass(filterLocatie === key)}>
+            {key.charAt(0).toUpperCase() + key.slice(1)}
+          </button>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2 mb-6">
+        {[['alles', 'Alle teams'], ['pupillen', 'Pupillen'], ['junioren', 'Junioren'], ['senioren', 'Senioren'], ['veteranen', 'Veteranen']].map(([key, label]) => (
+          <button key={key} onClick={() => setFilterCategorie(key)} className={pillClass(filterCategorie === key)}>
             {label}
           </button>
         ))}
@@ -103,6 +119,7 @@ export default function WedstrijdenProgrammaPage() {
               const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
               const _loc = (w.locatie || '').toLowerCase()
               const locatieLabel = _loc ? (_loc.includes('futsal') || _loc.includes('zaal') ? 'ZAAL' : (w.locatie || '').toUpperCase()) : null
+              const veldnummer = w.veldnummer || w.veld_nr || w.veld || null
               const teamcode = getVvzTeamcode(w, teamcodeLookup)
               const cardClasses = `bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 transition-shadow ${teamcode ? 'group cursor-pointer hover:shadow-md hover:border-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vvz-green focus-visible:ring-offset-2' : 'cursor-default'}`
               const vvzTeam = isThuis ? w.thuisteam : w.uitteam
@@ -123,8 +140,10 @@ export default function WedstrijdenProgrammaPage() {
                       <span className={`font-semibold text-sm ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
                       <span className="text-gray-400 text-xs">vs</span>
                       <span className={`font-semibold text-sm ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
-                      {w.accommodatie && (
-                        <p className="text-xs text-gray-400">{w.accommodatie}</p>
+                      {(w.accommodatie || veldnummer) && (
+                        <p className="text-xs text-gray-400">
+                          {w.accommodatie}{veldnummer ? ` · ${veldnummer}` : ''}
+                        </p>
                       )}
                     </div>
                     <div className="flex flex-col justify-center items-end shrink-0 gap-1">
@@ -155,8 +174,10 @@ export default function WedstrijdenProgrammaPage() {
                     {teamcode ? (
                       <svg className="self-center w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
                     ) : <span className="w-4" />}
-                    {w.accommodatie && (
-                      <span className="text-center text-xs text-gray-400 col-start-2 col-end-5">{w.accommodatie}</span>
+                    {(w.accommodatie || veldnummer) && (
+                      <span className="text-center text-xs text-gray-400 col-start-2 col-end-5">
+                        {w.accommodatie}{veldnummer ? ` · ${veldnummer}` : ''}
+                      </span>
                     )}
                   </div>
                 </Wrapper>
