@@ -4,11 +4,14 @@ import { getProgramma, getTeams } from '../services/wedstrijden'
 import { groepeerPerDag, formatDagLabel, buildTeamcodeLookup, getVvzTeamcode } from '../services/wedstrijdenHelpers'
 import AfgelastingenIndicator from '../components/AfgelastingenIndicator'
 
+const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
+
 export default function WedstrijdenProgrammaPage() {
   const [wedstrijden, setWedstrijden] = useState([])
   const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [filter, setFilter] = useState('alles')
 
   useEffect(() => {
     load()
@@ -49,20 +52,44 @@ export default function WedstrijdenProgrammaPage() {
   }
 
   const vandaag = new Date().toISOString().slice(0, 10)
-  const toekomst = wedstrijden.filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) >= vandaag)
+  const toekomst = wedstrijden
+    .filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) >= vandaag)
+    .filter(w => {
+      if (filter === 'alles') return true
+      const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
+      return filter === 'thuis' ? isThuis : !isThuis
+    })
   const perDag = groepeerPerDag(toekomst)
 
-  if (toekomst.length === 0) {
-    return (
-      <div className="max-w-3xl mx-auto p-4 pt-8 text-center">
-        <p className="text-gray-500">Geen wedstrijden gevonden.</p>
-      </div>
-    )
-  }
+  const leegTekst = filter === 'thuis' ? 'Geen thuiswedstrijden gevonden.' : filter === 'uit' ? 'Geen uitwedstrijden gevonden.' : 'Geen wedstrijden gevonden.'
+
+  const filterKnoppen = [
+    { key: 'alles', label: 'Alles' },
+    { key: 'thuis', label: 'Thuis' },
+    { key: 'uit', label: 'Uit' },
+  ]
 
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6">
       <AfgelastingenIndicator />
+      <div className="flex gap-2 mb-6">
+        {filterKnoppen.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setFilter(key)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              filter === key
+                ? 'bg-vvz-green text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {toekomst.length === 0 && (
+        <p className="text-gray-500 text-sm text-center py-8">{leegTekst}</p>
+      )}
       {[...perDag.entries()].map(([datum, items]) => (
         <div key={datum} className="mb-8">
           <div className="flex items-center gap-3 mb-4">
@@ -73,7 +100,7 @@ export default function WedstrijdenProgrammaPage() {
           </div>
           <div className="flex flex-col gap-3">
             {items.map((w, i) => {
-              const isThuis = w.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
+              const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
               const _loc = (w.locatie || '').toLowerCase()
               const locatieLabel = _loc ? (_loc.includes('futsal') || _loc.includes('zaal') ? 'ZAAL' : (w.locatie || '').toUpperCase()) : null
               const teamcode = getVvzTeamcode(w, teamcodeLookup)
