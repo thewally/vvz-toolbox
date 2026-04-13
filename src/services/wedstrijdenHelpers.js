@@ -27,7 +27,33 @@ export function formatDatumKort(wedstrijddatum) {
   return { dag: DUTCH_DAYS_SHORT[d.getDay()], datum: `${d.getDate()} ${DUTCH_MONTHS_SHORT[d.getMonth()]}` }
 }
 
+// Geeft een sorteergetal voor een teamnaam op categorie + volgnummer
+// Lagere waarde = eerder in de lijst
+// Volgorde: jeugd oplopend (JO8 < JO9 < ... < JO19), dan senioren (VVZ 1 < VVZ 2), dan rest
+export function teamSorteerGetal(teamnaam) {
+  const naam = (teamnaam || '').toLowerCase()
+
+  // Jeugd: JO8, JO9, JO10 ... JO19
+  const joMatch = naam.match(/[jm]o\s*(\d+)/)
+  if (joMatch) {
+    const leeftijd = parseInt(joMatch[1], 10)
+    // Volgnummer achter team, bv JO13-2 → 2
+    const volg = parseInt((naam.match(/[jm]o\s*\d+[-\s]+(\d+)/) || [])[1] || '1', 10)
+    return leeftijd * 100 + volg
+  }
+
+  // Senioren: VVZ '49 1, VVZ '49 2, ...
+  const seniorenMatch = naam.match(/vvz\s*'?49\s+(\d+)/)
+  if (seniorenMatch) return 2000 + parseInt(seniorenMatch[1], 10)
+
+  // Veteranen
+  if (/veteran|vet\./.test(naam)) return 3000
+
+  return 9999
+}
+
 // Groepeer op yyyy-mm-dd sleutel, gesorteerd
+// Binnen elke dag: eerst op tijd, dan op teamcategorie
 export function groepeerPerDag(wedstrijden) {
   const map = new Map()
   for (const w of wedstrijden) {
@@ -35,6 +61,19 @@ export function groepeerPerDag(wedstrijden) {
     const sleutel = datumSleutel(w.wedstrijddatum)
     if (!map.has(sleutel)) map.set(sleutel, [])
     map.get(sleutel).push(w)
+  }
+  // Sorteer per dag
+  for (const [, items] of map) {
+    items.sort((a, b) => {
+      // 1. Aanvangstijd
+      const tijdA = a.aanvangstijd || '99:99'
+      const tijdB = b.aanvangstijd || '99:99'
+      if (tijdA !== tijdB) return tijdA.localeCompare(tijdB)
+      // 2. Teamcategorie: gebruik VVZ-team (thuis of uit)
+      const vvzA = a.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE ? a.thuisteam : a.uitteam
+      const vvzB = b.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE ? b.thuisteam : b.uitteam
+      return teamSorteerGetal(vvzA) - teamSorteerGetal(vvzB)
+    })
   }
   return new Map([...map.entries()].sort())
 }
