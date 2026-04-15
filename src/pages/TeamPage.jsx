@@ -429,7 +429,7 @@ export default function TeamPage() {
                 <p className={`text-lg font-bold ${!isThuis(eerstvolgende) ? 'text-vvz-green' : 'text-gray-800'}`}>{eerstvolgende.uitteam}</p>
 
                 {(eerstvolgende.verzameltijd || eerstvolgende.vertrektijd) && (
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-lg text-gray-600 mt-1">
                     {eerstvolgende.verzameltijd && <strong>Verzamelen {eerstvolgende.verzameltijd}</strong>}
                     {eerstvolgende.verzameltijd && eerstvolgende.vertrektijd && <span> · </span>}
                     {eerstvolgende.vertrektijd && <strong>Vertrek {eerstvolgende.vertrektijd}</strong>}
