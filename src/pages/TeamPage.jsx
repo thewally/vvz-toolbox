@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getTeamProgramma, getTeamUitslagen, getTeams, getPoulestand, getTeamGegevens } from '../services/wedstrijden'
-import { groepeerPerDag, formatDagLabel, formatDatumKort, datumSleutel, parseWedstrijdDatum } from '../services/wedstrijdenHelpers'
+import { formatDagLabel, datumSleutel, parseWedstrijdDatum } from '../services/wedstrijdenHelpers'
 import AgendaAbonneerKnop from '../components/AgendaAbonneerKnop'
 
 const CLUB_RELATIECODE = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
@@ -31,14 +31,8 @@ const CAT_LABELS = {
   pupillen: 'Pupillen',
   zaalvoetbal: 'Zaalvoetbal',
 }
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
-
 function isThuis(w) {
   return w.thuisteamclubrelatiecode === CLUB_RELATIECODE
-}
-
-function getTegenstander(w) {
-  return isThuis(w) ? w.uitteam : w.thuisteam
 }
 
 function ThuisUitBadge({ wedstrijd }) {
@@ -50,233 +44,17 @@ function ThuisUitBadge({ wedstrijd }) {
   )
 }
 
-function fitText(ctx, text, maxWidth, startSize) {
-  let size = startSize
-  while (size > 16) {
-    ctx.font = `bold ${size}px system-ui, sans-serif`
-    if (ctx.measureText(text).width <= maxWidth) return size
-    size -= 2
-  }
-  // Truncate with ellipsis at minimum size
-  ctx.font = `bold ${size}px system-ui, sans-serif`
-  while (ctx.measureText(text + '...').width > maxWidth && text.length > 1) {
-    text = text.slice(0, -1)
-  }
-  return size
-}
-
-
-
-function drawBadge(ctx, text, cx, cy, bgColor, textColor) {
-  ctx.font = 'bold 22px system-ui, sans-serif'
-  const tw = ctx.measureText(text).width
-  const bw = tw + 32
-  const bh = 38
-  const r = bh / 2
-  ctx.fillStyle = bgColor
-  ctx.beginPath()
-  ctx.roundRect(cx - bw / 2, cy - bh / 2, bw, bh, r)
-  ctx.fill()
-  ctx.fillStyle = textColor
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(text, cx, cy)
-}
-
-async function loadImage(url) {
-  return new Promise((resolve) => {
-    const img = new Image()
-    img.crossOrigin = 'anonymous'
-    img.onload = () => resolve(img)
-    img.onerror = () => resolve(null)
-    img.src = url
-  })
-}
-
-async function shareWedstrijdCard(w, teamnaam, teamcode) {
-  const VVZ_GREEN = '#2E7D32'
-  const SCALE = 2
-  const SIZE = 600
-  const W = SIZE * SCALE
-  const H = SIZE * SCALE
-  const thuis = isThuis(w)
-
-  const canvas = document.createElement('canvas')
-  canvas.width = W
-  canvas.height = H
-  const ctx = canvas.getContext('2d')
-  ctx.scale(SCALE, SCALE)
-
-  const CW = SIZE
-  const CH = SIZE
-
-  // Laad logo's parallel
-  const [logoThuis, logoUit] = await Promise.all([
-    w.thuisteamlogo ? loadImage(w.thuisteamlogo) : Promise.resolve(null),
-    w.uitteamlogo ? loadImage(w.uitteamlogo) : Promise.resolve(null),
-  ])
-
-  // Achtergrond
-  ctx.fillStyle = '#f3f4f6'
-  ctx.fillRect(0, 0, CW, CH)
-
-  // Card
-  const cx = 24, cy = 24, cw = CW - 48, ch = CH - 48, r = 20
-  ctx.fillStyle = '#ffffff'
-  ctx.beginPath()
-  ctx.roundRect(cx, cy, cw, ch, r)
-  ctx.fill()
-
-  // Groene header
-  const barH = 72
-  ctx.save()
-  ctx.beginPath()
-  ctx.roundRect(cx, cy, cw, barH, [r, r, 0, 0])
-  ctx.clip()
-  ctx.fillStyle = VVZ_GREEN
-  ctx.fillRect(cx, cy, cw, barH)
-  ctx.restore()
-
-  // Datum links in header
-  const dagLabel = formatDagLabel(w.wedstrijddatum)
-  const dagStr = dagLabel.charAt(0).toUpperCase() + dagLabel.slice(1)
-  ctx.fillStyle = '#ffffff'
-  ctx.textBaseline = 'middle'
-  ctx.textAlign = 'left'
-  ctx.font = 'bold 22px system-ui, sans-serif'
-  ctx.fillText(dagStr, cx + 24, cy + barH / 2)
-
-  // Thuis/Uit pill rechts in header
-  const pillLabel = thuis ? 'Thuis' : 'Uit'
-  ctx.font = 'bold 18px system-ui, sans-serif'
-  const pillW = ctx.measureText(pillLabel).width + 28
-  const pillH = 34
-  const pillX = cx + cw - 20 - pillW
-  const pillY = cy + (barH - pillH) / 2
-  ctx.fillStyle = 'rgba(255,255,255,0.25)'
-  ctx.beginPath()
-  ctx.roundRect(pillX, pillY, pillW, pillH, pillH / 2)
-  ctx.fill()
-  ctx.fillStyle = '#ffffff'
-  ctx.textAlign = 'center'
-  ctx.fillText(pillLabel, pillX + pillW / 2, pillY + pillH / 2)
-
-  // Logo's + tijd
-  const logoSize = 80
-  const logoY = cy + barH + 28
-  const centerX = cx + cw / 2
-
-  if (logoThuis) {
-    ctx.drawImage(logoThuis, cx + 32, logoY, logoSize, logoSize)
-  }
-  if (logoUit) {
-    ctx.drawImage(logoUit, cx + cw - 32 - logoSize, logoY, logoSize, logoSize)
-  }
-
-  // Aanvangstijd gecentreerd
-  ctx.fillStyle = '#1f2937'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.font = 'bold 48px system-ui, sans-serif'
-  ctx.fillText(w.aanvangstijd || '--:--', centerX, logoY + logoSize / 2)
-
-  // Teamnamen
-  const nameY = logoY + logoSize + 36
-  ctx.textBaseline = 'alphabetic'
-
-  const thuisSize = fitText(ctx, w.thuisteam, cw - 48, 28)
-  ctx.font = `bold ${thuisSize}px system-ui, sans-serif`
-  ctx.fillStyle = thuis ? VVZ_GREEN : '#1f2937'
-  ctx.textAlign = 'center'
-  ctx.fillText(w.thuisteam, centerX, nameY)
-
-  ctx.fillStyle = '#9ca3af'
-  ctx.font = '18px system-ui, sans-serif'
-  ctx.fillText('vs', centerX, nameY + 28)
-
-  const uitSize = fitText(ctx, w.uitteam, cw - 48, 28)
-  ctx.font = `bold ${uitSize}px system-ui, sans-serif`
-  ctx.fillStyle = !thuis ? VVZ_GREEN : '#1f2937'
-  ctx.fillText(w.uitteam, centerX, nameY + 60)
-
-  // Details
-  let detailY = nameY + 100
-  ctx.fillStyle = '#6b7280'
-  ctx.font = '18px system-ui, sans-serif'
-  ctx.textAlign = 'center'
-
-  const verzamelTijd = w.verzameltijd || w.vertrektijd
-  const verzamelLabel = w.vertrektijd && !w.verzameltijd ? 'Vertrek' : 'Verzamelen'
-  if (verzamelTijd) {
-    ctx.fillText(`${verzamelLabel} ${verzamelTijd}`, centerX, detailY)
-    detailY += 28
-  }
-
-  if (w.accommodatie) {
-    const loc = `📍 ${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}`
-    // Wrap lange locatienamen
-    const words = loc.split(' ')
-    let line = ''
-    const maxW = cw - 48
-    for (const word of words) {
-      const test = line ? `${line} ${word}` : word
-      if (ctx.measureText(test).width > maxW && line) {
-        ctx.fillText(line, centerX, detailY)
-        detailY += 26
-        line = word
-      } else {
-        line = test
-      }
-    }
-    if (line) { ctx.fillText(line, centerX, detailY); detailY += 26 }
-  }
-
-  if (w.kleedkamerthuisteam) {
-    ctx.fillText(`Kleedkamer: ${w.kleedkamerthuisteam}`, centerX, detailY + 4)
-  }
-
-  // Convert to blob and share
-  let blob
-  try {
-    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
-  } catch {
-    blob = null
-  }
-
-  if (blob) {
-    const file = new File([blob], 'wedstrijd-vvz49.png', { type: 'image/png' })
-    if (navigator.canShare?.({ files: [file] })) {
-      try {
-        const mapsQ = w.accommodatie ? encodeURIComponent(`${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}`) : null
-        const shareText = [
-          `📅 ${dagStr} om ${w.aanvangstijd || '?'}`,
-          mapsQ ? `Locatie: https://maps.google.com/?q=${mapsQ}` : null,
-          verzamelTijd ? `🕐 ${verzamelLabel} om ${verzamelTijd}` : null,
-        ].filter(Boolean).join('\n')
-        await navigator.share({
-          files: [file],
-          title: `${w.thuisteam} vs ${w.uitteam}`,
-          text: shareText,
-        })
-        return
-      } catch (e) {
-        if (e.name === 'AbortError') return
-      }
-    }
-  }
-  window.open(buildWhatsAppUrl(w, teamnaam, teamcode))
-}
-
-function buildWhatsAppUrl(w, teamnaam, teamcode) {
-  const thuisUit = isThuis(w) ? 'thuis' : 'uit'
+function buildWhatsAppUrl(w, teamcode) {
   const pageUrl = `https://thewally.github.io/vvz-toolbox/#/teams/${teamcode}`
   const mapsQuery = w.accommodatie ? encodeURIComponent(`${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}`) : null
   const mapsUrl = mapsQuery ? `https://maps.google.com/?q=${mapsQuery}` : null
+  const verzamelTijd = w.verzameltijd || w.vertrektijd
+  const verzamelLabel = w.vertrektijd && !w.verzameltijd ? 'Vertrek' : 'Verzamelen'
   const tekst = [
     `📅 ${formatDagLabel(w.wedstrijddatum)} om ${w.aanvangstijd || '?'}`,
     w.accommodatie ? `📍 ${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}` : null,
     mapsUrl ? `Locatie: ${mapsUrl}` : null,
-    w.verzameltijd ? `🕐 Verzamelen om ${w.verzameltijd}` : null,
+    verzamelTijd ? `🕐 ${verzamelLabel} om ${verzamelTijd}` : null,
     `\n${pageUrl}`,
   ].filter(Boolean).join('\n')
   return `https://wa.me/?text=${encodeURIComponent(tekst)}`
@@ -294,6 +72,223 @@ export default function TeamPage() {
   const [teamfoto, setTeamfoto] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  async function laadAfbeelding(url) {
+    if (!url) return null
+    // Laad via proxy zodat Sportlink CORS geen blokkade vormt
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+    const proxyUrl = `${supabaseUrl}/functions/v1/image-proxy?url=${encodeURIComponent(url)}`
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => resolve(img)
+      img.onerror = () => resolve(null)
+      img.src = proxyUrl
+    })
+  }
+
+  async function shareWedstrijdCard(w, _teamNaam, tc) {
+    const VVZ_GREEN = '#2E7D32'
+    const S = 2 // retina scale
+    const CARD_W = 520
+    const PAD = 16        // buitenmarge
+    const INNER_W = CARD_W - PAD * 2  // 488
+    const HEADER_H = 56
+    const LOGO_SIZE = 56
+    const LOGO_COL = 66   // logo kolom breedte incl. marge
+    const CENTER_W = INNER_W - LOGO_COL * 2  // 356
+    const BODY_PAD_X = 16
+    const BODY_PAD_Y = 20
+    const R = 16           // card border-radius
+
+    const thuis = isThuis(w)
+    const verzamelTijd = w.verzameltijd || w.vertrektijd
+    const verzamelLabel = w.vertrektijd && !w.verzameltijd ? 'Vertrek' : 'Verzamelen'
+    const veld = w.veldnummer || w.veld || null
+
+    // Laad logo's
+    const [logoThuis, logoUit] = await Promise.all([
+      w.thuisteamlogo ? laadAfbeelding(w.thuisteamlogo) : Promise.resolve(null),
+      w.uitteamlogo ? laadAfbeelding(w.uitteamlogo) : Promise.resolve(null),
+    ])
+
+    // Bereken benodigde hoogte voor midden-kolom
+    const regelHoogte = (font, tekst, maxBreedte, ctx) => {
+      ctx.font = font
+      const woorden = tekst.split(' ')
+      let regel = '', regels = 1
+      for (const w of woorden) {
+        const test = regel ? `${regel} ${w}` : w
+        if (ctx.measureText(test).width > maxBreedte && regel) { regel = w; regels++ }
+        else regel = test
+      }
+      return regels
+    }
+
+    // Eerst meten op een tijdelijke canvas
+    const tmpCanvas = document.createElement('canvas')
+    const tmpCtx = tmpCanvas.getContext('2d')
+    let centerH = BODY_PAD_Y
+    centerH += 44            // aanvangstijd
+    if (verzamelTijd) centerH += 28
+    centerH += 8             // spacer voor teamnamen
+    centerH += 26            // thuisteam
+    centerH += 20            // vs
+    centerH += 26            // uitteam
+    if (w.accommodatie) {
+      const regels = regelHoogte('13px Arial', `📍 ${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}${veld ? ` · ${veld}` : ''}`, CENTER_W - 8, tmpCtx)
+      centerH += 10 + regels * 18
+    }
+    if (w.kleedkamerthuisteam) centerH += 20
+    centerH += BODY_PAD_Y
+
+    const BODY_H = Math.max(centerH, LOGO_SIZE + BODY_PAD_Y * 2)
+    const CARD_H = HEADER_H + BODY_H
+    const TOTAL_H = CARD_H + PAD * 2
+
+    // Teken op echte canvas
+    const canvas = document.createElement('canvas')
+    canvas.width = CARD_W * S
+    canvas.height = TOTAL_H * S
+    const ctx = canvas.getContext('2d')
+    ctx.scale(S, S)
+
+    // Achtergrond
+    ctx.fillStyle = '#f3f4f6'
+    ctx.fillRect(0, 0, CARD_W, TOTAL_H)
+
+    // Card (witte achtergrond met afgeronde hoeken)
+    const cx = PAD, cy = PAD
+    ctx.fillStyle = '#ffffff'
+    ctx.beginPath()
+    ctx.roundRect(cx, cy, INNER_W, CARD_H, R)
+    ctx.fill()
+
+    // Groene header
+    ctx.save()
+    ctx.beginPath()
+    ctx.roundRect(cx, cy, INNER_W, HEADER_H, [R, R, 0, 0])
+    ctx.clip()
+    ctx.fillStyle = VVZ_GREEN
+    ctx.fillRect(cx, cy, INNER_W, HEADER_H)
+    ctx.restore()
+
+    // Datum in header
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 15px Arial'
+    ctx.textBaseline = 'middle'
+    ctx.textAlign = 'left'
+    const DUTCH_DAYS = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag']
+    const DUTCH_MONTHS = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december']
+    const d = new Date(w.wedstrijddatum)
+    const dagStr = `${DUTCH_DAYS[d.getDay()]} ${d.getDate()} ${DUTCH_MONTHS[d.getMonth()]}`
+    ctx.fillText(dagStr, cx + 20, cy + HEADER_H / 2)
+
+    // Thuis/Uit badge
+    const badgeTekst = thuis ? 'Thuis' : 'Uit'
+    ctx.font = 'bold 13px Arial'
+    const bw = ctx.measureText(badgeTekst).width + 24
+    const bh = 26
+    const bx = cx + INNER_W - 20 - bw
+    const by = cy + (HEADER_H - bh) / 2
+    ctx.fillStyle = thuis ? '#dcfce7' : 'rgba(255,255,255,0.25)'
+    ctx.beginPath()
+    ctx.roundRect(bx, by, bw, bh, 6)
+    ctx.fill()
+    ctx.fillStyle = thuis ? '#15803d' : '#ffffff'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(badgeTekst, bx + bw / 2, by + bh / 2)
+
+    // Body
+    const bodyY = cy + HEADER_H
+    const logoY = bodyY + BODY_PAD_Y + (BODY_H - BODY_PAD_Y * 2 - LOGO_SIZE) / 2
+
+    // Logo's
+    if (logoThuis) ctx.drawImage(logoThuis, cx + BODY_PAD_X, logoY, LOGO_SIZE, LOGO_SIZE)
+    if (logoUit) ctx.drawImage(logoUit, cx + INNER_W - BODY_PAD_X - LOGO_SIZE, logoY, LOGO_SIZE, LOGO_SIZE)
+
+    // Midden kolom
+    const midX = cx + BODY_PAD_X + LOGO_COL + CENTER_W / 2
+    let textY = bodyY + BODY_PAD_Y
+
+    // Aanvangstijd
+    ctx.fillStyle = '#1f2937'
+    ctx.font = 'bold 36px Arial'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'alphabetic'
+    textY += 36
+    ctx.fillText(w.aanvangstijd || '--:--', midX, textY)
+    textY += 8
+
+    // Verzamel-/vertrektijd
+    if (verzamelTijd) {
+      ctx.fillStyle = '#1f2937'
+      ctx.font = 'bold 16px Arial'
+      textY += 20
+      ctx.fillText(`${verzamelLabel}: ${verzamelTijd}`, midX, textY)
+      textY += 4
+    }
+
+    // Thuisteam
+    ctx.fillStyle = thuis ? VVZ_GREEN : '#1f2937'
+    ctx.font = 'bold 17px Arial'
+    textY += 18
+    ctx.fillText(w.thuisteam, midX, textY)
+
+    // vs
+    ctx.fillStyle = '#9ca3af'
+    ctx.font = '13px Arial'
+    textY += 18
+    ctx.fillText('vs', midX, textY)
+
+    // Uitteam
+    ctx.fillStyle = !thuis ? VVZ_GREEN : '#1f2937'
+    ctx.font = 'bold 17px Arial'
+    textY += 20
+    ctx.fillText(w.uitteam, midX, textY)
+
+    // Accommodatie
+    if (w.accommodatie) {
+      ctx.fillStyle = '#6b7280'
+      ctx.font = '12px Arial'
+      const locTekst = `📍 ${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}${veld ? ` · ${veld}` : ''}`
+      textY += 14
+      // Simpele tekst-wrap
+      const woorden = locTekst.split(' ')
+      let regel = ''
+      for (const word of woorden) {
+        const test = regel ? `${regel} ${word}` : word
+        if (ctx.measureText(test).width > CENTER_W - 8 && regel) {
+          ctx.fillText(regel, midX, textY)
+          textY += 16
+          regel = word
+        } else { regel = test }
+      }
+      if (regel) { ctx.fillText(regel, midX, textY); textY += 16 }
+    }
+
+    // Kleedkamer
+    if (w.kleedkamerthuisteam) {
+      ctx.fillStyle = '#6b7280'
+      ctx.font = '12px Arial'
+      textY += 4
+      ctx.fillText(`Kleedkamer: ${w.kleedkamerthuisteam}`, midX, textY)
+    }
+
+    // Delen
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'))
+    if (blob) {
+      const file = new File([blob], 'wedstrijd-vvz49.png', { type: 'image/png' })
+      if (navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: `${w.thuisteam} vs ${w.uitteam}` })
+          return
+        } catch (e) {
+          if (e.name === 'AbortError') return
+        }
+      }
+    }
+    window.open(buildWhatsAppUrl(w, tc))
+  }
 
   useEffect(() => { load() }, [teamcode])
 
@@ -423,18 +418,17 @@ export default function TeamPage() {
                 )}
               </div>
               <div className="flex-1 flex flex-col items-center text-center">
-                <p className="text-2xl font-bold text-gray-800">Aanvang: {eerstvolgende.aanvangstijd || '--:--'}</p>
+                <p className="text-2xl font-bold text-gray-800">{eerstvolgende.aanvangstijd || '--:--'}</p>                
+                {(eerstvolgende.verzameltijd || eerstvolgende.vertrektijd) && (
+                  <p className="text-lg mt-1 text-gray-800">
+                    {eerstvolgende.verzameltijd && <span>Verzamelen: {eerstvolgende.verzameltijd}</span>}
+                    {eerstvolgende.verzameltijd && eerstvolgende.vertrektijd && <span> · </span>}
+                    {eerstvolgende.vertrektijd && <span>Vertrek: {eerstvolgende.vertrektijd}</span>}
+                  </p>
+                )}
                 <p className={`text-lg font-bold mt-2 ${isThuis(eerstvolgende) ? 'text-vvz-green' : 'text-gray-800'}`}>{eerstvolgende.thuisteam}</p>
                 <p className="text-gray-400 text-sm my-1">vs</p>
                 <p className={`text-lg font-bold ${!isThuis(eerstvolgende) ? 'text-vvz-green' : 'text-gray-800'}`}>{eerstvolgende.uitteam}</p>
-
-                {(eerstvolgende.verzameltijd || eerstvolgende.vertrektijd) && (
-                  <p className="text-lg text-gray-600 mt-2">
-                    {eerstvolgende.verzameltijd && <strong>Verzamelen: {eerstvolgende.verzameltijd}</strong>}
-                    {eerstvolgende.verzameltijd && eerstvolgende.vertrektijd && <span> · </span>}
-                    {eerstvolgende.vertrektijd && <strong>Vertrek: {eerstvolgende.vertrektijd}</strong>}
-                  </p>
-                )}
 
                 {eerstvolgende.accommodatie && (
                   <p className="text-sm text-gray-500 mt-1">
@@ -466,6 +460,13 @@ export default function TeamPage() {
             {/* Desktop: horizontale layout met logo's */}
             <div className="hidden sm:flex flex-col items-center text-center p-5">
               <p className="text-2xl font-bold text-gray-800 mb-2">{eerstvolgende.aanvangstijd || '--:--'}</p>
+              {(eerstvolgende.verzameltijd || eerstvolgende.vertrektijd) && (
+                <p className="text-lg text-gray-800 mt-1">
+                  {eerstvolgende.verzameltijd && <span>Verzamelen: {eerstvolgende.verzameltijd}</span>}
+                  {eerstvolgende.verzameltijd && eerstvolgende.vertrektijd && <span> · </span>}
+                  {eerstvolgende.vertrektijd && <span>Vertrek: {eerstvolgende.vertrektijd}</span>}
+                </p>
+              )}
               <div className="flex items-center justify-center gap-4 mb-2">
                 {eerstvolgende.thuisteamlogo
                   ? <img src={eerstvolgende.thuisteamlogo} alt={eerstvolgende.thuisteam} className="w-14 h-14 object-contain" />
@@ -483,14 +484,6 @@ export default function TeamPage() {
                   : <div className="w-14 h-14" />
                 }
               </div>
-
-              {(eerstvolgende.verzameltijd || eerstvolgende.vertrektijd) && (
-                <p className="text-sm text-gray-500 mb-1">
-                  {eerstvolgende.verzameltijd && <span>Verzamelen {eerstvolgende.verzameltijd}</span>}
-                  {eerstvolgende.verzameltijd && eerstvolgende.vertrektijd && <span> · </span>}
-                  {eerstvolgende.vertrektijd && <span>Vertrek {eerstvolgende.vertrektijd}</span>}
-                </p>
-              )}
 
               {eerstvolgende.accommodatie && (
                 <p className="text-sm text-gray-500 mb-1">
