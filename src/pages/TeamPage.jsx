@@ -65,6 +65,7 @@ export default function TeamPage() {
     return Promise.race([
       new Promise((resolve) => {
         const img = new Image()
+        img.crossOrigin = 'anonymous'
         img.onload = () => resolve(img)
         img.onerror = () => resolve(null)
         img.src = proxyUrl
