@@ -44,21 +44,6 @@ function ThuisUitBadge({ wedstrijd }) {
   )
 }
 
-function buildWhatsAppUrl(w, teamcode) {
-  const pageUrl = `https://thewally.github.io/vvz-toolbox/#/teams/${teamcode}`
-  const mapsQuery = w.accommodatie ? encodeURIComponent(`${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}`) : null
-  const mapsUrl = mapsQuery ? `https://maps.google.com/?q=${mapsQuery}` : null
-  const verzamelTijd = w.verzameltijd || w.vertrektijd
-  const verzamelLabel = w.vertrektijd && !w.verzameltijd ? 'Vertrek' : 'Verzamelen'
-  const tekst = [
-    `📅 ${formatDagLabel(w.wedstrijddatum)} om ${w.aanvangstijd || '?'}`,
-    w.accommodatie ? `📍 ${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}` : null,
-    mapsUrl ? `Locatie: ${mapsUrl}` : null,
-    verzamelTijd ? `🕐 ${verzamelLabel} om ${verzamelTijd}` : null,
-    `\n${pageUrl}`,
-  ].filter(Boolean).join('\n')
-  return `https://wa.me/?text=${encodeURIComponent(tekst)}`
-}
 
 export default function TeamPage() {
   const { teamcode } = useParams()
@@ -77,15 +62,18 @@ export default function TeamPage() {
     // Laad via proxy zodat Sportlink CORS geen blokkade vormt
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
     const proxyUrl = `${supabaseUrl}/functions/v1/image-proxy?url=${encodeURIComponent(url)}`
-    return new Promise((resolve) => {
-      const img = new Image()
-      img.onload = () => resolve(img)
-      img.onerror = () => resolve(null)
-      img.src = proxyUrl
-    })
+    return Promise.race([
+      new Promise((resolve) => {
+        const img = new Image()
+        img.onload = () => resolve(img)
+        img.onerror = () => resolve(null)
+        img.src = proxyUrl
+      }),
+      new Promise(resolve => setTimeout(() => resolve(null), 5000)),
+    ])
   }
 
-  async function shareWedstrijdCard(w, _teamNaam, tc) {
+  async function shareWedstrijdCard(w) {
     const VVZ_GREEN = '#2E7D32'
     const S = 2 // retina scale
     const CARD_W = 520
@@ -276,18 +264,23 @@ export default function TeamPage() {
 
     // Delen
     const blob = await new Promise(r => canvas.toBlob(r, 'image/png'))
-    if (blob) {
-      const file = new File([blob], 'wedstrijd-vvz49.png', { type: 'image/png' })
-      if (navigator.canShare?.({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], title: `${w.thuisteam} vs ${w.uitteam}` })
-          return
-        } catch (e) {
-          if (e.name === 'AbortError') return
-        }
+    if (!blob) return
+    const file = new File([blob], 'wedstrijd-vvz49.png', { type: 'image/png' })
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: `${w.thuisteam} vs ${w.uitteam}` })
+        return
+      } catch (e) {
+        if (e.name === 'AbortError') return
       }
     }
-    window.open(buildWhatsAppUrl(w, tc))
+    // Fallback: download het plaatje
+    const objectUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = objectUrl
+    a.download = 'wedstrijd-vvz49.png'
+    a.click()
+    URL.revokeObjectURL(objectUrl)
   }
 
   useEffect(() => { load() }, [teamcode])
@@ -441,7 +434,7 @@ export default function TeamPage() {
                 )}
 
                 <button
-                  onClick={() => shareWedstrijdCard(eerstvolgende, teamnaam, teamcode)}
+                  onClick={() => shareWedstrijdCard(eerstvolgende)}
                   className="mt-3 inline-flex items-center gap-2 bg-vvz-green hover:bg-vvz-green/90 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -496,7 +489,7 @@ export default function TeamPage() {
               )}
 
               <button
-                onClick={() => shareWedstrijdCard(eerstvolgende, teamnaam, teamcode)}
+                onClick={() => shareWedstrijdCard(eerstvolgende)}
                 className="mt-2 inline-flex items-center gap-2 bg-vvz-green hover:bg-vvz-green/90 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
