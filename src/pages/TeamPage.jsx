@@ -423,16 +423,16 @@ export default function TeamPage() {
                 )}
               </div>
               <div className="flex-1 flex flex-col items-center text-center">
-                <p className="text-2xl font-bold text-gray-800">{eerstvolgende.aanvangstijd || '--:--'}</p>
+                <p className="text-2xl font-bold text-gray-800">Aanvang: {eerstvolgende.aanvangstijd || '--:--'}</p>
                 <p className={`text-lg font-bold mt-2 ${isThuis(eerstvolgende) ? 'text-vvz-green' : 'text-gray-800'}`}>{eerstvolgende.thuisteam}</p>
                 <p className="text-gray-400 text-sm my-1">vs</p>
                 <p className={`text-lg font-bold ${!isThuis(eerstvolgende) ? 'text-vvz-green' : 'text-gray-800'}`}>{eerstvolgende.uitteam}</p>
 
                 {(eerstvolgende.verzameltijd || eerstvolgende.vertrektijd) && (
                   <p className="text-lg text-gray-600 mt-1">
-                    {eerstvolgende.verzameltijd && <strong>Verzamelen {eerstvolgende.verzameltijd}</strong>}
+                    {eerstvolgende.verzameltijd && <strong>Verzamelen: {eerstvolgende.verzameltijd}</strong>}
                     {eerstvolgende.verzameltijd && eerstvolgende.vertrektijd && <span> · </span>}
-                    {eerstvolgende.vertrektijd && <strong>Vertrek {eerstvolgende.vertrektijd}</strong>}
+                    {eerstvolgende.vertrektijd && <strong>Vertrek: {eerstvolgende.vertrektijd}</strong>}
                   </p>
                 )}
 
