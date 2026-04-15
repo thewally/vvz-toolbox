@@ -57,6 +57,8 @@ export default function TeamPage() {
   const [teamfoto, setTeamfoto] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [shareLogos, setShareLogos] = useState({ thuis: null, uit: null })
+
   async function laadAfbeelding(url) {
     if (!url) return null
     // Laad via proxy zodat Sportlink CORS geen blokkade vormt
@@ -94,11 +96,9 @@ export default function TeamPage() {
     const verzamelLabel = w.vertrektijd && !w.verzameltijd ? 'Vertrek' : 'Verzamelen'
     const veld = w.veldnummer || w.veld || null
 
-    // Laad logo's
-    const [logoThuis, logoUit] = await Promise.all([
-      w.thuisteamlogo ? laadAfbeelding(w.thuisteamlogo) : Promise.resolve(null),
-      w.uitteamlogo ? laadAfbeelding(w.uitteamlogo) : Promise.resolve(null),
-    ])
+    // Gebruik pre-loaded logo's (zodat navigator.share direct na klik werkt op iOS)
+    const logoThuis = shareLogos.thuis
+    const logoUit = shareLogos.uit
 
     // Bereken benodigde hoogte voor midden-kolom
     const regelHoogte = (font, tekst, maxBreedte, ctx) => {
@@ -290,6 +290,19 @@ export default function TeamPage() {
   }
 
   useEffect(() => { load() }, [teamcode])
+
+  // Pre-laad logo's voor eerstvolgende wedstrijd zodat navigator.share() direct na klik werkt
+  useEffect(() => {
+    const vandaagSleutel = new Date().toISOString().slice(0, 10)
+    const eerstvolgende = [...programma]
+      .filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) >= vandaagSleutel)
+      .sort((a, b) => new Date(a.wedstrijddatum) - new Date(b.wedstrijddatum))[0]
+    if (!eerstvolgende) return
+    Promise.all([
+      laadAfbeelding(eerstvolgende.thuisteamlogo),
+      laadAfbeelding(eerstvolgende.uitteamlogo),
+    ]).then(([thuis, uit]) => setShareLogos({ thuis, uit }))
+  }, [programma])
 
   async function load() {
     setLoading(true)
