@@ -438,7 +438,7 @@ export default function TeamPage() {
 
                 {eerstvolgende.accommodatie && (
                   <p className="text-sm text-gray-500 mt-1">
-                    📍 {eerstvolgende.accommodatie}{eerstvolgende.plaats ? `, ${eerstvolgende.plaats}` : ''}
+                    📍 {eerstvolgende.accommodatie}{eerstvolgende.plaats ? `, ${eerstvolgende.plaats}` : ''}{(eerstvolgende.veldnummer || eerstvolgende.veld) ? ` · ${eerstvolgende.veldnummer || eerstvolgende.veld}` : ''}
                   </p>
                 )}
 
@@ -494,7 +494,7 @@ export default function TeamPage() {
 
               {eerstvolgende.accommodatie && (
                 <p className="text-sm text-gray-500 mb-1">
-                  📍 {eerstvolgende.accommodatie}{eerstvolgende.plaats ? `, ${eerstvolgende.plaats}` : ''}
+                  📍 {eerstvolgende.accommodatie}{eerstvolgende.plaats ? `, ${eerstvolgende.plaats}` : ''}{(eerstvolgende.veldnummer || eerstvolgende.veld) ? ` · ${eerstvolgende.veldnummer || eerstvolgende.veld}` : ''}
                 </p>
               )}
 
@@ -552,7 +552,7 @@ export default function TeamPage() {
                     <span className="text-gray-400 text-xs">vs</span>
                     <span className={`font-semibold text-sm ${!isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
                     <span className="text-xs text-gray-400 capitalize">{formatDagLabel(w.wedstrijddatum)}</span>
-                    {w.accommodatie && <p className="text-xs text-gray-400">{w.accommodatie}</p>}
+                    {(w.accommodatie || w.veldnummer || w.veld) && <p className="text-xs text-gray-400">{w.accommodatie}{(w.veldnummer || w.veld) ? ` · ${w.veldnummer || w.veld}` : ''}</p>}
                     {(w.verzameltijd || w.vertrektijd) && (
                       <p className="text-xs text-gray-400">
                         {w.verzameltijd ? `Verzamelen ${w.verzameltijd}` : ''}
@@ -572,10 +572,10 @@ export default function TeamPage() {
                   <span className="self-center text-center text-gray-400 text-xs">vs</span>
                   <span className={`self-center font-semibold text-sm truncate ${!isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
                   <span className="self-center text-xs text-gray-400 capitalize">{formatDagLabel(w.wedstrijddatum)}</span>
-                  {w.accommodatie && <>
+                  {(w.accommodatie || w.veldnummer || w.veld) && <>
                     <span />
                     <span />
-                    <span className="text-center text-xs text-gray-400 col-start-2 col-end-5">{w.accommodatie}</span>
+                    <span className="text-center text-xs text-gray-400 col-start-2 col-end-5">{w.accommodatie}{(w.veldnummer || w.veld) ? ` · ${w.veldnummer || w.veld}` : ''}</span>
                   </>}
                 </div>
               </div>
