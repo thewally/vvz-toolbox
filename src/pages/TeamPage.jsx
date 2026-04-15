@@ -74,6 +74,7 @@ export default function TeamPage() {
   }
 
   async function shareWedstrijdCard(w) {
+    try {
     const VVZ_GREEN = '#2E7D32'
     const S = 2 // retina scale
     const CARD_W = 520
@@ -281,6 +282,10 @@ export default function TeamPage() {
     a.download = 'wedstrijd-vvz49.png'
     a.click()
     URL.revokeObjectURL(objectUrl)
+    } catch (err) {
+      console.error('shareWedstrijdCard fout:', err)
+      alert('Delen mislukt: ' + err.message)
+    }
   }
 
   useEffect(() => { load() }, [teamcode])
