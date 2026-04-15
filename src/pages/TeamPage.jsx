@@ -430,9 +430,9 @@ export default function TeamPage() {
 
                 {(eerstvolgende.verzameltijd || eerstvolgende.vertrektijd) && (
                   <p className="text-sm text-gray-500 mt-1">
-                    {eerstvolgende.verzameltijd && <span>Verzamelen <strong>{eerstvolgende.verzameltijd}</strong></span>}
+                    {eerstvolgende.verzameltijd && <strong>Verzamelen {eerstvolgende.verzameltijd}</strong>}
                     {eerstvolgende.verzameltijd && eerstvolgende.vertrektijd && <span> · </span>}
-                    {eerstvolgende.vertrektijd && <span>Vertrek <strong>{eerstvolgende.vertrektijd}</strong></span>}
+                    {eerstvolgende.vertrektijd && <strong>Vertrek {eerstvolgende.vertrektijd}</strong>}
                   </p>
                 )}
 
