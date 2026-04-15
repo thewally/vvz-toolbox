@@ -193,8 +193,14 @@ export default function TeamPage() {
     const logoY = bodyY + BODY_PAD_Y + (BODY_H - BODY_PAD_Y * 2 - LOGO_SIZE) / 2
 
     // Logo's
-    if (logoThuis) ctx.drawImage(logoThuis, cx + BODY_PAD_X, logoY, LOGO_SIZE, LOGO_SIZE)
-    if (logoUit) ctx.drawImage(logoUit, cx + INNER_W - BODY_PAD_X - LOGO_SIZE, logoY, LOGO_SIZE, LOGO_SIZE)
+    function drawLogoContain(img, x, y, size) {
+      const ratio = Math.min(size / img.naturalWidth, size / img.naturalHeight)
+      const w = img.naturalWidth * ratio
+      const h = img.naturalHeight * ratio
+      ctx.drawImage(img, x + (size - w) / 2, y + (size - h) / 2, w, h)
+    }
+    if (logoThuis) drawLogoContain(logoThuis, cx + BODY_PAD_X, logoY, LOGO_SIZE)
+    if (logoUit) drawLogoContain(logoUit, cx + INNER_W - BODY_PAD_X - LOGO_SIZE, logoY, LOGO_SIZE)
 
     // Midden kolom
     const midX = cx + BODY_PAD_X + LOGO_COL + CENTER_W / 2
