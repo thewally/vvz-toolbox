@@ -20,6 +20,7 @@ export default function WedstrijdenUitslagenPage() {
   const [error, setError] = useState(null)
   const [filterLocatie, setFilterLocatie] = useState('alles')
   const [filterCategorie, setFilterCategorie] = useState('alles')
+  const [filterSport, setFilterSport] = useState('alles')
   const [filterOpen, setFilterOpen] = useState(false)
 
   useEffect(() => {
@@ -74,10 +75,15 @@ export default function WedstrijdenUitslagenPage() {
       const vvzTeam = isThuis ? w.thuisteam : w.uitteam
       return getCategorie(vvzTeam) === filterCategorie
     })
+    .filter(w => {
+      if (filterSport === 'alles') return true
+      const isZaal = /futsal|zaal/i.test(w.sportomschrijving || '')
+      return filterSport === 'zaal' ? isZaal : !isZaal
+    })
   const perDagUnsorted = groepeerPerDag(verleden)
   const perDag = new Map([...perDagUnsorted.entries()].reverse())
 
-  const actieveFilters = (filterLocatie !== 'alles' ? 1 : 0) + (filterCategorie !== 'alles' ? 1 : 0)
+  const actieveFilters = (filterLocatie !== 'alles' ? 1 : 0) + (filterCategorie !== 'alles' ? 1 : 0) + (filterSport !== 'alles' ? 1 : 0)
   const pillClass = (active) => `px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${active ? 'bg-vvz-green text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
 
   return (
@@ -109,6 +115,14 @@ export default function WedstrijdenUitslagenPage() {
             <div className="flex flex-wrap gap-2">
               {[['alles', 'Alle teams'], ['pupillen', 'Pupillen'], ['junioren', 'Junioren'], ['senioren', 'Senioren'], ['veteranen', 'Veteranen']].map(([key, label]) => (
                 <button key={key} onClick={() => setFilterCategorie(key)} className={pillClass(filterCategorie === key)}>{label}</button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Sport</p>
+            <div className="flex flex-wrap gap-2">
+              {[['alles', 'Alles'], ['veld', 'Veld'], ['zaal', 'Zaal']].map(([key, label]) => (
+                <button key={key} onClick={() => setFilterSport(key)} className={pillClass(filterSport === key)}>{label}</button>
               ))}
             </div>
           </div>
