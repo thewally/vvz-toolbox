@@ -97,7 +97,15 @@ export default function WedstrijdenAfgelastingenPage() {
       w.thuisteamclubrelatiecode === CLUB_RC || w.uitteamclubrelatiecode === CLUB_RC
     )
     setAfgelast(eigenClub)
-    if (teamsRes.data) setTeams(teamsRes.data)
+    if (eigenClub.length > 0) {
+      console.log('[Afgelastingen] voorbeeld veld-namen:', Object.keys(eigenClub[0]))
+      console.log('[Afgelastingen] data:', eigenClub)
+    }
+    if (teamsRes.data) {
+      setTeams(teamsRes.data)
+      const vvz3 = teamsRes.data.filter(t => (t.teamnaam || '').includes('3'))
+      console.log('[Teams] VVZ 3-teams:', vvz3.map(t => ({ teamnaam: t.teamnaam, teamcode: t.teamcode, speeldag: t.speeldag, leeftijdscategorie: t.leeftijdscategorie })))
+    }
     setLoading(false)
   }
 
