@@ -1,17 +1,29 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getAfgelastingen, getTeams } from '../services/wedstrijden'
-import { groepeerPerDag, formatDagLabel, buildTeamcodeLookup, getVvzTeamcode } from '../services/wedstrijdenHelpers'
+import { getAfgelastingen } from '../services/wedstrijden'
+import { groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
 
 const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
+function getVvzTeamcode(w) {
+  const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
+  const isUit = w.uitteamclubrelatiecode === CLUB_RC
+  if (isThuis && w.thuisteamcode) return String(w.thuisteamcode)
+  if (isUit && w.uitteamcode) return String(w.uitteamcode)
+  return null
+}
+
+function getSportBadge(w) {
+  const sport = (w.sportomschrijving || '').toLowerCase()
+  if (sport.includes('zaal') || sport.includes('futsal')) return 'zaal'
+  if (sport) return 'veld'
+  return null
+}
+
 export default function WedstrijdenAfgelastingenPage() {
   const [afgelast, setAfgelast] = useState([])
-  const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
-  const teamcodeLookup = useMemo(() => buildTeamcodeLookup(teams), [teams])
 
   useEffect(() => {
     load()
@@ -20,7 +32,7 @@ export default function WedstrijdenAfgelastingenPage() {
   async function load() {
     setLoading(true)
     setError(null)
-    const [afgelastRes, teamsRes] = await Promise.all([getAfgelastingen(), getTeams()])
+    const afgelastRes = await getAfgelastingen()
     if (afgelastRes.error) {
       setError(afgelastRes.error.message)
       setLoading(false)
@@ -32,7 +44,6 @@ export default function WedstrijdenAfgelastingenPage() {
       w.thuisteamclubrelatiecode === CLUB_RC || w.uitteamclubrelatiecode === CLUB_RC
     )
     setAfgelast(eigenClub)
-    if (teamsRes.data) setTeams(teamsRes.data)
     setLoading(false)
   }
 
@@ -90,7 +101,8 @@ export default function WedstrijdenAfgelastingenPage() {
           <div className="flex flex-col gap-3">
             {items.map((w, i) => {
               const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
-              const teamcode = getVvzTeamcode(w, teamcodeLookup)
+              const teamcode = getVvzTeamcode(w)
+              const sportBadge = getSportBadge(w)
               const Wrapper = teamcode
                 ? ({ children }) => <Link to={`/teams/${teamcode}`} className="block group">{children}</Link>
                 : ({ children }) => <div>{children}</div>
@@ -107,8 +119,13 @@ export default function WedstrijdenAfgelastingenPage() {
                       <div className="flex-1 min-w-0 text-right">
                         <span className={`font-semibold text-sm truncate block ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
                       </div>
-                      <div className="shrink-0 w-16 text-center">
-                        <span className="text-xs font-bold text-orange-500 uppercase">Afgelast</span>
+                      <div className="shrink-0 text-center">
+                        <span className="block text-xs font-bold text-orange-500 uppercase">Afgelast</span>
+                        {sportBadge && (
+                          <span className={`inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full ${sportBadge === 'zaal' ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>
+                            {sportBadge === 'zaal' ? 'ZAAL' : 'VELD'}
+                          </span>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <span className={`font-semibold text-sm truncate block ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
