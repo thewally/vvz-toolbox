@@ -170,7 +170,7 @@ export default function TopNav() {
         </div>
 
         {/* Rechts: inloggen/gebruiker + hamburger */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ml-auto">
           {!user && (
             <Link
               to="/login"
