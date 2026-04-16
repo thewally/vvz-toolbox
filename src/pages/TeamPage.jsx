@@ -82,7 +82,7 @@ export default function TeamPage() {
     const CARD_W = 520
     const PAD = 16
     const INNER_W = CARD_W - PAD * 2
-    const HEADER_H = 56
+    const HEADER_H = 44
     const LOGO_SIZE = 56
     const LOGO_COL = 66
     const CENTER_W = INNER_W - LOGO_COL * 2
@@ -163,11 +163,11 @@ export default function TeamPage() {
     const bh = 26
     const bx = cx + INNER_W - 20 - bw
     const by = cy + (HEADER_H - bh) / 2
-    ctx.fillStyle = thuis ? '#dcfce7' : 'rgba(255,255,255,0.25)'
+    ctx.fillStyle = thuis ? '#dcfce7' : '#f3f4f6'
     ctx.beginPath()
-    ctx.roundRect(bx, by, bw, bh, 6)
+    ctx.roundRect(bx, by, bw, bh, bh / 2)
     ctx.fill()
-    ctx.fillStyle = thuis ? '#15803d' : '#ffffff'
+    ctx.fillStyle = thuis ? '#15803d' : '#6b7280'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(badgeTekst, bx + bw / 2, by + bh / 2)
