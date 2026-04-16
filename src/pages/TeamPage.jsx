@@ -196,7 +196,7 @@ export default function TeamPage() {
     textY += 8
 
     if (verzamelTijd) {
-      ctx.font = 'bold 16px Arial'
+      ctx.font = '16px Arial'
       textY += 20
       ctx.fillText(`${verzamelLabel}: ${verzamelTijd}`, midX, textY)
       textY += 4
