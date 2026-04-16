@@ -19,6 +19,7 @@ import WedstrijdenUitslagenPage from './pages/WedstrijdenUitslagenPage'
 import WedstrijdenTeamsCatPage from './pages/WedstrijdenTeamsCatPage'
 import WedstrijdenTeamsZaalPage from './pages/WedstrijdenTeamsZaalPage'
 import WedstrijdenAfgelastingenPage from './pages/WedstrijdenAfgelastingenPage'
+import WedstrijdenStandenPage from './pages/WedstrijdenStandenPage'
 import TeamPage from './pages/TeamPage'
 import TrainingschemaBeheerPage from './pages/TrainingschemaBeheerPage'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -104,6 +105,7 @@ export default function App() {
           <Route index element={<Navigate to="programma" replace />} />
           <Route path="programma" element={<WedstrijdenProgrammaPage />} />
           <Route path="uitslagen" element={<WedstrijdenUitslagenPage />} />
+          <Route path="standen" element={<WedstrijdenStandenPage />} />
           <Route path="afgelastingen" element={<WedstrijdenAfgelastingenPage />} />
           <Route path="verslagen" element={<PlaceholderPage title="Wedstrijdverslagen" />} />
           <Route path="topscorers" element={<PlaceholderPage title="Topscorers & Keeperstrofee" />} />

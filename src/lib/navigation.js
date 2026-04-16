@@ -13,6 +13,7 @@ export const NAV_SECTIONS = [
     children: [
       { label: 'Programma', to: '/wedstrijden/programma' },
       { label: 'Uitslagen', to: '/wedstrijden/uitslagen' },
+      { label: 'Standen', to: '/wedstrijden/standen' },
       { label: 'Afgelastingen', to: '/wedstrijden/afgelastingen' },
       { label: 'Wedstrijdverslagen', to: '/wedstrijden/verslagen' },
       { label: 'Topscorers & Keeperstrofee', to: '/wedstrijden/topscorers' },
