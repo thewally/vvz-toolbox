@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getProgramma, getTeams } from '../services/wedstrijden'
-import { groepeerPerDag, formatDagLabel, buildTeamcodeLookup, getVvzTeamcode } from '../services/wedstrijdenHelpers'
+import { getProgramma } from '../services/wedstrijden'
+import { groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
 
 const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
 export default function WedstrijdenProgrammaPage() {
   const [wedstrijden, setWedstrijden] = useState([])
-  const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [filterLocatie, setFilterLocatie] = useState('alles')
@@ -22,17 +21,14 @@ export default function WedstrijdenProgrammaPage() {
   async function load() {
     setLoading(true)
     setError(null)
-    const [programmaRes, teamsRes] = await Promise.all([getProgramma(), getTeams()])
+    const programmaRes = await getProgramma()
     if (programmaRes.error) {
       setError(programmaRes.error.message)
     } else {
       setWedstrijden(programmaRes.data ?? [])
     }
-    if (teamsRes.data) setTeams(teamsRes.data)
     setLoading(false)
   }
-
-  const teamcodeLookup = useMemo(() => buildTeamcodeLookup(teams), [teams])
 
   if (loading) {
     return (
@@ -150,7 +146,7 @@ export default function WedstrijdenProgrammaPage() {
               const _loc = (w.locatie || '').toLowerCase()
               const locatieLabel = _loc ? (_loc.includes('futsal') || _loc.includes('zaal') ? 'ZAAL' : (w.locatie || '').toUpperCase()) : null
               const veldnummer = w.veldnummer || w.veld_nr || w.veld || null
-              const teamcode = getVvzTeamcode(w, teamcodeLookup)
+              const teamcode = isThuis ? w.thuisteamid : w.uitteamid
               const cardClasses = `bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 transition-shadow ${teamcode ? 'group cursor-pointer hover:shadow-md hover:border-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vvz-green focus-visible:ring-offset-2' : 'cursor-default'}`
               const vvzTeam = isThuis ? w.thuisteam : w.uitteam
               const Wrapper = teamcode
