@@ -164,8 +164,8 @@ export default function TopNav() {
     <nav className="bg-vvz-green no-print">
       {/* Hamburgerbalk */}
       <div className="flex items-center justify-between px-4 py-2">
-        {/* Links: afgelastingen-indicator (alleen bolletje op mobiel, tekst op desktop) */}
-        <div className="flex items-center gap-2">
+        {/* Links: afgelastingen-indicator (alleen op desktop) */}
+        <div className="hidden sm:flex items-center gap-2">
           <AfgelastingenIndicator compact />
         </div>
 

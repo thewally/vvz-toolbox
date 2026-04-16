@@ -17,7 +17,7 @@ const LEGENDA = [
   { kleur: 'bg-red-500', tekst: 'Alle wedstrijden afgelast' },
 ]
 
-function InfoPopover() {
+function InfoPopover({ dark = false }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -34,7 +34,7 @@ function InfoPopover() {
       <button
         onClick={e => { e.preventDefault(); setOpen(o => !o) }}
         aria-label="Uitleg kleurcodes"
-        className="text-white/60 hover:text-white transition-colors"
+        className={dark ? 'text-gray-400 hover:text-gray-700 transition-colors' : 'text-white/60 hover:text-white transition-colors'}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
@@ -91,9 +91,12 @@ export default function AfgelastingenIndicator({ compact = false }) {
   }
 
   return (
-    <Link to="/wedstrijden/afgelastingen" className="flex items-center gap-2 mb-4 hover:underline">
-      <span className={`rounded-full w-3 h-3 shrink-0 animate-pulse ${config.kleur}`} />
-      <span className="text-sm font-semibold text-black">{config.label}</span>
-    </Link>
+    <div className="flex items-center gap-2 mb-4">
+      <Link to="/wedstrijden/afgelastingen" className="flex items-center gap-2 hover:underline">
+        <span className={`rounded-full w-3 h-3 shrink-0 animate-pulse ${config.kleur}`} />
+        <span className="text-sm font-semibold text-black">{config.label}</span>
+      </Link>
+      <InfoPopover dark />
+    </div>
   )
 }
