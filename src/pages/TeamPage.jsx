@@ -57,7 +57,7 @@ export default function TeamPage() {
   const [teamfoto, setTeamfoto] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [shareLogos, setShareLogos] = useState({ thuis: null, uit: null })
+  const [shareFile, setShareFile] = useState(null)
 
   async function laadAfbeelding(url) {
     if (!url) return null
@@ -76,56 +76,47 @@ export default function TeamPage() {
     ])
   }
 
-  async function shareWedstrijdCard(w) {
-    try {
+  async function genereerShareBlob(w, logoThuis, logoUit) {
     const VVZ_GREEN = '#2E7D32'
-    const S = 2 // retina scale
+    const S = 2
     const CARD_W = 520
-    const PAD = 16        // buitenmarge
-    const INNER_W = CARD_W - PAD * 2  // 488
+    const PAD = 16
+    const INNER_W = CARD_W - PAD * 2
     const HEADER_H = 56
     const LOGO_SIZE = 56
-    const LOGO_COL = 66   // logo kolom breedte incl. marge
-    const CENTER_W = INNER_W - LOGO_COL * 2  // 356
+    const LOGO_COL = 66
+    const CENTER_W = INNER_W - LOGO_COL * 2
     const BODY_PAD_X = 16
     const BODY_PAD_Y = 20
-    const R = 16           // card border-radius
+    const R = 16
 
     const thuis = isThuis(w)
     const verzamelTijd = w.verzameltijd || w.vertrektijd
     const verzamelLabel = w.vertrektijd && !w.verzameltijd ? 'Vertrek' : 'Verzamelen'
     const veld = w.veldnummer || w.veld || null
 
-    // Gebruik pre-loaded logo's (zodat navigator.share direct na klik werkt op iOS)
-    const logoThuis = shareLogos.thuis
-    const logoUit = shareLogos.uit
-
-    // Bereken benodigde hoogte voor midden-kolom
-    const regelHoogte = (font, tekst, maxBreedte, ctx) => {
-      ctx.font = font
+    const tmpCtx = document.createElement('canvas').getContext('2d')
+    function regelHoogte(font, tekst, maxBreedte) {
+      tmpCtx.font = font
       const woorden = tekst.split(' ')
       let regel = '', regels = 1
-      for (const w of woorden) {
-        const test = regel ? `${regel} ${w}` : w
-        if (ctx.measureText(test).width > maxBreedte && regel) { regel = w; regels++ }
+      for (const word of woorden) {
+        const test = regel ? `${regel} ${word}` : word
+        if (tmpCtx.measureText(test).width > maxBreedte && regel) { regel = word; regels++ }
         else regel = test
       }
       return regels
     }
 
-    // Eerst meten op een tijdelijke canvas
-    const tmpCanvas = document.createElement('canvas')
-    const tmpCtx = tmpCanvas.getContext('2d')
     let centerH = BODY_PAD_Y
-    centerH += 44            // aanvangstijd
+    centerH += 44
     if (verzamelTijd) centerH += 28
-    centerH += 8             // spacer voor teamnamen
-    centerH += 26            // thuisteam
-    centerH += 20            // vs
-    centerH += 26            // uitteam
+    centerH += 8
+    centerH += 26
+    centerH += 20
+    centerH += 26
     if (w.accommodatie) {
-      const regels = regelHoogte('13px Arial', `📍 ${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}${veld ? ` · ${veld}` : ''}`, CENTER_W - 8, tmpCtx)
-      centerH += 10 + regels * 18
+      centerH += 10 + regelHoogte('13px Arial', `📍 ${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}${veld ? ` · ${veld}` : ''}`, CENTER_W - 8) * 18
     }
     if (w.kleedkamerthuisteam) centerH += 20
     centerH += BODY_PAD_Y
@@ -134,25 +125,21 @@ export default function TeamPage() {
     const CARD_H = HEADER_H + BODY_H
     const TOTAL_H = CARD_H + PAD * 2
 
-    // Teken op echte canvas
     const canvas = document.createElement('canvas')
     canvas.width = CARD_W * S
     canvas.height = TOTAL_H * S
     const ctx = canvas.getContext('2d')
     ctx.scale(S, S)
 
-    // Achtergrond
     ctx.fillStyle = '#f3f4f6'
     ctx.fillRect(0, 0, CARD_W, TOTAL_H)
 
-    // Card (witte achtergrond met afgeronde hoeken)
     const cx = PAD, cy = PAD
     ctx.fillStyle = '#ffffff'
     ctx.beginPath()
     ctx.roundRect(cx, cy, INNER_W, CARD_H, R)
     ctx.fill()
 
-    // Groene header
     ctx.save()
     ctx.beginPath()
     ctx.roundRect(cx, cy, INNER_W, HEADER_H, [R, R, 0, 0])
@@ -161,18 +148,15 @@ export default function TeamPage() {
     ctx.fillRect(cx, cy, INNER_W, HEADER_H)
     ctx.restore()
 
-    // Datum in header
+    const DUTCH_DAYS = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag']
+    const DUTCH_MONTHS = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december']
+    const d = new Date(w.wedstrijddatum)
     ctx.fillStyle = '#ffffff'
     ctx.font = 'bold 15px Arial'
     ctx.textBaseline = 'middle'
     ctx.textAlign = 'left'
-    const DUTCH_DAYS = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag']
-    const DUTCH_MONTHS = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december']
-    const d = new Date(w.wedstrijddatum)
-    const dagStr = `${DUTCH_DAYS[d.getDay()]} ${d.getDate()} ${DUTCH_MONTHS[d.getMonth()]}`
-    ctx.fillText(dagStr, cx + 20, cy + HEADER_H / 2)
+    ctx.fillText(`${DUTCH_DAYS[d.getDay()]} ${d.getDate()} ${DUTCH_MONTHS[d.getMonth()]}`, cx + 20, cy + HEADER_H / 2)
 
-    // Thuis/Uit badge
     const badgeTekst = thuis ? 'Thuis' : 'Uit'
     ctx.font = 'bold 13px Arial'
     const bw = ctx.measureText(badgeTekst).width + 24
@@ -188,25 +172,21 @@ export default function TeamPage() {
     ctx.textBaseline = 'middle'
     ctx.fillText(badgeTekst, bx + bw / 2, by + bh / 2)
 
-    // Body
     const bodyY = cy + HEADER_H
     const logoY = bodyY + BODY_PAD_Y + (BODY_H - BODY_PAD_Y * 2 - LOGO_SIZE) / 2
 
-    // Logo's
     function drawLogoContain(img, x, y, size) {
       const ratio = Math.min(size / img.naturalWidth, size / img.naturalHeight)
-      const w = img.naturalWidth * ratio
-      const h = img.naturalHeight * ratio
-      ctx.drawImage(img, x + (size - w) / 2, y + (size - h) / 2, w, h)
+      const iw = img.naturalWidth * ratio
+      const ih = img.naturalHeight * ratio
+      ctx.drawImage(img, x + (size - iw) / 2, y + (size - ih) / 2, iw, ih)
     }
     if (logoThuis) drawLogoContain(logoThuis, cx + BODY_PAD_X, logoY, LOGO_SIZE)
     if (logoUit) drawLogoContain(logoUit, cx + INNER_W - BODY_PAD_X - LOGO_SIZE, logoY, LOGO_SIZE)
 
-    // Midden kolom
     const midX = cx + BODY_PAD_X + LOGO_COL + CENTER_W / 2
     let textY = bodyY + BODY_PAD_Y
 
-    // Aanvangstijd
     ctx.fillStyle = '#1f2937'
     ctx.font = 'bold 36px Arial'
     ctx.textAlign = 'center'
@@ -215,40 +195,33 @@ export default function TeamPage() {
     ctx.fillText(w.aanvangstijd || '--:--', midX, textY)
     textY += 8
 
-    // Verzamel-/vertrektijd
     if (verzamelTijd) {
-      ctx.fillStyle = '#1f2937'
       ctx.font = 'bold 16px Arial'
       textY += 20
       ctx.fillText(`${verzamelLabel}: ${verzamelTijd}`, midX, textY)
       textY += 4
     }
 
-    // Thuisteam
     ctx.fillStyle = thuis ? VVZ_GREEN : '#1f2937'
     ctx.font = 'bold 17px Arial'
     textY += 18
     ctx.fillText(w.thuisteam, midX, textY)
 
-    // vs
     ctx.fillStyle = '#9ca3af'
     ctx.font = '13px Arial'
     textY += 18
     ctx.fillText('vs', midX, textY)
 
-    // Uitteam
     ctx.fillStyle = !thuis ? VVZ_GREEN : '#1f2937'
     ctx.font = 'bold 17px Arial'
     textY += 20
     ctx.fillText(w.uitteam, midX, textY)
 
-    // Accommodatie
     if (w.accommodatie) {
       ctx.fillStyle = '#6b7280'
       ctx.font = '12px Arial'
       const locTekst = `📍 ${w.accommodatie}${w.plaats ? `, ${w.plaats}` : ''}${veld ? ` · ${veld}` : ''}`
       textY += 14
-      // Simpele tekst-wrap
       const woorden = locTekst.split(' ')
       let regel = ''
       for (const word of woorden) {
@@ -262,7 +235,6 @@ export default function TeamPage() {
       if (regel) { ctx.fillText(regel, midX, textY); textY += 16 }
     }
 
-    // Kleedkamer
     if (w.kleedkamerthuisteam) {
       ctx.fillStyle = '#6b7280'
       ctx.font = '12px Arial'
@@ -270,44 +242,43 @@ export default function TeamPage() {
       ctx.fillText(`Kleedkamer: ${w.kleedkamerthuisteam}`, midX, textY)
     }
 
-    // Delen
-    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'))
-    if (!blob) return
-    const file = new File([blob], 'wedstrijd-vvz49.png', { type: 'image/png' })
-    if (navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], title: `${w.thuisteam} vs ${w.uitteam}` })
-        return
-      } catch (e) {
-        if (e.name === 'AbortError') return
-      }
+    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+  }
+
+  function shareWedstrijdCard(w) {
+    if (!shareFile) return
+    if (navigator.canShare?.({ files: [shareFile] })) {
+      navigator.share({ files: [shareFile], title: `${w.thuisteam} vs ${w.uitteam}` })
+        .catch(e => { if (e.name !== 'AbortError') console.error(e) })
+      return
     }
-    // Fallback: download het plaatje
-    const objectUrl = URL.createObjectURL(blob)
+    // Fallback: download
+    const objectUrl = URL.createObjectURL(shareFile)
     const a = document.createElement('a')
     a.href = objectUrl
     a.download = 'wedstrijd-vvz49.png'
     a.click()
     URL.revokeObjectURL(objectUrl)
-    } catch (err) {
-      console.error('shareWedstrijdCard fout:', err)
-      alert('Delen mislukt: ' + err.message)
-    }
   }
 
   useEffect(() => { load() }, [teamcode])
 
-  // Pre-laad logo's voor eerstvolgende wedstrijd zodat navigator.share() direct na klik werkt
+  // Pre-genereer share-afbeelding zodat navigator.share() direct na klik werkt op iOS
   useEffect(() => {
     const vandaagSleutel = new Date().toISOString().slice(0, 10)
     const eerstvolgende = [...programma]
       .filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) >= vandaagSleutel)
       .sort((a, b) => new Date(a.wedstrijddatum) - new Date(b.wedstrijddatum))[0]
     if (!eerstvolgende) return
+    setShareFile(null)
     Promise.all([
       laadAfbeelding(eerstvolgende.thuisteamlogo),
       laadAfbeelding(eerstvolgende.uitteamlogo),
-    ]).then(([thuis, uit]) => setShareLogos({ thuis, uit }))
+    ]).then(([thuis, uit]) => {
+      genereerShareBlob(eerstvolgende, thuis, uit).then(blob => {
+        if (blob) setShareFile(new File([blob], 'wedstrijd-vvz49.png', { type: 'image/png' }))
+      })
+    })
   }, [programma])
 
   async function load() {
