@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { getTeamProgramma, getTeamUitslagen, getTeams, getPoulestand, getTeamGegevens } from '../services/wedstrijden'
+import { getTeamProgramma, getTeamUitslagen, getTeams, getPoulestand, getTeamGegevens, getAfgelastingen } from '../services/wedstrijden'
 import { formatDagLabel, datumSleutel, parseWedstrijdDatum, kiesPouleViaWedstrijd } from '../services/wedstrijdenHelpers'
 import AgendaAbonneerKnop from '../components/AgendaAbonneerKnop'
 
@@ -65,6 +65,7 @@ export default function TeamPage() {
   const [selectedPoulecode, setSelectedPoulecode] = useState(null)
   const [standLoading, setStandLoading] = useState(false)
   const [teamfoto, setTeamfoto] = useState(null)
+  const [afgelastingen, setAfgelastingen] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [shareFile, setShareFile] = useState(null)
@@ -294,19 +295,35 @@ export default function TeamPage() {
   async function load() {
     setLoading(true)
     setError(null)
-    const [progRes, uitRes, teamsRes, gegevensRes] = await Promise.all([
+    const [progRes, uitRes, teamsRes, gegevensRes, afgelastRes] = await Promise.all([
       getTeamProgramma(teamcode),
       getTeamUitslagen(teamcode),
       getTeams(),
       getTeamGegevens(teamcode),
+      getAfgelastingen(),
     ])
     if (progRes.error || uitRes.error) {
       setError((progRes.error || uitRes.error).message)
       setLoading(false)
       return
     }
-    setProgramma(progRes.data ?? [])
+    const progData = progRes.data ?? []
+    setProgramma(progData)
     setUitslagen(uitRes.data ?? [])
+
+    // Filter afgelastingen op dit team via teamcode of teamnaam
+    const progCodes = new Set(progData.map(w => w.wedstrijdcode).filter(Boolean))
+    const alleAfgelast = (afgelastRes.data ?? []).filter(w =>
+      w.thuisteamclubrelatiecode === CLUB_RELATIECODE || w.uitteamclubrelatiecode === CLUB_RELATIECODE
+    )
+    // Haal wedstrijden op die voor dit team zijn maar al verwijderd zijn uit het programma
+    const teamNamen = new Set(progData.flatMap(w => [w.thuisteam, w.uitteam]).filter(Boolean))
+    const teamAfgelast = alleAfgelast.filter(w =>
+      !progCodes.has(w.wedstrijdcode) &&
+      (teamNamen.has(w.thuisteam) || teamNamen.has(w.uitteam) ||
+       String(w.thuisteamcode) === String(teamcode) || String(w.uitteamcode) === String(teamcode))
+    ).map(w => ({ ...w, afgelast: true }))
+    setAfgelastingen(teamAfgelast)
     setTeamfoto(gegevensRes.data?.team?.teamfoto || null)
 
     // Verzamel alle poules voor dit team
@@ -374,13 +391,16 @@ export default function TeamPage() {
   })()
   const sportBadgeIsZaal = (sportBadgeLabel || '').includes('ZAAL')
 
-  // Toekomstige wedstrijden (alles)
+  // Toekomstige wedstrijden (inclusief afgelaste)
   const vandaagSleutel = new Date().toISOString().slice(0, 10)
-  const toekomstig = [...programma]
-    .filter(w => w.wedstrijddatum && datumSleutel(w.wedstrijddatum) >= vandaagSleutel)
+  const toekomstigNormaal = programma.filter(w => w.wedstrijddatum && datumSleutel(w.wedstrijddatum) >= vandaagSleutel)
+  const toekomstigAfgelast = afgelastingen.filter(w => w.wedstrijddatum && datumSleutel(w.wedstrijddatum) >= vandaagSleutel)
+  const toekomstig = [...toekomstigNormaal, ...toekomstigAfgelast]
     .sort((a, b) => parseWedstrijdDatum(a.wedstrijddatum) - parseWedstrijdDatum(b.wedstrijddatum))
 
-  const eerstvolgende = toekomstig[0] || null
+  const eerstvolgende = toekomstigNormaal
+    .filter(w => w.wedstrijddatum && datumSleutel(w.wedstrijddatum) >= vandaagSleutel)
+    .sort((a, b) => parseWedstrijdDatum(a.wedstrijddatum) - parseWedstrijdDatum(b.wedstrijddatum))[0] || null
 
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6">
@@ -528,22 +548,25 @@ export default function TeamPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {toekomstig.map((w, i) => (
-              <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 hover:shadow-md transition-shadow">
+              <div key={i} className={`bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 transition-shadow ${w.afgelast ? 'opacity-60' : 'hover:shadow-md'}`}>
                 {/* Mobiel: drie-kolommen layout */}
                 <div className="sm:hidden flex items-center gap-3">
                   <div className="flex flex-col items-center justify-center shrink-0">
-                    <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
+                    <span className={`text-sm font-bold ${w.afgelast ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{w.aanvangstijd || '--:--'}</span>
                     <span className={`w-14 text-center text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis(w) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                       {isThuis(w) ? 'THUIS' : 'UIT'}
                     </span>
                   </div>
                   <div className="flex-1 flex flex-col items-center justify-center text-center gap-0.5">
                     <span className={`font-semibold text-sm ${isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
-                    <span className="text-gray-400 text-xs">vs</span>
+                    {w.afgelast
+                      ? <span className="text-xs font-bold text-orange-500 uppercase">Afgelast</span>
+                      : <span className="text-gray-400 text-xs">vs</span>
+                    }
                     <span className={`font-semibold text-sm ${!isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
                     <span className="text-xs text-gray-400 capitalize">{formatDagLabel(w.wedstrijddatum)}</span>
-                    {(w.accommodatie || w.veldnummer || w.veld) && <p className="text-xs text-gray-400">{w.accommodatie}{(w.veldnummer || w.veld) ? ` · ${w.veldnummer || w.veld}` : ''}</p>}
-                    {(w.verzameltijd || w.vertrektijd) && (
+                    {!w.afgelast && (w.accommodatie || w.veldnummer || w.veld) && <p className="text-xs text-gray-400">{w.accommodatie}{(w.veldnummer || w.veld) ? ` · ${w.veldnummer || w.veld}` : ''}</p>}
+                    {!w.afgelast && (w.verzameltijd || w.vertrektijd) && (
                       <p className="text-xs text-gray-400">
                         {w.verzameltijd ? `Verzamelen ${w.verzameltijd}` : ''}
                         {w.verzameltijd && w.vertrektijd ? ' · ' : ''}
@@ -555,14 +578,17 @@ export default function TeamPage() {
                 {/* Desktop: horizontale layout */}
                 <div className="hidden sm:grid gap-x-2 gap-y-0.5" style={{gridTemplateColumns: 'auto 1fr 4rem 1fr auto'}}>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-gray-800">{w.aanvangstijd || '--:--'}</span>
+                    <span className={`text-sm font-bold ${w.afgelast ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{w.aanvangstijd || '--:--'}</span>
                     <ThuisUitBadge wedstrijd={w} />
                   </div>
                   <span className={`self-center text-right font-semibold text-sm truncate ${isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
-                  <span className="self-center text-center text-gray-400 text-xs">vs</span>
+                  {w.afgelast
+                    ? <span className="self-center text-center text-xs font-bold text-orange-500 uppercase">Afgelast</span>
+                    : <span className="self-center text-center text-gray-400 text-xs">vs</span>
+                  }
                   <span className={`self-center font-semibold text-sm truncate ${!isThuis(w) ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
                   <span className="self-center text-xs text-gray-400 capitalize">{formatDagLabel(w.wedstrijddatum)}</span>
-                  {(w.accommodatie || w.veldnummer || w.veld) && <>
+                  {!w.afgelast && (w.accommodatie || w.veldnummer || w.veld) && <>
                     <span />
                     <span />
                     <span className="text-center text-xs text-gray-400 col-start-2 col-end-5">{w.accommodatie}{(w.veldnummer || w.veld) ? ` · ${w.veldnummer || w.veld}` : ''}</span>
