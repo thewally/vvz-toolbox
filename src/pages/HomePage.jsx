@@ -10,6 +10,7 @@ import { fetchAllPages } from '../services/pages'
 import { fetchPublicNewsItems } from '../services/news'
 import { fetchActivities } from '../services/activities'
 import { QUICK_LINK_ICONS } from '../lib/quickLinkIcons'
+import AfgelastingenIndicator from '../components/AfgelastingenIndicator'
 
 const CARD_CLASS = "group block bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 hover:-translate-y-1 border border-gray-100 overflow-hidden"
 
@@ -182,6 +183,9 @@ export default function HomePage() {
 
         {/* Breed: nieuws */}
         <main className="flex-1 min-w-0">
+          <div className="sm:hidden mb-4">
+            <AfgelastingenIndicator />
+          </div>
           <h2 className="text-xl font-bold text-gray-800 mb-4">Nieuws</h2>
           {newsItems.length > 0 ? (
             <div className="space-y-4">
