@@ -5,63 +5,28 @@ import { groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
 
 const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
-const SPEELDAG_VELD = ['Zaterdag', 'Zondag']
-
-function normaliseer(s) {
-  return (s || '').toLowerCase().replace(/[^a-z0-9]/g, '')
-}
-
-function isZaalTeam(team) {
-  const naam = (team.teamnaam || '').toLowerCase()
-  return !naam.includes('o23') && !SPEELDAG_VELD.includes(team.speeldag || '')
-}
-
 function buildLookup(teams) {
-  // byNormNaam: normaliseerde naam -> array van { teamcode, isZaal }
-  const byNaam = new Map()
-  const byNormNaam = new Map()
   const byCode = new Map()
+  const byNaam = new Map()
   for (const t of teams) {
     if (!t.teamcode) continue
-    const zaal = isZaalTeam(t)
-    if (t.teamnaam) {
-      byNaam.set(t.teamnaam, t.teamcode)
-      const norm = normaliseer(t.teamnaam)
-      if (!byNormNaam.has(norm)) byNormNaam.set(norm, [])
-      byNormNaam.get(norm).push({ teamcode: t.teamcode, isZaal: zaal })
-    }
     byCode.set(String(t.teamcode), t.teamcode)
+    if (t.teamnaam) byNaam.set(t.teamnaam, t.teamcode)
   }
-  return { byNaam, byNormNaam, byCode }
+  return { byCode, byNaam }
 }
 
 function getVvzTeamcode(w, lookup) {
   const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
   if (!isThuis && w.uitteamclubrelatiecode !== CLUB_RC) return null
 
-  // 1. directe teamcode uit afgelastingendata — meest betrouwbaar
+  // 1. directe teamcode — meest betrouwbaar, vermijdt naam-ambiguïteit
   const tc = isThuis ? w.thuisteamcode : w.uitteamcode
-  if (tc) {
-    const strTc = String(tc)
-    if (lookup.byCode.has(strTc)) return lookup.byCode.get(strTc)
-  }
+  if (tc && lookup.byCode.has(String(tc))) return lookup.byCode.get(String(tc))
 
-  // 2. exacte naam
+  // 2. exacte teamnaam — zelfde aanpak als programma/uitslagen
   const naam = isThuis ? w.thuisteam : w.uitteam
-  if (lookup.byNaam.has(naam)) return lookup.byNaam.get(naam)
-
-  // 3. genormaliseerde naam — bij meerdere kandidaten, kies op sport
-  const norm = normaliseer(naam)
-  const kandidaten = lookup.byNormNaam.get(norm)
-  if (kandidaten?.length) {
-    if (kandidaten.length === 1) return kandidaten[0].teamcode
-    const sport = (w.sportomschrijving || '').toLowerCase()
-    const wedstrijdIsZaal = sport.includes('zaal') || sport.includes('futsal')
-    const match = kandidaten.find(k => k.isZaal === wedstrijdIsZaal)
-    return (match || kandidaten[0]).teamcode
-  }
-
-  return null
+  return lookup.byNaam.get(naam) ?? null
 }
 
 function getSportBadge(w) {
