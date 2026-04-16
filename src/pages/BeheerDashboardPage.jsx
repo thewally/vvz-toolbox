@@ -14,6 +14,17 @@ const TILES = [
     ),
   },
   {
+    title: 'Wedstrijdverslagen',
+    description: 'Verslagen per team schrijven en publiceren',
+    to: '/beheer/verslagen',
+    role: 'content',
+    icon: (
+      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897L16.862 4.487zM19.5 7.125L16.862 4.487M4.5 19.5h6" />
+      </svg>
+    ),
+  },
+  {
     title: "Pagina's",
     description: "Contentpagina's beheren",
     to: '/beheer/content',

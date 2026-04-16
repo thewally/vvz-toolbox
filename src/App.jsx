@@ -44,6 +44,10 @@ import NieuwsPage from './pages/NieuwsPage'
 import NieuwsDetailPage from './pages/NieuwsDetailPage'
 import NieuwsBeheerPage from './pages/NieuwsBeheerPage'
 import NieuwsEditPage from './pages/NieuwsEditPage'
+import WedstrijdenVerslagenPage from './pages/WedstrijdenVerslagenPage'
+import WedstrijdenVerslagDetailPage from './pages/WedstrijdenVerslagDetailPage'
+import VerslagenBeheerPage from './pages/VerslagenBeheerPage'
+import VerslagEditPage from './pages/VerslagEditPage'
 import EmailBevestigdPage from './pages/EmailBevestigdPage'
 import GebruikersBeheerPage from './pages/GebruikersBeheerPage'
 import WachtwoordVergetenPage from './pages/WachtwoordVergetenPage'
@@ -89,6 +93,9 @@ export default function App() {
           <Route path="nieuws" element={<ProtectedRoute requiredRole="content"><NieuwsBeheerPage /></ProtectedRoute>} />
           <Route path="nieuws/nieuw" element={<ProtectedRoute requiredRole="content"><NieuwsEditPage /></ProtectedRoute>} />
           <Route path="nieuws/:id" element={<ProtectedRoute requiredRole="content"><NieuwsEditPage /></ProtectedRoute>} />
+          <Route path="verslagen" element={<ProtectedRoute requiredRole="content"><VerslagenBeheerPage /></ProtectedRoute>} />
+          <Route path="verslagen/nieuw" element={<ProtectedRoute requiredRole="content"><VerslagEditPage /></ProtectedRoute>} />
+          <Route path="verslagen/:id" element={<ProtectedRoute requiredRole="content"><VerslagEditPage /></ProtectedRoute>} />
           <Route path="content" element={<ProtectedRoute requiredRole="content"><ContentBeheerPage /></ProtectedRoute>} />
           <Route path="content/nieuw" element={<ProtectedRoute requiredRole="content"><ContentEditPage /></ProtectedRoute>} />
           <Route path="content/:id" element={<ProtectedRoute requiredRole="content"><ContentEditPage /></ProtectedRoute>} />
@@ -107,7 +114,8 @@ export default function App() {
           <Route path="uitslagen" element={<WedstrijdenUitslagenPage />} />
           <Route path="standen" element={<WedstrijdenStandenPage />} />
           <Route path="afgelastingen" element={<WedstrijdenAfgelastingenPage />} />
-          <Route path="verslagen" element={<PlaceholderPage title="Wedstrijdverslagen" />} />
+          <Route path="verslagen" element={<WedstrijdenVerslagenPage />} />
+          <Route path="verslagen/:slug" element={<WedstrijdenVerslagDetailPage />} />
           <Route path="topscorers" element={<PlaceholderPage title="Topscorers & Keeperstrofee" />} />
         </Route>
         <Route path="pagina/:slug" element={<ContentPage />} />

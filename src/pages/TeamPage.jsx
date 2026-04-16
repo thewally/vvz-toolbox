@@ -2,7 +2,17 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getTeamProgramma, getTeamUitslagen, getTeams, getPoulestand, getTeamGegevens, getAfgelastingen } from '../services/wedstrijden'
 import { formatDagLabel, datumSleutel, parseWedstrijdDatum, kiesPouleViaWedstrijd } from '../services/wedstrijdenHelpers'
+import { fetchMatchReportsByTeam } from '../services/matchReports'
 import AgendaAbonneerKnop from '../components/AgendaAbonneerKnop'
+
+const VERSLAGEN_PREVIEW_LIMIT = 5
+
+function stripHtmlPreview(html, maxLen = 120) {
+  if (!html) return ''
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  if (text.length <= maxLen) return text
+  return text.slice(0, maxLen).replace(/\s+\S*$/, '') + '…'
+}
 
 const CLUB_RELATIECODE = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
@@ -66,6 +76,7 @@ export default function TeamPage() {
   const [standLoading, setStandLoading] = useState(false)
   const [teamfoto, setTeamfoto] = useState(null)
   const [afgelastingen, setAfgelastingen] = useState([])
+  const [verslagen, setVerslagen] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [shareFile, setShareFile] = useState(null)
@@ -295,12 +306,13 @@ export default function TeamPage() {
   async function load() {
     setLoading(true)
     setError(null)
-    const [progRes, uitRes, teamsRes, gegevensRes, afgelastRes] = await Promise.all([
+    const [progRes, uitRes, teamsRes, gegevensRes, afgelastRes, verslagenRes] = await Promise.all([
       getTeamProgramma(teamcode),
       getTeamUitslagen(teamcode),
       getTeams(),
       getTeamGegevens(teamcode),
       getAfgelastingen(),
+      fetchMatchReportsByTeam(teamcode, VERSLAGEN_PREVIEW_LIMIT),
     ])
     if (progRes.error || uitRes.error) {
       setError((progRes.error || uitRes.error).message)
@@ -325,6 +337,7 @@ export default function TeamPage() {
     ).map(w => ({ ...w, afgelast: true }))
     setAfgelastingen(teamAfgelast)
     setTeamfoto(gegevensRes.data?.team?.teamfoto || null)
+    setVerslagen(verslagenRes?.data ?? [])
 
     // Verzamel alle poules voor dit team
     const teams = teamsRes.data ?? []
@@ -653,6 +666,37 @@ export default function TeamPage() {
           </div>
         )}
       </section>
+
+      {/* Wedstrijdverslagen */}
+      {verslagen.length > 0 && (
+        <section className="mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-700">Wedstrijdverslagen</h2>
+            <Link to="/wedstrijden/verslagen" className="text-sm text-vvz-green hover:underline">Alle verslagen</Link>
+          </div>
+          <div className="flex flex-col gap-3">
+            {verslagen.map(v => (
+              <Link
+                key={v.id}
+                to={`/wedstrijden/verslagen/${v.slug}`}
+                className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 hover:shadow-md transition-shadow block"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  {v.published_at && (
+                    <span className="text-xs text-gray-400">
+                      {new Date(v.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                  )}
+                </div>
+                <p className="font-semibold text-gray-800 text-sm">{v.title}</p>
+                {v.content && (
+                  <p className="text-xs text-gray-500 mt-1">{stripHtmlPreview(v.content)}</p>
+                )}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Poulestand */}
       {poules.length > 0 && (
