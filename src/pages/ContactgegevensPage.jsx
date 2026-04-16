@@ -115,15 +115,21 @@ export default function ContactgegevensPage() {
                   @{new URL(info.instagram_url).pathname.replace(/^\//, '').replace(/\/$/, '')}
                 </a>
               )}
-              {info.twitter_handle && (
-                <a href={`https://x.com/${info.twitter_handle.replace('@', '')}`} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black text-white text-sm font-medium hover:opacity-90 transition-opacity">
-                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
-                  </svg>
-                  @{info.twitter_handle.replace('@', '')}
-                </a>
-              )}
+              {info.twitter_handle && (() => {
+                const raw = info.twitter_handle.trim()
+                const handle = raw.startsWith('http')
+                  ? new URL(raw).pathname.replace(/^\//, '').replace(/\/$/, '')
+                  : raw.replace('@', '')
+                return (
+                  <a href={`https://x.com/${handle}`} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
+                    </svg>
+                    @{handle}
+                  </a>
+                )
+              })()}
               {info.youtube_url && (
                 <a href={info.youtube_url} target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#FF0000] text-white text-sm font-medium hover:opacity-90 transition-opacity">
