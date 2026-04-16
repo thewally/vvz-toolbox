@@ -4,6 +4,7 @@ import Image from '@tiptap/extension-image'
 import Youtube from '@tiptap/extension-youtube'
 import Link from '@tiptap/extension-link'
 import Underline from '@tiptap/extension-underline'
+import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
 import { Node, mergeAttributes } from '@tiptap/core'
 import { useRef, useCallback, useEffect } from 'react'
 import { uploadPageImage } from '../services/pages'
@@ -75,6 +76,10 @@ export default function TipTapEditor({ content, onChange, disabled = false, onIm
       Youtube.configure({ controls: false }),
       Link.configure({ openOnClick: false }),
       Underline,
+      Table.configure({ resizable: false }),
+      TableRow,
+      TableHeader,
+      TableCell,
       Vimeo,
     ],
     content: content || '',
@@ -263,6 +268,55 @@ export default function TipTapEditor({ content, onChange, disabled = false, onIm
           Vimeo
         </ToolbarButton>
 
+        <span className="w-px bg-gray-300 mx-1" role="separator" aria-orientation="vertical" />
+
+        <ToolbarButton
+          onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+          disabled={disabled || editor.isActive('table')}
+          title="Tabel invoegen"
+        >
+          Tabel
+        </ToolbarButton>
+        {editor.isActive('table') && (
+          <>
+            <ToolbarButton
+              onClick={() => editor.chain().focus().addColumnAfter().run()}
+              disabled={disabled}
+              title="Kolom toevoegen"
+            >
+              +Kol
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => editor.chain().focus().addRowAfter().run()}
+              disabled={disabled}
+              title="Rij toevoegen"
+            >
+              +Rij
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => editor.chain().focus().deleteColumn().run()}
+              disabled={disabled}
+              title="Kolom verwijderen"
+            >
+              -Kol
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => editor.chain().focus().deleteRow().run()}
+              disabled={disabled}
+              title="Rij verwijderen"
+            >
+              -Rij
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => editor.chain().focus().deleteTable().run()}
+              disabled={disabled}
+              title="Tabel verwijderen"
+            >
+              ✕ Tabel
+            </ToolbarButton>
+          </>
+        )}
+
         <input
           ref={fileInputRef}
           type="file"
@@ -275,7 +329,7 @@ export default function TipTapEditor({ content, onChange, disabled = false, onIm
       </div>
 
       {/* Editor content */}
-      <div className="prose max-w-none p-4 min-h-[200px]">
+      <div className="prose max-w-none p-4 min-h-[200px] [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-gray-300 [&_td]:px-3 [&_td]:py-2 [&_td]:text-sm [&_th]:border [&_th]:border-gray-300 [&_th]:px-3 [&_th]:py-2 [&_th]:text-sm [&_th]:font-semibold [&_th]:bg-gray-50 [&_table]:my-3">
         <EditorContent editor={editor} />
       </div>
     </div>
