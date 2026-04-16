@@ -50,8 +50,27 @@ export default function WedstrijdenVerslagenPage() {
   const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [filterTeam, setFilterTeam] = useState('alles')
 
   const sportLookup = useMemo(() => buildSportLookup(teams), [teams])
+
+  // Unieke teams die verslagen hebben, gesorteerd op naam
+  const teamOpties = useMemo(() => {
+    const map = new Map()
+    for (const item of items) {
+      if (item.team_id && item.team_name && !map.has(String(item.team_id))) {
+        map.set(String(item.team_id), item.team_name)
+      }
+    }
+    return [...map.entries()]
+      .map(([id, naam]) => ({ id, naam, sport: sportLookup.get(id) }))
+      .sort((a, b) => a.naam.localeCompare(b.naam, 'nl'))
+  }, [items, sportLookup])
+
+  const gefilterd = useMemo(() =>
+    filterTeam === 'alles' ? items : items.filter(i => String(i.team_id) === filterTeam),
+    [items, filterTeam]
+  )
 
   useEffect(() => { load() }, [])
 
@@ -95,35 +114,58 @@ export default function WedstrijdenVerslagenPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Wedstrijdverslagen</h1>
-
-      <div className="flex flex-col gap-3">
-        {items.map(item => (
-          <Link
-            key={item.id}
-            to={`/wedstrijden/verslagen/${item.slug}`}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4 hover:shadow-md transition-shadow block"
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Wedstrijdverslagen</h1>
+        {teamOpties.length > 1 && (
+          <select
+            value={filterTeam}
+            onChange={e => setFilterTeam(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-vvz-green"
           >
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              {item.team_name && (
-                <span className="inline-flex items-center bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">
-                  {item.team_name}
-                </span>
-              )}
-              {item.team_id && sportLookup.get(String(item.team_id)) && (
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sportLookup.get(String(item.team_id)) === 'Zaal' ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>
-                  {sportLookup.get(String(item.team_id))}
-                </span>
-              )}
-              {item.published_at && (
-                <span className="text-xs text-gray-400">{formatDatum(item.published_at)}</span>
-              )}
-            </div>
-            <h2 className="text-lg font-semibold text-gray-800 mb-1">{item.title}</h2>
-            <p className="text-sm text-gray-500">{previewFromHtml(item.content)}</p>
-          </Link>
-        ))}
+            <option value="alles">Alle teams</option>
+            {teamOpties.map(t => (
+              <option key={t.id} value={t.id}>
+                {t.naam}{t.sport ? ` (${t.sport})` : ''}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
+
+      {gefilterd.length === 0 ? (
+        <p className="text-gray-500 text-sm">Geen verslagen gevonden voor dit team.</p>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {gefilterd.map(item => {
+            const sport = sportLookup.get(String(item.team_id))
+            return (
+              <Link
+                key={item.id}
+                to={`/wedstrijden/verslagen/${item.slug}`}
+                className="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4 hover:shadow-md transition-shadow block"
+              >
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  {item.team_name && (
+                    <span className="inline-flex items-center bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">
+                      {item.team_name}
+                    </span>
+                  )}
+                  {sport && (
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sport === 'Zaal' ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>
+                      {sport}
+                    </span>
+                  )}
+                  {item.published_at && (
+                    <span className="text-xs text-gray-400">{formatDatum(item.published_at)}</span>
+                  )}
+                </div>
+                <h2 className="text-lg font-semibold text-gray-800 mb-1">{item.title}</h2>
+                <p className="text-sm text-gray-500">{previewFromHtml(item.content)}</p>
+              </Link>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
