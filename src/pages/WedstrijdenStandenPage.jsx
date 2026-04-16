@@ -44,6 +44,7 @@ function kiesPoule(teamPoules) {
 export default function WedstrijdenStandenPage() {
   const [teams, setTeams] = useState([])
   const [standen, setStanden] = useState({}) // poulecode → stand[]
+  const [geselecteerd, setGeselecteerd] = useState({}) // teamcode → poulecode
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [filterCategorie, setFilterCategorie] = useState('alles')
@@ -68,11 +69,15 @@ export default function WedstrijdenStandenPage() {
       perTeamcode.get(t.teamcode).push(t)
     }
 
-    // Kies per team de juiste poule en haal standen op
+    // Kies per team de standaard poule en bouw de selectie-map op
+    const selectieMap = {}
     const pouleVerzoeken = []
-    for (const [, poules] of perTeamcode) {
+    for (const [teamcode, poules] of perTeamcode) {
       const gekozen = kiesPoule(poules)
-      if (gekozen?.poulecode) pouleVerzoeken.push(gekozen.poulecode)
+      if (gekozen?.poulecode) {
+        selectieMap[teamcode] = gekozen.poulecode
+        pouleVerzoeken.push(gekozen.poulecode)
+      }
     }
     const uniekePoulecodes = [...new Set(pouleVerzoeken)]
 
@@ -82,6 +87,7 @@ export default function WedstrijdenStandenPage() {
     const standenMap = {}
     for (const { pc, data } of results) standenMap[pc] = data
     setStanden(standenMap)
+    setGeselecteerd(selectieMap)
     setLoading(false)
   }
 
@@ -100,7 +106,15 @@ export default function WedstrijdenStandenPage() {
     </div>
   )
 
-  // Groepeer per teamcode, kies meest recente poule per team
+  async function wisselPoule(teamcode, poulecode) {
+    setGeselecteerd(prev => ({ ...prev, [teamcode]: poulecode }))
+    if (!standen[poulecode]) {
+      const { data } = await getPoulestand(poulecode)
+      setStanden(prev => ({ ...prev, [poulecode]: data ?? [] }))
+    }
+  }
+
+  // Groepeer per teamcode
   const perTeamcode = new Map()
   for (const t of teams) {
     if (!t.teamcode) continue
@@ -110,12 +124,14 @@ export default function WedstrijdenStandenPage() {
 
   const teamBlokken = []
   for (const [teamcode, poules] of perTeamcode) {
-    const gekozen = kiesPoule(poules)
+    const poulecode = geselecteerd[teamcode] || kiesPoule(poules)?.poulecode
+    if (!poulecode) continue
+    const gekozen = poules.find(p => String(p.poulecode) === String(poulecode)) || kiesPoule(poules)
     if (!gekozen) continue
-    const stand = standen[gekozen.poulecode] ?? []
-    if (stand.length === 0) continue
+    const stand = standen[poulecode] ?? []
+    if (stand.length === 0 && Object.keys(geselecteerd).length > 0) continue
     const categorie = getTeamCategorie(gekozen)
-    teamBlokken.push({ teamcode, gekozen, stand, categorie })
+    teamBlokken.push({ teamcode, gekozen, poules, poulecode, stand, categorie })
   }
 
   // Sorteer: volgorde categorie, dan teamnaam
@@ -179,26 +195,37 @@ export default function WedstrijdenStandenPage() {
             <div className="flex-1 h-px bg-gray-200" />
           </div>
           <div className="flex flex-col gap-6">
-            {blokken.map(({ teamcode, gekozen, stand }) => (
+            {blokken.map(({ teamcode, gekozen, poules, poulecode, stand }) => (
               <div key={teamcode} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <Link
-                  to={`/teams/${teamcode}`}
-                  className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100 hover:bg-gray-100 transition-colors group"
-                >
-                  <div>
+                <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100">
+                  <Link to={`/teams/${teamcode}`} className="group flex-1 min-w-0 mr-2">
                     <p className="font-semibold text-gray-800 text-sm group-hover:text-vvz-green transition-colors">
                       {gekozen.teamnaam}
                     </p>
-                    {(gekozen.competitienaam || gekozen.klassenaam || gekozen.poulenaam) && (
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {[gekozen.competitienaam, gekozen.klassenaam, gekozen.poulenaam].filter(Boolean).join(' – ')}
-                      </p>
-                    )}
-                  </div>
-                  <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
-                </Link>
+                  </Link>
+                  {poules.length > 1 ? (
+                    <select
+                      value={poulecode}
+                      onChange={e => wisselPoule(teamcode, e.target.value)}
+                      className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-vvz-green focus:border-vvz-green max-w-[180px] sm:max-w-xs"
+                    >
+                      {poules.map(p => (
+                        <option key={p.poulecode} value={p.poulecode}>
+                          {[p.competitienaam, p.klassenaam, p.poulenaam].filter(Boolean).join(' – ')}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (gekozen.competitienaam || gekozen.klassenaam || gekozen.poulenaam) ? (
+                    <p className="text-xs text-gray-400 truncate max-w-[180px] sm:max-w-xs">
+                      {[gekozen.competitienaam, gekozen.klassenaam, gekozen.poulenaam].filter(Boolean).join(' – ')}
+                    </p>
+                  ) : null}
+                  <Link to={`/teams/${teamcode}`} className="ml-2 shrink-0">
+                    <svg className="w-4 h-4 text-gray-300 hover:text-gray-500 transition-colors" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                  </Link>
+                </div>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-100 text-gray-500">
