@@ -1,32 +1,15 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getAfgelastingen, getTeams } from '../services/wedstrijden'
+import { getAfgelastingen } from '../services/wedstrijden'
 import { groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
 
 const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
-function buildLookup(teams) {
-  const byCode = new Map()
-  const byNaam = new Map()
-  for (const t of teams) {
-    if (!t.teamcode) continue
-    byCode.set(String(t.teamcode), t.teamcode)
-    if (t.teamnaam) byNaam.set(t.teamnaam, t.teamcode)
-  }
-  return { byCode, byNaam }
-}
-
-function getVvzTeamcode(w, lookup) {
+function getVvzTeamid(w) {
   const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
-  if (!isThuis && w.uitteamclubrelatiecode !== CLUB_RC) return null
-
-  // 1. directe teamcode — meest betrouwbaar, vermijdt naam-ambiguïteit
-  const tc = isThuis ? w.thuisteamcode : w.uitteamcode
-  if (tc && lookup.byCode.has(String(tc))) return lookup.byCode.get(String(tc))
-
-  // 2. exacte teamnaam — zelfde aanpak als programma/uitslagen
-  const naam = isThuis ? w.thuisteam : w.uitteam
-  return lookup.byNaam.get(naam) ?? null
+  if (isThuis && w.thuisteamid) return String(w.thuisteamid)
+  if (!isThuis && w.uitteamclubrelatiecode === CLUB_RC && w.uitteamid) return String(w.uitteamid)
+  return null
 }
 
 function getSportBadge(w) {
@@ -38,11 +21,8 @@ function getSportBadge(w) {
 
 export default function WedstrijdenAfgelastingenPage() {
   const [afgelast, setAfgelast] = useState([])
-  const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
-  const lookup = useMemo(() => buildLookup(teams), [teams])
 
   useEffect(() => {
     load()
@@ -51,19 +31,17 @@ export default function WedstrijdenAfgelastingenPage() {
   async function load() {
     setLoading(true)
     setError(null)
-    const [afgelastRes, teamsRes] = await Promise.all([getAfgelastingen(), getTeams()])
+    const afgelastRes = await getAfgelastingen()
     if (afgelastRes.error) {
       setError(afgelastRes.error.message)
       setLoading(false)
       return
     }
     const data = afgelastRes.data ?? []
-    // Filter op eigen club (afgelastingen endpoint kan alle clubs teruggeven)
     const eigenClub = data.filter(w =>
       w.thuisteamclubrelatiecode === CLUB_RC || w.uitteamclubrelatiecode === CLUB_RC
     )
     setAfgelast(eigenClub)
-    if (teamsRes.data) setTeams(teamsRes.data)
     setLoading(false)
   }
 
@@ -121,7 +99,7 @@ export default function WedstrijdenAfgelastingenPage() {
           <div className="flex flex-col gap-3">
             {items.map((w, i) => {
               const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
-              const teamcode = getVvzTeamcode(w, lookup)
+              const teamcode = getVvzTeamid(w)
               const sportBadge = getSportBadge(w)
               const Wrapper = teamcode
                 ? ({ children }) => <Link to={`/teams/${teamcode}`} className="block group">{children}</Link>
