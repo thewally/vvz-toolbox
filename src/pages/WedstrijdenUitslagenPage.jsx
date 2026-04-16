@@ -3,11 +3,24 @@ import { Link } from 'react-router-dom'
 import { getUitslagen, getTeams } from '../services/wedstrijden'
 import { groepeerPerDag, formatDagLabel, buildTeamcodeLookup, getVvzTeamcode } from '../services/wedstrijdenHelpers'
 
+const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
+
+function getCategorie(teamnaam) {
+  const naam = (teamnaam || '').toLowerCase()
+  if (/35\+|45\+|30\+|veteran|vet\./.test(naam)) return 'veteranen'
+  const joMatch = naam.match(/[jm]o\s*(\d+)/)
+  if (joMatch) return parseInt(joMatch[1], 10) <= 12 ? 'pupillen' : 'junioren'
+  return 'senioren'
+}
+
 export default function WedstrijdenUitslagenPage() {
   const [wedstrijden, setWedstrijden] = useState([])
   const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [filterLocatie, setFilterLocatie] = useState('alles')
+  const [filterCategorie, setFilterCategorie] = useState('alles')
+  const [filterOpen, setFilterOpen] = useState(false)
 
   useEffect(() => {
     load()
@@ -48,22 +61,62 @@ export default function WedstrijdenUitslagenPage() {
   }
 
   const vandaag = new Date().toISOString().slice(0, 10)
-  const verleden = wedstrijden.filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) <= vandaag && w.uitslag)
+  const verleden = wedstrijden
+    .filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) <= vandaag && w.uitslag)
+    .filter(w => {
+      if (filterLocatie === 'alles') return true
+      const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
+      return filterLocatie === 'thuis' ? isThuis : !isThuis
+    })
+    .filter(w => {
+      if (filterCategorie === 'alles') return true
+      const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
+      const vvzTeam = isThuis ? w.thuisteam : w.uitteam
+      return getCategorie(vvzTeam) === filterCategorie
+    })
   const perDagUnsorted = groepeerPerDag(verleden)
-  // Meest recent eerst
   const perDag = new Map([...perDagUnsorted.entries()].reverse())
 
-  if (verleden.length === 0) {
-    return (
-      <div className="max-w-3xl mx-auto p-4 pt-8 text-center">
-        <p className="text-gray-500">Geen uitslagen gevonden.</p>
-
-      </div>
-    )
-  }
+  const actieveFilters = (filterLocatie !== 'alles' ? 1 : 0) + (filterCategorie !== 'alles' ? 1 : 0)
+  const pillClass = (active) => `px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${active ? 'bg-vvz-green text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
 
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6">
+      <div className="flex items-center justify-end mb-4">
+        <button
+          onClick={() => setFilterOpen(o => !o)}
+          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${actieveFilters > 0 ? 'bg-vvz-green text-white border-vvz-green' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+          </svg>
+          Filteren
+          {actieveFilters > 0 && <span className="bg-white text-vvz-green rounded-full w-4 h-4 text-xs flex items-center justify-center font-bold">{actieveFilters}</span>}
+        </button>
+      </div>
+      {filterOpen && (
+        <div className="mb-5 p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-4">
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Locatie</p>
+            <div className="flex flex-wrap gap-2">
+              {[['alles', 'Alles'], ['thuis', 'Thuis'], ['uit', 'Uit']].map(([key, label]) => (
+                <button key={key} onClick={() => setFilterLocatie(key)} className={pillClass(filterLocatie === key)}>{label}</button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Teams</p>
+            <div className="flex flex-wrap gap-2">
+              {[['alles', 'Alle teams'], ['pupillen', 'Pupillen'], ['junioren', 'Junioren'], ['senioren', 'Senioren'], ['veteranen', 'Veteranen']].map(([key, label]) => (
+                <button key={key} onClick={() => setFilterCategorie(key)} className={pillClass(filterCategorie === key)}>{label}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      {verleden.length === 0 && (
+        <p className="text-gray-500 text-sm text-center py-8">Geen uitslagen gevonden voor deze filters.</p>
+      )}
       {[...perDag.entries()].map(([datum, items]) => (
         <div key={datum} className="mb-8">
           <div className="flex items-center gap-3 mb-4">
