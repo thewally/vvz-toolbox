@@ -164,63 +164,24 @@ export default function TopNav() {
     <nav className="bg-vvz-green no-print">
       {/* Hamburgerbalk */}
       <div className="flex items-center justify-between px-4 py-2">
-        <div className="flex items-center gap-3">
+        {/* Links: afgelastingen-indicator (alleen bolletje op mobiel, tekst op desktop) */}
+        <div className="flex items-center gap-2">
           <AfgelastingenIndicator compact />
-          {!user && (
-            <Link
-              to="/login"
-              state={{ from: { pathname: location.pathname } }}
-              className="sm:hidden text-white/80 font-medium text-sm hover:text-white transition-colors"
-            >
-              Inloggen
-            </Link>
-          )}
-          {user && (
-            <div className="relative sm:hidden">
-              <button
-                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="text-white/80 font-medium text-sm hover:text-white transition-colors flex items-center gap-1"
-              >
-                {profile?.display_name || user.email}
-                <svg className={`w-3 h-3 transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {userDropdownOpen && (
-                <div className="absolute left-0 mt-1 w-44 bg-white rounded-lg shadow-lg py-1 z-50">
-                  {hasAnyRole() && (
-                    <Link
-                      to="/beheer"
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Beheer
-                    </Link>
-                  )}
-                  <button
-                    onClick={() => { setUserDropdownOpen(false); signOut().then(() => navigate('/')) }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Uitloggen
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
+        {/* Rechts: inloggen/gebruiker + hamburger */}
         <div className="flex items-center gap-3">
           {!user && (
             <Link
               to="/login"
               state={{ from: { pathname: location.pathname } }}
-              className="hidden sm:inline text-white/80 font-medium text-sm hover:text-white transition-colors"
+              className="text-white/80 font-medium text-sm hover:text-white transition-colors"
             >
               Inloggen
             </Link>
           )}
           {user && (
-            <div className="relative hidden sm:block">
+            <div className="relative">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                 className="text-white/80 font-medium text-sm hover:text-white transition-colors flex items-center gap-1"

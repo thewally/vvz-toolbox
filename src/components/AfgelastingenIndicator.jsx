@@ -83,7 +83,7 @@ export default function AfgelastingenIndicator({ compact = false }) {
       <div className="flex items-center gap-1.5">
         <Link to="/wedstrijden/afgelastingen" className="flex items-center gap-1.5">
           <span className={`shrink-0 rounded-full w-3 h-3 animate-pulse ${config.kleur}`} />
-          <span className="text-white/80 font-medium text-sm">{config.label}</span>
+          <span className="hidden sm:inline text-white/80 font-medium text-sm">{config.label}</span>
         </Link>
         <InfoPopover />
       </div>
