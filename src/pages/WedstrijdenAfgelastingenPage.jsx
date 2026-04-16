@@ -11,6 +11,8 @@ export default function WedstrijdenAfgelastingenPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  const teamcodeLookup = useMemo(() => buildTeamcodeLookup(teams), [teams])
+
   useEffect(() => {
     load()
   }, [])
@@ -64,7 +66,6 @@ export default function WedstrijdenAfgelastingenPage() {
     )
   }
 
-  const teamcodeLookup = useMemo(() => buildTeamcodeLookup(teams), [teams])
   const perDag = groepeerPerDag(afgelast)
 
   return (
