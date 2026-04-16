@@ -93,6 +93,7 @@ export const AVAILABLE_TOOLS = [
   { label: 'Veldindeling', route: '/trainingsschema/veldindeling' },
   { label: 'Programma', route: '/wedstrijden/programma' },
   { label: 'Uitslagen', route: '/wedstrijden/uitslagen' },
+  { label: 'Standen', route: '/wedstrijden/standen' },
   { label: 'Afgelastingen', route: '/wedstrijden/afgelastingen' },
   { label: 'Wedstrijdverslagen', route: '/wedstrijden/verslagen' },
   { label: 'Topscorers & Keeperstrofee', route: '/wedstrijden/topscorers' },
