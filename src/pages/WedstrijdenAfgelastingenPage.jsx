@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react'
-import { getAfgelastingen } from '../services/wedstrijden'
-import { groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
+import { useEffect, useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
+import { getAfgelastingen, getTeams } from '../services/wedstrijden'
+import { groepeerPerDag, formatDagLabel, buildTeamcodeLookup, getVvzTeamcode } from '../services/wedstrijdenHelpers'
 
 const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
 export default function WedstrijdenAfgelastingenPage() {
   const [afgelast, setAfgelast] = useState([])
+  const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -16,7 +18,7 @@ export default function WedstrijdenAfgelastingenPage() {
   async function load() {
     setLoading(true)
     setError(null)
-    const afgelastRes = await getAfgelastingen()
+    const [afgelastRes, teamsRes] = await Promise.all([getAfgelastingen(), getTeams()])
     if (afgelastRes.error) {
       setError(afgelastRes.error.message)
       setLoading(false)
@@ -28,6 +30,7 @@ export default function WedstrijdenAfgelastingenPage() {
       w.thuisteamclubrelatiecode === CLUB_RC || w.uitteamclubrelatiecode === CLUB_RC
     )
     setAfgelast(eigenClub)
+    if (teamsRes.data) setTeams(teamsRes.data)
     setLoading(false)
   }
 
@@ -61,6 +64,7 @@ export default function WedstrijdenAfgelastingenPage() {
     )
   }
 
+  const teamcodeLookup = useMemo(() => buildTeamcodeLookup(teams), [teams])
   const perDag = groepeerPerDag(afgelast)
 
   return (
@@ -84,33 +88,44 @@ export default function WedstrijdenAfgelastingenPage() {
           </div>
           <div className="flex flex-col gap-3">
             {items.map((w, i) => {
-              const isThuis = w.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
+              const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
+              const teamcode = getVvzTeamcode(w, teamcodeLookup)
+              const Wrapper = teamcode
+                ? ({ children }) => <Link to={`/teams/${teamcode}`} className="block group">{children}</Link>
+                : ({ children }) => <div>{children}</div>
               return (
-                <div key={i} className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 opacity-75">
-                  <div className="flex items-center gap-3">
-                    <div className="shrink-0 w-14 text-center">
-                      <span className="block text-sm font-bold text-gray-400 line-through">{w.aanvangstijd || '--:--'}</span>
-                      <span className={`inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                        {isThuis ? 'THUIS' : 'UIT'}
-                      </span>
+                <Wrapper key={i}>
+                  <div className={`bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 opacity-75 ${teamcode ? 'hover:shadow-md hover:opacity-100 transition-all' : ''}`}>
+                    <div className="flex items-center gap-3">
+                      <div className="shrink-0 w-14 text-center">
+                        <span className="block text-sm font-bold text-gray-400 line-through">{w.aanvangstijd || '--:--'}</span>
+                        <span className={`inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full ${isThuis ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {isThuis ? 'THUIS' : 'UIT'}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0 text-right">
+                        <span className={`font-semibold text-sm truncate block ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                      </div>
+                      <div className="shrink-0 w-16 text-center">
+                        <span className="text-xs font-bold text-orange-500 uppercase">Afgelast</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className={`font-semibold text-sm truncate block ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                      </div>
+                      {teamcode && (
+                        <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                      )}
                     </div>
-                    <div className="flex-1 min-w-0 text-right">
-                      <span className={`font-semibold text-sm truncate block ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
-                    </div>
-                    <div className="shrink-0 w-16 text-center">
-                      <span className="text-xs font-bold text-orange-500 uppercase">Afgelast</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className={`font-semibold text-sm truncate block ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
-                    </div>
+                    {w.accommodatie && (
+                      <div className="flex gap-3 -mt-2">
+                        <div className="shrink-0 w-14" />
+                        <p className="flex-1 text-xs text-gray-400 text-center">{w.accommodatie}</p>
+                      </div>
+                    )}
                   </div>
-                  {w.accommodatie && (
-                    <div className="flex gap-3 -mt-2">
-                      <div className="shrink-0 w-14" />
-                      <p className="flex-1 text-xs text-gray-400 text-center">{w.accommodatie}</p>
-                    </div>
-                  )}
-                </div>
+                </Wrapper>
               )
             })}
           </div>
