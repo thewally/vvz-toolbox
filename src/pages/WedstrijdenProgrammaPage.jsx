@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getProgramma, getTeams } from '../services/wedstrijden'
 import { groepeerPerDag, formatDagLabel, buildTeamcodeLookup, getVvzTeamcode } from '../services/wedstrijdenHelpers'
-import AfgelastingenIndicator from '../components/AfgelastingenIndicator'
 
 const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
@@ -94,7 +93,6 @@ export default function WedstrijdenProgrammaPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6">
-      <AfgelastingenIndicator />
       <div className="flex items-center justify-end mb-4">
         <button
           onClick={() => setFilterOpen(o => !o)}

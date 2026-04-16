@@ -4,6 +4,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { QUICK_LINKS, NAV_SECTIONS } from '../lib/navigation'
 import { fetchMenu, fetchQuickLinks } from '../services/menu'
+import AfgelastingenIndicator from './AfgelastingenIndicator'
 
 /**
  * Normaliseert een database menu-item naar het formaat dat de render-logica verwacht.
@@ -163,7 +164,8 @@ export default function TopNav() {
     <nav className="bg-vvz-green no-print">
       {/* Hamburgerbalk */}
       <div className="flex items-center justify-between px-4 py-2">
-        <div>
+        <div className="flex items-center gap-3">
+          <AfgelastingenIndicator compact />
           {!user && (
             <Link
               to="/login"
