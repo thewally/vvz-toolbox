@@ -37,13 +37,20 @@ function buildLookup(teams) {
 
 function getVvzTeamcode(w, lookup) {
   const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
-  const naam = isThuis ? w.thuisteam : (w.uitteamclubrelatiecode === CLUB_RC ? w.uitteam : null)
-  if (!naam) return null
+  if (!isThuis && w.uitteamclubrelatiecode !== CLUB_RC) return null
 
-  // 1. exacte naam
+  // 1. directe teamcode uit afgelastingendata — meest betrouwbaar
+  const tc = isThuis ? w.thuisteamcode : w.uitteamcode
+  if (tc) {
+    const strTc = String(tc)
+    if (lookup.byCode.has(strTc)) return lookup.byCode.get(strTc)
+  }
+
+  // 2. exacte naam
+  const naam = isThuis ? w.thuisteam : w.uitteam
   if (lookup.byNaam.has(naam)) return lookup.byNaam.get(naam)
 
-  // 2. genormaliseerde naam — bij meerdere kandidaten, kies op sport
+  // 3. genormaliseerde naam — bij meerdere kandidaten, kies op sport
   const norm = normaliseer(naam)
   const kandidaten = lookup.byNormNaam.get(norm)
   if (kandidaten?.length) {
@@ -54,12 +61,6 @@ function getVvzTeamcode(w, lookup) {
     return (match || kandidaten[0]).teamcode
   }
 
-  // 3. directe teamcode uit afgelastingendata (als die beschikbaar is)
-  const tc = isThuis ? w.thuisteamcode : w.uitteamcode
-  if (tc) {
-    const strTc = String(tc)
-    if (lookup.byCode.has(strTc)) return lookup.byCode.get(strTc)
-  }
   return null
 }
 
@@ -97,15 +98,7 @@ export default function WedstrijdenAfgelastingenPage() {
       w.thuisteamclubrelatiecode === CLUB_RC || w.uitteamclubrelatiecode === CLUB_RC
     )
     setAfgelast(eigenClub)
-    if (eigenClub.length > 0) {
-      console.log('[Afgelastingen] voorbeeld veld-namen:', Object.keys(eigenClub[0]))
-      console.log('[Afgelastingen] data:', eigenClub)
-    }
-    if (teamsRes.data) {
-      setTeams(teamsRes.data)
-      const vvz3 = teamsRes.data.filter(t => (t.teamnaam || '').includes('3'))
-      console.log('[Teams] VVZ 3-teams:', vvz3.map(t => ({ teamnaam: t.teamnaam, teamcode: t.teamcode, speeldag: t.speeldag, leeftijdscategorie: t.leeftijdscategorie })))
-    }
+    if (teamsRes.data) setTeams(teamsRes.data)
     setLoading(false)
   }
 
