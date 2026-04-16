@@ -1,6 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchPublicMatchReports } from '../services/matchReports'
+import { getTeams } from '../services/wedstrijden'
+
+const SPEELDAG_VELD = ['Zaterdag', 'Zondag']
+
+function buildSportLookup(teams) {
+  const map = new Map()
+  for (const t of teams) {
+    if (!t.teamcode) continue
+    const isZaal = !((t.teamnaam || '').toLowerCase().includes('o23')) && !SPEELDAG_VELD.includes(t.speeldag || '')
+    map.set(String(t.teamcode), isZaal ? 'Zaal' : 'Veld')
+  }
+  return map
+}
 
 /**
  * Strip HTML-tags en geef een korte tekst-preview terug.
@@ -34,17 +47,21 @@ function formatDatum(iso) {
 
 export default function WedstrijdenVerslagenPage() {
   const [items, setItems] = useState([])
+  const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  const sportLookup = useMemo(() => buildSportLookup(teams), [teams])
 
   useEffect(() => { load() }, [])
 
   async function load() {
     setLoading(true)
     setError(null)
-    const { data, error } = await fetchPublicMatchReports()
+    const [{ data, error }, teamsRes] = await Promise.all([fetchPublicMatchReports(), getTeams()])
     if (error) setError(error.message)
     else setItems(data ?? [])
+    if (teamsRes.data) setTeams(teamsRes.data)
     setLoading(false)
   }
 
@@ -91,6 +108,11 @@ export default function WedstrijdenVerslagenPage() {
               {item.team_name && (
                 <span className="inline-flex items-center bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">
                   {item.team_name}
+                </span>
+              )}
+              {item.team_id && sportLookup.get(String(item.team_id)) && (
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sportLookup.get(String(item.team_id)) === 'Zaal' ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>
+                  {sportLookup.get(String(item.team_id))}
                 </span>
               )}
               {item.published_at && (

@@ -1,8 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { fetchMatchReportBySlug } from '../services/matchReports'
+import { getTeams } from '../services/wedstrijden'
 import { makeIframesResponsive } from '../lib/htmlUtils'
 import DOMPurify from 'dompurify'
+
+const SPEELDAG_VELD = ['Zaterdag', 'Zondag']
+
+function getSportLabel(teamId, teams) {
+  const t = teams.find(t => String(t.teamcode) === String(teamId))
+  if (!t) return null
+  const isZaal = !((t.teamnaam || '').toLowerCase().includes('o23')) && !SPEELDAG_VELD.includes(t.speeldag || '')
+  return isZaal ? 'Zaal' : 'Veld'
+}
 
 function formatDatum(iso) {
   if (!iso) return ''
@@ -16,18 +26,20 @@ function formatDatum(iso) {
 export default function WedstrijdenVerslagDetailPage() {
   const { slug } = useParams()
   const [item, setItem] = useState(null)
+  const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
     async function load() {
       setLoading(true)
-      const { data, error } = await fetchMatchReportBySlug(slug)
+      const [{ data, error }, teamsRes] = await Promise.all([fetchMatchReportBySlug(slug), getTeams()])
       if (error || !data) {
         setNotFound(true)
       } else {
         setItem(data)
       }
+      if (teamsRes.data) setTeams(teamsRes.data)
       setLoading(false)
     }
     load()
@@ -70,6 +82,14 @@ export default function WedstrijdenVerslagDetailPage() {
             {item.team_name}
           </Link>
         )}
+        {item.team_id && (() => {
+          const sport = getSportLabel(item.team_id, teams)
+          return sport ? (
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${sport === 'Zaal' ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>
+              {sport}
+            </span>
+          ) : null
+        })()}
         {item.published_at && (
           <span className="text-sm text-gray-400">{formatDatum(item.published_at)}</span>
         )}
