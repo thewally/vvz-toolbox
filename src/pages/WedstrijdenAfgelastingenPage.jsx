@@ -5,19 +5,30 @@ import { groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
 
 const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
+const SPEELDAG_VELD = ['Zaterdag', 'Zondag']
+
 function normaliseer(s) {
   return (s || '').toLowerCase().replace(/[^a-z0-9]/g, '')
 }
 
+function isZaalTeam(team) {
+  const naam = (team.teamnaam || '').toLowerCase()
+  return !naam.includes('o23') && !SPEELDAG_VELD.includes(team.speeldag || '')
+}
+
 function buildLookup(teams) {
+  // byNormNaam: normaliseerde naam -> array van { teamcode, isZaal }
   const byNaam = new Map()
   const byNormNaam = new Map()
   const byCode = new Map()
   for (const t of teams) {
     if (!t.teamcode) continue
+    const zaal = isZaalTeam(t)
     if (t.teamnaam) {
       byNaam.set(t.teamnaam, t.teamcode)
-      byNormNaam.set(normaliseer(t.teamnaam), t.teamcode)
+      const norm = normaliseer(t.teamnaam)
+      if (!byNormNaam.has(norm)) byNormNaam.set(norm, [])
+      byNormNaam.get(norm).push({ teamcode: t.teamcode, isZaal: zaal })
     }
     byCode.set(String(t.teamcode), t.teamcode)
   }
@@ -31,9 +42,18 @@ function getVvzTeamcode(w, lookup) {
 
   // 1. exacte naam
   if (lookup.byNaam.has(naam)) return lookup.byNaam.get(naam)
-  // 2. genormaliseerde naam
+
+  // 2. genormaliseerde naam — bij meerdere kandidaten, kies op sport
   const norm = normaliseer(naam)
-  if (lookup.byNormNaam.has(norm)) return lookup.byNormNaam.get(norm)
+  const kandidaten = lookup.byNormNaam.get(norm)
+  if (kandidaten?.length) {
+    if (kandidaten.length === 1) return kandidaten[0].teamcode
+    const sport = (w.sportomschrijving || '').toLowerCase()
+    const wedstrijdIsZaal = sport.includes('zaal') || sport.includes('futsal')
+    const match = kandidaten.find(k => k.isZaal === wedstrijdIsZaal)
+    return (match || kandidaten[0]).teamcode
+  }
+
   // 3. directe teamcode uit afgelastingendata (als die beschikbaar is)
   const tc = isThuis ? w.thuisteamcode : w.uitteamcode
   if (tc) {
