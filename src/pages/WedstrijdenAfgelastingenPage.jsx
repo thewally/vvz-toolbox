@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { getAfgelastingen, getProgramma } from '../services/wedstrijden'
+import { getAfgelastingen } from '../services/wedstrijden'
 import { groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
+
+const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
 export default function WedstrijdenAfgelastingenPage() {
   const [afgelast, setAfgelast] = useState([])
@@ -14,18 +16,18 @@ export default function WedstrijdenAfgelastingenPage() {
   async function load() {
     setLoading(true)
     setError(null)
-    const [afgelastRes, programmaRes] = await Promise.all([
-      getAfgelastingen(),
-      getProgramma(),
-    ])
-    if (afgelastRes.error || programmaRes.error) {
-      setError((afgelastRes.error || programmaRes.error).message)
+    const afgelastRes = await getAfgelastingen()
+    if (afgelastRes.error) {
+      setError(afgelastRes.error.message)
       setLoading(false)
       return
     }
-    const afgelastCodes = new Set((afgelastRes.data ?? []).map(a => a.wedstrijdcode))
-    const afgelastenWedstrijden = (programmaRes.data ?? []).filter(w => afgelastCodes.has(w.wedstrijdcode))
-    setAfgelast(afgelastenWedstrijden)
+    const data = afgelastRes.data ?? []
+    // Filter op eigen club (afgelastingen endpoint kan alle clubs teruggeven)
+    const eigenClub = data.filter(w =>
+      w.thuisteamclubrelatiecode === CLUB_RC || w.uitteamclubrelatiecode === CLUB_RC
+    )
+    setAfgelast(eigenClub)
     setLoading(false)
   }
 
@@ -84,7 +86,7 @@ export default function WedstrijdenAfgelastingenPage() {
             {items.map((w, i) => {
               const isThuis = w.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
               return (
-                <div key={i} className="bg-white rounded-xl border border-orange-200 shadow-sm px-4 py-3 opacity-75">
+                <div key={i} className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 opacity-75">
                   <div className="flex items-center gap-3">
                     <div className="shrink-0 w-14 text-center">
                       <span className="block text-sm font-bold text-gray-400 line-through">{w.aanvangstijd || '--:--'}</span>

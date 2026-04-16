@@ -1,12 +1,22 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getTeamProgramma, getTeamUitslagen, getTeams, getPoulestand, getTeamGegevens } from '../services/wedstrijden'
-import { formatDagLabel, datumSleutel, parseWedstrijdDatum } from '../services/wedstrijdenHelpers'
+import { formatDagLabel, datumSleutel, parseWedstrijdDatum, kiesPouleViaWedstrijd } from '../services/wedstrijdenHelpers'
 import AgendaAbonneerKnop from '../components/AgendaAbonneerKnop'
 
 const CLUB_RELATIECODE = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
 const SPEELDAG_REGULIER = ['Zondag', 'Zaterdag']
+
+function kiesPouleFallback(teamPoules) {
+  if (!teamPoules.length) return null
+  const sorted = [...teamPoules].sort((a, b) => {
+    const s = (b.seizoen || '').localeCompare(a.seizoen || '')
+    if (s !== 0) return s
+    return (a.competitiesoort === 'regulier' ? 0 : 1) - (b.competitiesoort === 'regulier' ? 0 : 1)
+  })
+  return sorted[0]
+}
 
 function getTeamCategorie(team) {
   if (!team) return 'senioren'
@@ -304,11 +314,9 @@ export default function TeamPage() {
     const teamPoules = teams.filter(t => String(t.teamcode) === String(teamcode))
     setPoules(teamPoules)
 
-    // Kies standaard: meest recente entry (laatste in de lijst), met voorkeur voor regulier
-    const regulier = [...teamPoules].reverse().find(t => t.competitiesoort === 'regulier')
-    const info = regulier
-      || teamPoules[teamPoules.length - 1]
-      || null
+    // Kies standaard: poule van de eerstvolgende wedstrijd, anders meest recente regulier
+    const viaWedstrijd = kiesPouleViaWedstrijd(teamPoules, progRes.data ?? [])
+    const info = viaWedstrijd || kiesPouleFallback(teamPoules)
     setTeamInfo(info)
 
     // Laad poulestand voor de standaard selectie

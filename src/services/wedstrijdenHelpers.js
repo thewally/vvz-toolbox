@@ -159,6 +159,37 @@ export function getVvzTeamcode(wedstrijd, teamcodeLookup) {
 }
 
 /**
+ * Kies de poule die overeenkomt met de eerstvolgende wedstrijd uit het programma.
+ * Vergelijkt competitienaam-velden van de wedstrijd met de teamPoules entries.
+ * Geeft null terug als er geen match gevonden wordt.
+ */
+export function kiesPouleViaWedstrijd(teamPoules, programma) {
+  const vandaag = new Date().toISOString().slice(0, 10)
+  const volgend = [...programma]
+    .filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) >= vandaag)
+    .sort((a, b) => new Date(a.wedstrijddatum) - new Date(b.wedstrijddatum))[0]
+  if (!volgend) return null
+
+  // Probeer te matchen op seizoen als dat beschikbaar is in de wedstrijd
+  const seizoen = (volgend.seizoen || '').trim()
+  if (seizoen) {
+    const opSeizoen = teamPoules.filter(p => (p.seizoen || '') === seizoen)
+    if (opSeizoen.length === 1) return opSeizoen[0]
+    if (opSeizoen.length > 1) {
+      return opSeizoen.find(p => p.competitiesoort === 'regulier') || opSeizoen[0]
+    }
+  }
+
+  // Probeer te matchen op competitienaam (niet altijd beschikbaar in programma-data)
+  const compNaam = (volgend.competitienaam || volgend.competitie || '').toLowerCase().trim()
+  if (!compNaam) return null
+  return teamPoules.find(p => {
+    const pouleComp = (p.competitienaam || '').toLowerCase().trim()
+    return pouleComp && (pouleComp === compNaam || pouleComp.includes(compNaam) || compNaam.includes(pouleComp))
+  }) || null
+}
+
+/**
  * Bepaal het afgelastingen-niveau op basis van afgelastingen en programma.
  * groen = geen, geel = sommige, oranje = alle thuis, rood = alles
  */

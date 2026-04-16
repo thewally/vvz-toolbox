@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getTeams, getPoulestand } from '../services/wedstrijden'
-
-const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
+import { getTeams, getPoulestand, getTeamProgramma } from '../services/wedstrijden'
+import { kiesPouleViaWedstrijd } from '../services/wedstrijdenHelpers'
 
 const CATEGORIE_VOLGORDE = ['senioren', 'veteranen', 'zaal', 'junioren', 'pupillen']
 const CATEGORIE_LABELS = {
@@ -37,8 +36,16 @@ function getTeamCategorie(team) {
 
 // Kies meest recente reguliere poule voor een team (zelfde logica als TeamPage)
 function kiesPoule(teamPoules) {
-  const regulier = [...teamPoules].reverse().find(t => t.competitiesoort === 'regulier')
-  return regulier || teamPoules[teamPoules.length - 1] || null
+  if (!teamPoules.length) return null
+  // Sorteer op seizoen aflopend; binnen hetzelfde seizoen: regulier boven beker
+  const sorted = [...teamPoules].sort((a, b) => {
+    const s = (b.seizoen || '').localeCompare(a.seizoen || '')
+    if (s !== 0) return s
+    const ar = a.competitiesoort === 'regulier' ? 0 : 1
+    const br = b.competitiesoort === 'regulier' ? 0 : 1
+    return ar - br
+  })
+  return sorted[0]
 }
 
 export default function WedstrijdenStandenPage() {
@@ -55,10 +62,10 @@ export default function WedstrijdenStandenPage() {
   async function load() {
     setLoading(true)
     setError(null)
-    const { data, error } = await getTeams()
-    if (error) { setError(error.message); setLoading(false); return }
+    const teamsRes = await getTeams()
+    if (teamsRes.error) { setError(teamsRes.error.message); setLoading(false); return }
 
-    const allTeams = data ?? []
+    const allTeams = teamsRes.data ?? []
     setTeams(allTeams)
 
     // Groepeer per teamcode
@@ -69,11 +76,25 @@ export default function WedstrijdenStandenPage() {
       perTeamcode.get(t.teamcode).push(t)
     }
 
+    // Voor teams met meerdere poules: haal team-specifiek programma op (zelfde aanpak als TeamPage)
+    // zodat we de juiste fase kunnen kiezen op basis van de eerstvolgende wedstrijd.
+    const teamcodesMetMeerderePoules = [...perTeamcode.entries()]
+      .filter(([, poules]) => poules.length > 1)
+      .map(([tc]) => tc)
+
+    const programmaResultaten = await Promise.all(
+      teamcodesMetMeerderePoules.map(tc => getTeamProgramma(tc).then(r => ({ tc, data: r.data ?? [] })))
+    )
+    const programmaPerTeamcode = new Map()
+    for (const { tc, data } of programmaResultaten) programmaPerTeamcode.set(tc, data)
+
     // Kies per team de standaard poule en bouw de selectie-map op
     const selectieMap = {}
     const pouleVerzoeken = []
     for (const [teamcode, poules] of perTeamcode) {
-      const gekozen = kiesPoule(poules)
+      const teamProgramma = programmaPerTeamcode.get(teamcode) ?? []
+      const viaWedstrijd = kiesPouleViaWedstrijd(poules, teamProgramma)
+      const gekozen = viaWedstrijd || kiesPoule(poules)
       if (gekozen?.poulecode) {
         selectieMap[teamcode] = gekozen.poulecode
         pouleVerzoeken.push(gekozen.poulecode)
