@@ -1,15 +1,45 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { getAfgelastingen } from '../services/wedstrijden'
+import { getAfgelastingen, getTeams } from '../services/wedstrijden'
 import { groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
 
 const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
-function getVvzTeamcode(w) {
+function normaliseer(s) {
+  return (s || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+}
+
+function buildLookup(teams) {
+  const byNaam = new Map()
+  const byNormNaam = new Map()
+  const byCode = new Map()
+  for (const t of teams) {
+    if (!t.teamcode) continue
+    if (t.teamnaam) {
+      byNaam.set(t.teamnaam, t.teamcode)
+      byNormNaam.set(normaliseer(t.teamnaam), t.teamcode)
+    }
+    byCode.set(String(t.teamcode), t.teamcode)
+  }
+  return { byNaam, byNormNaam, byCode }
+}
+
+function getVvzTeamcode(w, lookup) {
   const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
-  const isUit = w.uitteamclubrelatiecode === CLUB_RC
-  if (isThuis && w.thuisteamcode) return String(w.thuisteamcode)
-  if (isUit && w.uitteamcode) return String(w.uitteamcode)
+  const naam = isThuis ? w.thuisteam : (w.uitteamclubrelatiecode === CLUB_RC ? w.uitteam : null)
+  if (!naam) return null
+
+  // 1. exacte naam
+  if (lookup.byNaam.has(naam)) return lookup.byNaam.get(naam)
+  // 2. genormaliseerde naam
+  const norm = normaliseer(naam)
+  if (lookup.byNormNaam.has(norm)) return lookup.byNormNaam.get(norm)
+  // 3. directe teamcode uit afgelastingendata (als die beschikbaar is)
+  const tc = isThuis ? w.thuisteamcode : w.uitteamcode
+  if (tc) {
+    const strTc = String(tc)
+    if (lookup.byCode.has(strTc)) return lookup.byCode.get(strTc)
+  }
   return null
 }
 
@@ -22,8 +52,11 @@ function getSportBadge(w) {
 
 export default function WedstrijdenAfgelastingenPage() {
   const [afgelast, setAfgelast] = useState([])
+  const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  const lookup = useMemo(() => buildLookup(teams), [teams])
 
   useEffect(() => {
     load()
@@ -32,7 +65,7 @@ export default function WedstrijdenAfgelastingenPage() {
   async function load() {
     setLoading(true)
     setError(null)
-    const afgelastRes = await getAfgelastingen()
+    const [afgelastRes, teamsRes] = await Promise.all([getAfgelastingen(), getTeams()])
     if (afgelastRes.error) {
       setError(afgelastRes.error.message)
       setLoading(false)
@@ -44,6 +77,7 @@ export default function WedstrijdenAfgelastingenPage() {
       w.thuisteamclubrelatiecode === CLUB_RC || w.uitteamclubrelatiecode === CLUB_RC
     )
     setAfgelast(eigenClub)
+    if (teamsRes.data) setTeams(teamsRes.data)
     setLoading(false)
   }
 
@@ -101,7 +135,7 @@ export default function WedstrijdenAfgelastingenPage() {
           <div className="flex flex-col gap-3">
             {items.map((w, i) => {
               const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
-              const teamcode = getVvzTeamcode(w)
+              const teamcode = getVvzTeamcode(w, lookup)
               const sportBadge = getSportBadge(w)
               const Wrapper = teamcode
                 ? ({ children }) => <Link to={`/teams/${teamcode}`} className="block group">{children}</Link>
