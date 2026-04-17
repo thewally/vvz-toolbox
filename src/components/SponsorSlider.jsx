@@ -1,32 +1,37 @@
 import { useEffect, useState } from 'react'
-import { getSponsors } from '../services/sponsors'
+import { getSponsors, getSponsorGroepen } from '../services/sponsors'
 
 export default function SponsorSlider() {
-  const [goud, setGoud] = useState([])
-  const [zilver, setZilver] = useState([])
+  const [items, setItems] = useState([])
 
   useEffect(() => {
-    getSponsors().then(({ data }) => {
-      if (!data) return
-      setGoud(data.filter(s => s.categorie === 'goud' && s.logo_url))
-      setZilver(data.filter(s => s.categorie === 'zilver' && s.logo_url))
+    Promise.all([getSponsors(), getSponsorGroepen()]).then(([s, g]) => {
+      const sponsors = s.data ?? []
+      const groepen = g.data ?? []
+
+      const sliderItems = []
+
+      for (const groep of groepen) {
+        if (groep.slider_weergave === 'geen') continue
+        const groepSponsors = sponsors.filter(sp => sp.groep_id === groep.id)
+
+        if (groep.slider_weergave === 'groot') {
+          for (const sp of groepSponsors) {
+            sliderItems.push({ type: 'groot', sponsor: sp })
+          }
+        } else if (groep.slider_weergave === 'klein') {
+          for (let i = 0; i < groepSponsors.length; i += 2) {
+            sliderItems.push({ type: 'klein', paar: groepSponsors.slice(i, i + 2) })
+          }
+        }
+      }
+
+      setItems(sliderItems)
     })
   }, [])
 
-  // Groepeer zilver per 2
-  const zilverParen = []
-  for (let i = 0; i < zilver.length; i += 2) {
-    zilverParen.push(zilver.slice(i, i + 2))
-  }
-
-  const items = [
-    ...goud.map(s => ({ type: 'goud', sponsor: s })),
-    ...zilverParen.map(paar => ({ type: 'zilver', paar })),
-  ]
-
   if (items.length === 0) return null
 
-  // Herhaal items tot we er minimaal 12 hebben, zodat de content altijd breder is dan het scherm
   let base = [...items]
   while (base.length < 12) base = [...base, ...items]
   const doubled = [...base, ...base]
@@ -44,7 +49,7 @@ export default function SponsorSlider() {
       `}</style>
       <div className="marquee-inner flex gap-6 sm:gap-12 items-center w-max">
         {doubled.map((item, idx) =>
-          item.type === 'goud' ? (
+          item.type === 'groot' ? (
             <a
               key={idx}
               href={item.sponsor.website_url}
@@ -53,11 +58,15 @@ export default function SponsorSlider() {
               className="shrink-0 flex items-center justify-center rounded-lg h-7 w-[70px] sm:h-20 sm:w-[200px] p-1 sm:p-4 shadow-sm"
               style={{ backgroundColor: item.sponsor.logo_achtergrond || '#ffffff' }}
             >
-              <img
-                src={item.sponsor.logo_url}
-                alt={item.sponsor.naam}
-                className="h-6 sm:h-16 w-auto max-w-[60px] sm:max-w-[180px] object-contain"
-              />
+              {item.sponsor.logo_url ? (
+                <img
+                  src={item.sponsor.logo_url}
+                  alt={item.sponsor.naam}
+                  className="h-6 sm:h-16 w-auto max-w-[60px] sm:max-w-[180px] object-contain"
+                />
+              ) : (
+                <span className="text-xs sm:text-sm font-medium text-gray-700 text-center truncate">{item.sponsor.naam}</span>
+              )}
             </a>
           ) : (
             <div key={idx} className="shrink-0 flex flex-col gap-px w-[70px] sm:w-[200px]">
@@ -70,11 +79,11 @@ export default function SponsorSlider() {
                   className="flex items-center justify-center rounded shadow-sm w-full h-[13px] sm:h-[39px] p-0.5 sm:p-1.5"
                   style={{ backgroundColor: s.logo_achtergrond || '#ffffff' }}
                 >
-                  <img
-                    src={s.logo_url}
-                    alt={s.naam}
-                    className="h-full w-auto max-w-full object-contain"
-                  />
+                  {s.logo_url ? (
+                    <img src={s.logo_url} alt={s.naam} className="h-full w-auto max-w-full object-contain" />
+                  ) : (
+                    <span className="text-[8px] sm:text-xs font-medium text-gray-700 truncate">{s.naam}</span>
+                  )}
                 </a>
               ))}
             </div>
