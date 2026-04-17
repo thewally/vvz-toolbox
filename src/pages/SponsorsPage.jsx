@@ -10,26 +10,59 @@ function hexToRgb(hex) {
 }
 
 function SponsorCard({ sponsor, size }) {
-  const inner = sponsor.logo_url ? (
+  const heeftTekst = size === 'groot' && sponsor.beschrijving && sponsor.beschrijving.replace(/<[^>]+>/g, '').trim()
+
+  const logo = sponsor.logo_url ? (
     <img
       src={sponsor.logo_url}
       alt={sponsor.naam}
-      className={`w-auto object-contain group-hover:scale-105 transition-transform ${size === 'groot' ? 'max-h-24' : 'max-h-12'}`}
+      className={`w-auto object-contain transition-transform group-hover:scale-105 ${size === 'groot' ? 'max-h-24' : 'max-h-12'}`}
     />
   ) : (
     <span className={`font-medium text-gray-700 text-center ${size === 'groot' ? 'text-lg' : 'text-sm'}`}>{sponsor.naam}</span>
   )
+
+  if (size === 'groot' && (sponsor.website_url || heeftTekst)) {
+    return (
+      <div
+        className="group relative flex items-center justify-center rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-8 h-40 overflow-hidden"
+        style={{ backgroundColor: sponsor.logo_achtergrond || '#ffffff' }}
+      >
+        {logo}
+        <div className="absolute inset-0 flex opacity-0 group-hover:opacity-100 transition-opacity">
+          {sponsor.website_url && (
+            <a
+              href={sponsor.website_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex items-center justify-center text-white text-xs font-medium text-center px-3 bg-black/60 hover:bg-black/75 transition-colors ${heeftTekst ? 'w-1/2' : 'w-full rounded-xl'}`}
+            >
+              Ga naar de website
+            </a>
+          )}
+          {heeftTekst && (
+            <Link
+              to={`/sponsors/${sponsor.slug}`}
+              className={`flex items-center justify-center text-white text-xs font-medium text-center px-3 bg-vvz-green/80 hover:bg-vvz-green transition-colors ${sponsor.website_url ? 'w-1/2' : 'w-full rounded-xl'}`}
+            >
+              Meer informatie over {sponsor.naam}
+            </Link>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   const cls = `group flex items-center justify-center rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all ${size === 'groot' ? 'p-8 h-40' : 'p-4 h-24'}`
 
   return sponsor.website_url ? (
     <a href={sponsor.website_url} target="_blank" rel="noopener noreferrer"
       className={cls} style={{ backgroundColor: sponsor.logo_achtergrond || '#ffffff' }}>
-      {inner}
+      {logo}
     </a>
   ) : (
     <div className={cls} style={{ backgroundColor: sponsor.logo_achtergrond || '#ffffff' }}>
-      {inner}
+      {logo}
     </div>
   )
 }
