@@ -38,7 +38,10 @@ export default function SponsorDetailPage() {
         )}
         <h1 className="text-2xl font-bold text-gray-800">{sponsor.naam}</h1>
         {sponsor.beschrijving && (
-          <div className="w-full text-left text-gray-600 leading-relaxed [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-2 [&_h2]:mb-1 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1 [&_a]:text-vvz-green [&_a]:underline" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(sponsor.beschrijving) }} />
+          <div className="w-full text-left prose max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(sponsor.beschrijving, {
+            ADD_TAGS: ['iframe'],
+            ADD_ATTR: ['allowfullscreen', 'frameborder', 'allow', 'src', 'loading']
+          }) }} />
         )}
         {sponsor.website_url && (
           <a
