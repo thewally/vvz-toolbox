@@ -25,7 +25,8 @@ import TrainingschemaBeheerPage from './pages/TrainingschemaBeheerPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import PlaceholderPage from './pages/PlaceholderPage'
 import ContactgegevensPage from './pages/ContactgegevensPage'
-import ReglemenenPage from './pages/ReglemenenPage'
+import RegulationsPage from './pages/RegulationsPage'
+import RegulationsBeheerPage from './pages/RegulationsBeheerPage'
 import LocatieRoutebeschrijvingPage from './pages/LocatieRoutebeschrijvingPage'
 import SponsorsPage from './pages/SponsorsPage'
 import SponsorDetailPage from './pages/SponsorDetailPage'
@@ -99,6 +100,7 @@ export default function App() {
           <Route path="content" element={<ProtectedRoute requiredRole="content"><ContentBeheerPage /></ProtectedRoute>} />
           <Route path="content/nieuw" element={<ProtectedRoute requiredRole="content"><ContentEditPage /></ProtectedRoute>} />
           <Route path="content/:id" element={<ProtectedRoute requiredRole="content"><ContentEditPage /></ProtectedRoute>} />
+          <Route path="reglementen" element={<ProtectedRoute requiredRole="content"><RegulationsBeheerPage /></ProtectedRoute>} />
           <Route path="contact">
             <Route index element={<ProtectedRoute requiredRole="contact"><ContactBeheerPage /></ProtectedRoute>} />
             <Route path="gegevens" element={<Navigate to="/beheer/contact" replace />} />
@@ -140,7 +142,7 @@ export default function App() {
         <Route path="club">
           <Route path="historie" element={<PlaceholderPage title="Historie" />} />
           <Route path="ereleden" element={<EreledenPage />} />
-          <Route path="reglementen" element={<ReglemenenPage />} />
+          <Route path="reglementen" element={<RegulationsPage />} />
         </Route>
 
         <Route path="contact">
