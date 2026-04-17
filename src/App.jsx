@@ -90,17 +90,17 @@ export default function App() {
             <Route path="ereleden" element={<ProtectedRoute requiredRole="ereleden"><EreledenBeheerPage /></ProtectedRoute>} />
           </Route>
           <Route path="gebruikers" element={<ProtectedRoute requiredRole="gebruikers"><GebruikersBeheerPage /></ProtectedRoute>} />
-          <Route path="menu" element={<ProtectedRoute requiredRole="content"><MenuBeheerPage /></ProtectedRoute>} />
-          <Route path="nieuws" element={<ProtectedRoute requiredRole="content"><NieuwsBeheerPage /></ProtectedRoute>} />
-          <Route path="nieuws/nieuw" element={<ProtectedRoute requiredRole="content"><NieuwsEditPage /></ProtectedRoute>} />
-          <Route path="nieuws/:id" element={<ProtectedRoute requiredRole="content"><NieuwsEditPage /></ProtectedRoute>} />
-          <Route path="verslagen" element={<ProtectedRoute requiredRole="content"><VerslagenBeheerPage /></ProtectedRoute>} />
-          <Route path="verslagen/nieuw" element={<ProtectedRoute requiredRole="content"><VerslagEditPage /></ProtectedRoute>} />
-          <Route path="verslagen/:id" element={<ProtectedRoute requiredRole="content"><VerslagEditPage /></ProtectedRoute>} />
-          <Route path="content" element={<ProtectedRoute requiredRole="content"><ContentBeheerPage /></ProtectedRoute>} />
-          <Route path="content/nieuw" element={<ProtectedRoute requiredRole="content"><ContentEditPage /></ProtectedRoute>} />
-          <Route path="content/:id" element={<ProtectedRoute requiredRole="content"><ContentEditPage /></ProtectedRoute>} />
-          <Route path="reglementen" element={<ProtectedRoute requiredRole="content"><RegulationsBeheerPage /></ProtectedRoute>} />
+          <Route path="menu" element={<ProtectedRoute requiredRole="paginas"><MenuBeheerPage /></ProtectedRoute>} />
+          <Route path="nieuws" element={<ProtectedRoute requiredRole="nieuws"><NieuwsBeheerPage /></ProtectedRoute>} />
+          <Route path="nieuws/nieuw" element={<ProtectedRoute requiredRole="nieuws"><NieuwsEditPage /></ProtectedRoute>} />
+          <Route path="nieuws/:id" element={<ProtectedRoute requiredRole="nieuws"><NieuwsEditPage /></ProtectedRoute>} />
+          <Route path="verslagen" element={<ProtectedRoute requiredRole="verslagen"><VerslagenBeheerPage /></ProtectedRoute>} />
+          <Route path="verslagen/nieuw" element={<ProtectedRoute requiredRole="verslagen"><VerslagEditPage /></ProtectedRoute>} />
+          <Route path="verslagen/:id" element={<ProtectedRoute requiredRole="verslagen"><VerslagEditPage /></ProtectedRoute>} />
+          <Route path="content" element={<ProtectedRoute requiredRole="paginas"><ContentBeheerPage /></ProtectedRoute>} />
+          <Route path="content/nieuw" element={<ProtectedRoute requiredRole="paginas"><ContentEditPage /></ProtectedRoute>} />
+          <Route path="content/:id" element={<ProtectedRoute requiredRole="paginas"><ContentEditPage /></ProtectedRoute>} />
+          <Route path="reglementen" element={<ProtectedRoute requiredRole="reglementen"><RegulationsBeheerPage /></ProtectedRoute>} />
           <Route path="contact">
             <Route index element={<ProtectedRoute requiredRole="contact"><ContactBeheerPage /></ProtectedRoute>} />
             <Route path="gegevens" element={<Navigate to="/beheer/contact" replace />} />
