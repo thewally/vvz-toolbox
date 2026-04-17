@@ -271,14 +271,10 @@ export default function SponsoringBeheerPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
                         </svg>
 
-                        {s.logo_url ? (
+                        {s.logo_url && (
                           <div className="w-10 h-8 flex items-center justify-center rounded shrink-0"
                             style={{ backgroundColor: s.logo_achtergrond || '#ffffff' }}>
                             <img src={s.logo_url} alt={s.naam} className="max-h-7 max-w-[36px] object-contain" />
-                          </div>
-                        ) : (
-                          <div className="w-10 h-8 bg-gray-100 rounded shrink-0 flex items-center justify-center">
-                            <span className="text-[9px] text-gray-400 text-center leading-tight px-0.5">{s.naam}</span>
                           </div>
                         )}
 
