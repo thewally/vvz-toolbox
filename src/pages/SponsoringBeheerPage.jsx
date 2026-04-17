@@ -4,7 +4,7 @@ import {
   getAllSponsors, createSponsor, updateSponsor, deleteSponsor, generateSlug,
   getSponsorGroepen, createSponsorGroep, updateSponsorGroep, deleteSponsorGroep,
 } from '../services/sponsors'
-import RichTextEditor from '../components/RichTextEditor'
+import TipTapEditor from '../components/TipTapEditor'
 
 const LEEG_SPONSOR = {
   naam: '', groep_id: '', logo_url: '', website_url: '',
@@ -453,7 +453,7 @@ export default function SponsoringBeheerPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Beschrijving</label>
-                <RichTextEditor value={sponsorForm.beschrijving}
+                <TipTapEditor content={sponsorForm.beschrijving}
                   onChange={val => setSponsorForm(f => ({ ...f, beschrijving: val }))} />
               </div>
 
