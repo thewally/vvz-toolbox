@@ -45,3 +45,6 @@ WHERE groep_id IS NULL;
 
 -- 6. Verwijder de hardcoded CHECK constraint op categorie
 ALTER TABLE sponsors DROP CONSTRAINT IF EXISTS sponsors_categorie_check;
+
+-- 7. Maak categorie nullable (groep_id is de nieuwe vervanger)
+ALTER TABLE sponsors ALTER COLUMN categorie DROP NOT NULL;
