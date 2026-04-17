@@ -41,7 +41,6 @@ export const NAV_SECTIONS = [
     label: 'SPONSORING',
     children: [
       { label: 'Sponsors', to: '/sponsors' },
-      { label: 'Sponsor worden?', to: '/sponsoring/sponsor-worden' },
       { label: 'Sponsor Acties', to: '/sponsoring/acties' },
     ],
   },

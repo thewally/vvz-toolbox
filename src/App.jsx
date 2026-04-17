@@ -30,7 +30,6 @@ import RegulationsBeheerPage from './pages/RegulationsBeheerPage'
 import LocatieRoutebeschrijvingPage from './pages/LocatieRoutebeschrijvingPage'
 import SponsorsPage from './pages/SponsorsPage'
 import SponsorDetailPage from './pages/SponsorDetailPage'
-import SponsorWordenPage from './pages/SponsorWordenPage'
 import SponsoringBeheerPage from './pages/SponsoringBeheerPage'
 import WieDoetWatPage from './pages/WieDoetWatPage'
 import ContactBeheerPage from './pages/ContactBeheerPage'
@@ -131,7 +130,6 @@ export default function App() {
         <Route path="sponsors" element={<SponsorsPage />} />
         <Route path="sponsors/:slug" element={<SponsorDetailPage />} />
         <Route path="sponsoring">
-          <Route path="sponsor-worden" element={<SponsorWordenPage />} />
           <Route path="acties" element={<PlaceholderPage title="Sponsor Acties" />} />
           <Route path="beheer" element={
             <ProtectedRoute adminOnly>

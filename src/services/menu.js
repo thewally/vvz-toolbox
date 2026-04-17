@@ -60,7 +60,6 @@
 --
 --   -- SPONSORING children
 --   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_sponsoring, 'Sponsors', 'tool', '/sponsors', 0, true);
---   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_sponsoring, 'Sponsor worden?', 'tool', '/sponsoring/sponsor-worden', 1, true);
 --   INSERT INTO menu_items (parent_id, label, type, tool_route, position, is_visible) VALUES (grp_sponsoring, 'Sponsor Acties', 'tool', '/sponsoring/acties', 2, true);
 --
 --   -- CLUBINFORMATIE children
@@ -103,7 +102,6 @@ export const AVAILABLE_TOOLS = [
   { label: 'Pupillen', route: '/teams/pupillen' },
   { label: 'Zaalvoetbal', route: '/teams/zaalvoetbal' },
   { label: 'Sponsors', route: '/sponsors' },
-  { label: 'Sponsor worden?', route: '/sponsoring/sponsor-worden' },
   { label: 'Plattegrond', route: '/plattegrond' },
   { label: 'Huisstijl', route: '/huistijl' },
   { label: 'Historie', route: '/club/historie' },
