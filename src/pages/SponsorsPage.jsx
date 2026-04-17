@@ -9,8 +9,8 @@ function hexToRgb(hex) {
   return `${r}, ${g}, ${b}`
 }
 
-function SponsorCard({ sponsor, size }) {
-  const heeftTekst = size === 'groot' && sponsor.beschrijving && sponsor.beschrijving.replace(/<[^>]+>/g, '').trim()
+function SponsorCard({ sponsor, size, groepHeeftSponsorTekst = false }) {
+  const heeftTekst = size === 'groot' && groepHeeftSponsorTekst && sponsor.beschrijving && sponsor.beschrijving.replace(/<[^>]+>/g, '').trim()
 
   const logo = sponsor.logo_url ? (
     <img
@@ -121,13 +121,13 @@ export default function SponsorsPage() {
 
             {groep.pagina_weergave === 'groot' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {groepSponsors.map(s => <SponsorCard key={s.id} sponsor={s} size="groot" />)}
+                {groepSponsors.map(s => <SponsorCard key={s.id} sponsor={s} size="groot" groepHeeftSponsorTekst={!!groep.heeft_sponsortekst} />)}
               </div>
             )}
 
             {groep.pagina_weergave === 'klein' && (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                {groepSponsors.map(s => <SponsorCard key={s.id} sponsor={s} size="klein" />)}
+                {groepSponsors.map(s => <SponsorCard key={s.id} sponsor={s} size="klein" groepHeeftSponsorTekst={!!groep.heeft_sponsortekst} />)}
               </div>
             )}
           </section>

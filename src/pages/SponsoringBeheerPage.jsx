@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   getAllSponsors, createSponsor, updateSponsor, deleteSponsor, generateSlug,
   getSponsorGroepen, createSponsorGroep, updateSponsorGroep, deleteSponsorGroep,
+  uploadSponsorLogo,
 } from '../services/sponsors'
 import TipTapEditor from '../components/TipTapEditor'
 
@@ -13,7 +14,7 @@ const LEEG_SPONSOR = {
 
 const LEEG_GROEP = {
   naam: '', slug: '', kleur: '#6b7280', volgorde: 0,
-  slider_weergave: 'geen', pagina_weergave: 'klein',
+  slider_weergave: 'geen', pagina_weergave: 'klein', heeft_sponsortekst: false,
 }
 
 const WEERGAVE_OPTIES = [
@@ -33,6 +34,8 @@ export default function SponsoringBeheerPage() {
   const [sponsorForm, setSponsorForm] = useState(LEEG_SPONSOR)
   const [sponsorOpslaan, setSponsorOpslaan] = useState(false)
   const [sponsorFout, setSponsorFout] = useState(null)
+  const [logoBestand, setLogoBestand] = useState(null)
+  const logoInputRef = useRef(null)
 
   // Groep modal
   const [groepModal, setGroepModal] = useState(null)
@@ -61,12 +64,14 @@ export default function SponsoringBeheerPage() {
     const id = groepId ?? groepen[0]?.id ?? ''
     setSponsorForm({ ...LEEG_SPONSOR, groep_id: id })
     setSponsorFout(null)
+    setLogoBestand(null)
     setSponsorModal({ mode: 'nieuw' })
   }
 
   function openBewerkenSponsor(s) {
     setSponsorForm({ ...s, groep_id: s.groep_id ?? s.groep?.id ?? '' })
     setSponsorFout(null)
+    setLogoBestand(null)
     setSponsorModal({ mode: 'bewerken', id: s.id })
   }
 
@@ -82,6 +87,12 @@ export default function SponsoringBeheerPage() {
     // eslint-disable-next-line no-unused-vars
     const { id: _id, created_at: _cat, groep: _groep, ...rest } = sponsorForm
     const data = { ...rest, slug }
+
+    if (logoBestand) {
+      const { data: upload, error: uploadFout } = await uploadSponsorLogo(logoBestand)
+      if (uploadFout) { setSponsorFout(uploadFout.message); setSponsorOpslaan(false); return }
+      data.logo_url = upload.url
+    }
 
     if (sponsorModal.mode === 'bewerken') {
       const origineel = sponsors.find(s => s.id === sponsorModal.id)
@@ -397,85 +408,108 @@ export default function SponsoringBeheerPage() {
               </h3>
               <button onClick={() => setSponsorModal(null)} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
-            <form onSubmit={handleSponsorOpslaan} className="px-6 py-5 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Naam *</label>
-                <input required value={sponsorForm.naam}
-                  onChange={e => setSponsorForm(f => ({ ...f, naam: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Groep *</label>
-                <select value={sponsorForm.groep_id}
-                  onChange={e => setSponsorForm(f => ({ ...f, groep_id: e.target.value }))}
-                  required
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green">
-                  <option value="">Kies een groep...</option>
-                  {groepen.map(g => (
-                    <option key={g.id} value={g.id}>{g.naam}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
-                <input type="url" value={sponsorForm.logo_url}
-                  onChange={e => setSponsorForm(f => ({ ...f, logo_url: e.target.value }))}
-                  placeholder="https://..."
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green" />
-              </div>
-
-              {sponsorForm.logo_url && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Logo achtergrondkleur</label>
-                  <div className="flex items-center gap-3">
-                    <input type="color" value={sponsorForm.logo_achtergrond || '#ffffff'}
-                      onChange={e => setSponsorForm(f => ({ ...f, logo_achtergrond: e.target.value }))}
-                      className="h-9 w-14 rounded border border-gray-300 cursor-pointer p-0.5" />
-                    <button type="button" onClick={() => setSponsorForm(f => ({ ...f, logo_achtergrond: '#ffffff' }))}
-                      className="text-xs text-gray-400 hover:text-vvz-green transition-colors">Reset naar wit</button>
+            {(() => {
+              const actieveGroep = groepen.find(g => g.id === sponsorForm.groep_id)
+              const toontLogo = actieveGroep && (actieveGroep.pagina_weergave !== 'geen' || actieveGroep.slider_weergave !== 'geen')
+              const toontTekst = actieveGroep?.heeft_sponsortekst
+              const logoPreview = logoBestand ? URL.createObjectURL(logoBestand) : sponsorForm.logo_url
+              return (
+                <form onSubmit={handleSponsorOpslaan} className="px-6 py-5 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Naam *</label>
+                    <input required value={sponsorForm.naam}
+                      onChange={e => setSponsorForm(f => ({ ...f, naam: e.target.value }))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green" />
                   </div>
-                  <div className="mt-2 flex items-center justify-center rounded-lg p-4 border border-gray-200 h-20 w-[200px]"
-                    style={{ backgroundColor: sponsorForm.logo_achtergrond || '#ffffff' }}>
-                    <img src={sponsorForm.logo_url} alt="preview" className="max-h-12 max-w-[160px] w-auto object-contain" />
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Groep *</label>
+                    <select value={sponsorForm.groep_id}
+                      onChange={e => setSponsorForm(f => ({ ...f, groep_id: e.target.value }))}
+                      required
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green">
+                      <option value="">Kies een groep...</option>
+                      {groepen.map(g => (
+                        <option key={g.id} value={g.id}>{g.naam}</option>
+                      ))}
+                    </select>
                   </div>
-                </div>
-              )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
-                <input type="url" value={sponsorForm.website_url}
-                  onChange={e => setSponsorForm(f => ({ ...f, website_url: e.target.value }))}
-                  placeholder="https://..."
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green" />
-              </div>
+                  {toontLogo && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Logo</label>
+                      <div className="flex items-center gap-3">
+                        <button type="button"
+                          onClick={() => logoInputRef.current?.click()}
+                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700">
+                          {logoPreview ? 'Ander logo kiezen' : 'Logo uploaden'}
+                        </button>
+                        {logoPreview && (
+                          <button type="button"
+                            onClick={() => { setLogoBestand(null); setSponsorForm(f => ({ ...f, logo_url: '' })); if (logoInputRef.current) logoInputRef.current.value = '' }}
+                            className="text-xs text-red-400 hover:text-red-600 transition-colors">
+                            Verwijderen
+                          </button>
+                        )}
+                      </div>
+                      <input ref={logoInputRef} type="file" accept="image/*" className="hidden"
+                        onChange={e => { if (e.target.files[0]) setLogoBestand(e.target.files[0]) }} />
+                      {logoPreview && (
+                        <div className="mt-3 space-y-2">
+                          <div className="flex items-center justify-center rounded-lg p-4 border border-gray-200 h-24 w-[220px]"
+                            style={{ backgroundColor: sponsorForm.logo_achtergrond || '#ffffff' }}>
+                            <img src={logoPreview} alt="preview" className="max-h-14 max-w-[180px] w-auto object-contain" />
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <label className="text-xs text-gray-500">Achtergrond:</label>
+                            <input type="color" value={sponsorForm.logo_achtergrond || '#ffffff'}
+                              onChange={e => setSponsorForm(f => ({ ...f, logo_achtergrond: e.target.value }))}
+                              className="h-7 w-10 rounded border border-gray-300 cursor-pointer p-0.5" />
+                            <button type="button" onClick={() => setSponsorForm(f => ({ ...f, logo_achtergrond: '#ffffff' }))}
+                              className="text-xs text-gray-400 hover:text-vvz-green transition-colors">Reset</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Beschrijving</label>
-                <TipTapEditor content={sponsorForm.beschrijving}
-                  onChange={val => setSponsorForm(f => ({ ...f, beschrijving: val }))} />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
+                    <input type="url" value={sponsorForm.website_url}
+                      onChange={e => setSponsorForm(f => ({ ...f, website_url: e.target.value }))}
+                      placeholder="https://..."
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green" />
+                  </div>
 
-              <div className="flex items-center gap-2 pt-1">
-                <input type="checkbox" id="actief" checked={sponsorForm.actief}
-                  onChange={e => setSponsorForm(f => ({ ...f, actief: e.target.checked }))}
-                  className="accent-vvz-green" />
-                <label htmlFor="actief" className="text-sm text-gray-700">Actief</label>
-              </div>
+                  {toontTekst && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Beschrijving</label>
+                      <TipTapEditor content={sponsorForm.beschrijving}
+                        onChange={val => setSponsorForm(f => ({ ...f, beschrijving: val }))} />
+                    </div>
+                  )}
 
-              {sponsorFout && <p className="text-sm text-red-500">{sponsorFout}</p>}
-              <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={sponsorOpslaan}
-                  className="flex-1 bg-vvz-green text-white py-2 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors disabled:opacity-50">
-                  {sponsorOpslaan ? 'Opslaan...' : 'Opslaan'}
-                </button>
-                <button type="button" onClick={() => setSponsorModal(null)}
-                  className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
-                  Annuleren
-                </button>
-              </div>
-            </form>
+                  <div className="flex items-center gap-2 pt-1">
+                    <input type="checkbox" id="actief" checked={sponsorForm.actief}
+                      onChange={e => setSponsorForm(f => ({ ...f, actief: e.target.checked }))}
+                      className="accent-vvz-green" />
+                    <label htmlFor="actief" className="text-sm text-gray-700">Actief</label>
+                  </div>
+
+                  {sponsorFout && <p className="text-sm text-red-500">{sponsorFout}</p>}
+                  <div className="flex gap-3 pt-2">
+                    <button type="submit" disabled={sponsorOpslaan}
+                      className="flex-1 bg-vvz-green text-white py-2 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors disabled:opacity-50">
+                      {sponsorOpslaan ? 'Opslaan...' : 'Opslaan'}
+                    </button>
+                    <button type="button" onClick={() => setSponsorModal(null)}
+                      className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                      Annuleren
+                    </button>
+                  </div>
+                </form>
+              )
+            })()}
           </div>
         </div>
       )}
@@ -527,6 +561,16 @@ export default function SponsoringBeheerPage() {
                   {WEERGAVE_OPTIES.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
                 <p className="text-xs text-gray-400 mt-1">Groot = grote logokaart · Klein = kleine logokaart · Niet tonen = alleen naam</p>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input type="checkbox" id="heeft_sponsortekst" checked={!!groepForm.heeft_sponsortekst}
+                  onChange={e => setGroepForm(f => ({ ...f, heeft_sponsortekst: e.target.checked }))}
+                  className="accent-vvz-green" />
+                <div>
+                  <label htmlFor="heeft_sponsortekst" className="text-sm text-gray-700 font-medium">Sponsorteksten toestaan</label>
+                  <p className="text-xs text-gray-400">Sponsors in deze groep kunnen een uitgebreide beschrijving krijgen met een eigen detailpagina.</p>
+                </div>
               </div>
 
               {groepFout && <p className="text-sm text-red-500">{groepFout}</p>}

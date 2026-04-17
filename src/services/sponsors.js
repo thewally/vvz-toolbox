@@ -38,6 +38,19 @@ export async function deleteSponsor(id) {
   return supabase.from('sponsors').delete().eq('id', id)
 }
 
+export async function uploadSponsorLogo(file) {
+  const ext = file.name.split('.').pop()
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+  const { error } = await supabase.storage.from('sponsor-logos').upload(path, file)
+  if (error) return { data: null, error }
+  const { data } = supabase.storage.from('sponsor-logos').getPublicUrl(path)
+  return { data: { url: data.publicUrl, path }, error: null }
+}
+
+export async function deleteSponsorLogo(path) {
+  return supabase.storage.from('sponsor-logos').remove([path])
+}
+
 export function generateSlug(naam) {
   return naam
     .toLowerCase()

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, Navigate } from 'react-router-dom'
 import { getSponsorBySlug } from '../services/sponsors'
 import DOMPurify from 'dompurify'
 
@@ -25,6 +25,8 @@ export default function SponsorDetailPage() {
       <Link to="/sponsors" className="mt-4 inline-block text-vvz-green hover:underline">← Terug naar sponsors</Link>
     </div>
   )
+
+  if (sponsor && !sponsor.groep?.heeft_sponsortekst) return <Navigate to="/sponsors" replace />
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
