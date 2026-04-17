@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react'
 import { fetchDocuments, getDocumentPublicUrl, formatFileSize } from '../services/documents'
+import { fetchClubGegevens } from '../services/sportlink'
 
-const PRIVACY_URL = 'https://www.sportlink.com/privacy/'
+function getPrivacyUrl(clubgegevens) {
+  if (!clubgegevens) return null
+  const item = clubgegevens.gegevens ?? (Array.isArray(clubgegevens) ? clubgegevens[0] : clubgegevens)
+  return item?.privacystatementclub || null
+}
 
 export default function RegulationsPage() {
   const [documents, setDocuments] = useState([])
+  const [privacyUrl, setPrivacyUrl] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -12,13 +18,11 @@ export default function RegulationsPage() {
     let mounted = true
     async function load() {
       setLoading(true)
-      const { data, error } = await fetchDocuments()
+      const [docsRes, clubRes] = await Promise.all([fetchDocuments(), fetchClubGegevens()])
       if (!mounted) return
-      if (error) {
-        setError(error.message)
-      } else {
-        setDocuments(data ?? [])
-      }
+      if (docsRes.error) setError(docsRes.error.message)
+      else setDocuments(docsRes.data ?? [])
+      if (clubRes.data) setPrivacyUrl(getPrivacyUrl(clubRes.data))
       setLoading(false)
     }
     load()
@@ -36,9 +40,9 @@ export default function RegulationsPage() {
       )}
 
       <div className="space-y-3">
-        {/* Privacyverklaring - altijd bovenaan, niet verwijderbaar */}
-        <a
-          href={PRIVACY_URL}
+        {/* Privacyverklaring - altijd bovenaan, URL via Sportlink clubgegevens */}
+        {privacyUrl && <a
+          href={privacyUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="block bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow"
@@ -57,7 +61,7 @@ export default function RegulationsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
             </svg>
           </div>
-        </a>
+        </a>}
 
         {loading ? (
           <div className="flex justify-center py-12">
