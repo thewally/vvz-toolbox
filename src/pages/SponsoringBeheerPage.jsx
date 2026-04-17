@@ -192,12 +192,14 @@ export default function SponsoringBeheerPage() {
       </Link>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-800">Sponsoring</h2>
-        <button
-          onClick={tab === 'sponsors' ? () => openNieuwSponsor() : openNieuwGroep}
-          className="bg-vvz-green text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors"
-        >
-          {tab === 'sponsors' ? '+ Sponsor toevoegen' : '+ Groep toevoegen'}
-        </button>
+        {tab === 'groepen' && (
+          <button
+            onClick={openNieuwGroep}
+            className="bg-vvz-green text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors"
+          >
+            + Groep toevoegen
+          </button>
+        )}
       </div>
 
       {/* Tab navigatie */}
