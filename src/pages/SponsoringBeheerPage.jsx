@@ -74,7 +74,11 @@ export default function SponsoringBeheerPage() {
     e.preventDefault()
     setSponsorOpslaan(true)
     setSponsorFout(null)
-    const slug = sponsorForm.slug || generateSlug(sponsorForm.naam)
+    const baseSlug = sponsorForm.slug || generateSlug(sponsorForm.naam)
+    const bestaandeSlugs = new Set(sponsors.filter(s => s.id !== sponsorModal?.id).map(s => s.slug))
+    let slug = baseSlug
+    let teller = 2
+    while (bestaandeSlugs.has(slug)) slug = `${baseSlug}-${teller++}`
     // eslint-disable-next-line no-unused-vars
     const { id: _id, created_at: _cat, groep: _groep, ...rest } = sponsorForm
     const data = { ...rest, slug }
