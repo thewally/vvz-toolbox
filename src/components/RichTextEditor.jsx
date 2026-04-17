@@ -73,6 +73,18 @@ export default function RichTextEditor({ value, onChange }) {
         </button>
         <button
           type="button"
+          title="Afbeelding invoegen"
+          onMouseDown={e => {
+            e.preventDefault()
+            const url = prompt('URL van de afbeelding:')
+            if (url) exec('insertImage', url)
+          }}
+          className="px-2 py-1 text-xs rounded hover:bg-gray-200 text-gray-600 transition-colors"
+        >
+          🖼
+        </button>
+        <button
+          type="button"
           title="Opmaak wissen"
           onMouseDown={e => { e.preventDefault(); exec('removeFormat') }}
           className="px-2 py-1 text-xs rounded hover:bg-gray-200 text-gray-400 transition-colors"
@@ -92,7 +104,8 @@ export default function RichTextEditor({ value, onChange }) {
           [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1
           [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1
           [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1
-          [&_a]:text-vvz-green [&_a]:underline"
+          [&_a]:text-vvz-green [&_a]:underline
+          [&_img]:max-w-full [&_img]:rounded [&_img]:my-2"
       />
     </div>
   )
