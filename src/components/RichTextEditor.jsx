@@ -52,7 +52,7 @@ export default function RichTextEditor({ value, onChange }) {
           <button
             key={h.tag}
             type="button"
-            onMouseDown={e => { e.preventDefault(); exec('formatBlock', h.tag) }}
+            onMouseDown={e => { e.preventDefault(); exec('formatBlock', `<${h.tag}>`) }}
             className="px-2 py-1 text-xs rounded hover:bg-gray-200 text-gray-600 transition-colors"
           >
             {h.label}
