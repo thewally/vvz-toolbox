@@ -57,9 +57,9 @@ export default function SponsoringBeheerPage() {
 
   // ── Sponsors ────────────────────────────────────────────────────────────────
 
-  function openNieuwSponsor() {
-    const eersteGroep = groepen[0]
-    setSponsorForm({ ...LEEG_SPONSOR, groep_id: eersteGroep?.id ?? '' })
+  function openNieuwSponsor(groepId) {
+    const id = groepId ?? groepen[0]?.id ?? ''
+    setSponsorForm({ ...LEEG_SPONSOR, groep_id: id })
     setSponsorFout(null)
     setSponsorModal({ mode: 'nieuw' })
   }
@@ -193,7 +193,7 @@ export default function SponsoringBeheerPage() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-800">Sponsoring</h2>
         <button
-          onClick={tab === 'sponsors' ? openNieuwSponsor : openNieuwGroep}
+          onClick={tab === 'sponsors' ? () => openNieuwSponsor() : openNieuwGroep}
           className="bg-vvz-green text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors"
         >
           {tab === 'sponsors' ? '+ Sponsor toevoegen' : '+ Groep toevoegen'}
@@ -236,6 +236,16 @@ export default function SponsoringBeheerPage() {
                     {groep.naam}
                   </span>
                   <span className="text-xs text-gray-400">{lijst.length} sponsor{lijst.length !== 1 ? 's' : ''}</span>
+                  <button
+                    onClick={() => openNieuwSponsor(groep.id)}
+                    title={`Sponsor toevoegen aan ${groep.naam}`}
+                    className="ml-auto text-xs font-medium text-vvz-green hover:text-vvz-green-dark flex items-center gap-0.5 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Toevoegen
+                  </button>
                 </div>
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                   {lijst.length === 0 ? (
