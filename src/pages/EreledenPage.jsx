@@ -1,6 +1,5 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { fetchEreleden } from '../services/ereleden'
-import { fetchEredelenGroepen } from '../services/eredelenGroepen'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 
@@ -151,7 +150,6 @@ function EreledenSectie({ groep, items }) {
 
 export default function EreledenPage() {
   const [ereleden, setEreleden] = useState([])
-  const [groepen, setGroepen] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [exporting, setExporting] = useState(false)
@@ -159,18 +157,19 @@ export default function EreledenPage() {
 
   useEffect(() => {
     async function load() {
-      const [{ data: elData, error: elErr }, { data: grData, error: grErr }] = await Promise.all([
-        fetchEreleden(),
-        fetchEredelenGroepen(),
-      ])
-      if (elErr) setError(elErr.message)
-      else setEreleden(elData ?? [])
-      if (grErr) setError(grErr?.message)
-      else setGroepen(grData ?? [])
+      const { data, error } = await fetchEreleden()
+      if (error) setError(error.message)
+      else setEreleden(data ?? [])
       setLoading(false)
     }
     load()
   }, [])
+
+  // groepen afleiden uit de join-data op ereleden — geen extra DB-call nodig
+  const groepen = useMemo(() =>
+    [...new Map(ereleden.filter(e => e.groep).map(e => [e.groep_id, e.groep])).values()]
+      .sort((a, b) => a.volgorde - b.volgorde),
+  [ereleden])
 
   async function handlePrint() {
     if (!printRef.current || exporting) return

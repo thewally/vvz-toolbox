@@ -106,17 +106,18 @@ export default function EreledenBeheerPage() {
   async function handleSaveGroep() {
     setSavingGroep(true)
     setGroepError(null)
+    // slug wordt afgeleid uit naam als het leeg is (bij nieuw), of behouden (bij bewerken)
     const payload = { ...groepForm, slug: groepForm.slug || slugify(groepForm.naam) }
-    if (editingGroep) {
-      const { error } = await updateEredelenGroep(editingGroep.id, payload)
-      if (error) { setGroepError(error.message); setSavingGroep(false); return }
-    } else {
-      const { error } = await createEredelenGroep(payload)
-      if (error) { setGroepError(error.message); setSavingGroep(false); return }
+    try {
+      const { error } = editingGroep
+        ? await updateEredelenGroep(editingGroep.id, payload)
+        : await createEredelenGroep(payload)
+      if (error) { setGroepError(error.message); return }
+      setGroepModalOpen(false)
+      load()
+    } finally {
+      setSavingGroep(false)
     }
-    setSavingGroep(false)
-    setGroepModalOpen(false)
-    load()
   }
 
   async function handleDeleteGroep(groep) {
@@ -255,6 +256,7 @@ export default function EreledenBeheerPage() {
                         onClick={() => handleToggleOverleden(item)}
                         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none shrink-0 ${item.overleden ? 'bg-gray-400' : 'bg-gray-200'}`}
                         title={item.overleden ? 'Markeer als levend' : 'Markeer als overleden'}
+                        aria-label={item.overleden ? 'Markeer als levend' : 'Markeer als overleden'}
                       >
                         <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${item.overleden ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
                       </button>
@@ -334,6 +336,7 @@ export default function EreledenBeheerPage() {
                   type="button"
                   onClick={() => setForm(f => ({ ...f, overleden: !f.overleden }))}
                   className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${form.overleden ? 'bg-gray-400' : 'bg-gray-200'}`}
+                  aria-label={form.overleden ? 'Markeer als levend' : 'Markeer als overleden'}
                 >
                   <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${form.overleden ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
                 </button>
