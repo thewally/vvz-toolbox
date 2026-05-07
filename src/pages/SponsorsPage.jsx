@@ -2,12 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getSponsors, getSponsorGroepen } from '../services/sponsors'
 
-function hexToRgb(hex) {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return `${r}, ${g}, ${b}`
-}
 
 function SponsorCard({ sponsor, size, groepHeeftSponsorTekst = false }) {
   const heeftTekst = size === 'groot' && groepHeeftSponsorTekst && sponsor.beschrijving && sponsor.beschrijving.replace(/<[^>]+>/g, '').trim()
@@ -107,16 +101,10 @@ export default function SponsorsPage() {
         const groepSponsors = sponsors.filter(s => s.groep_id === groep.id)
         if (groepSponsors.length === 0) return null
 
-        const badgeStyle = {
-          backgroundColor: `rgba(${hexToRgb(groep.kleur)}, 0.15)`,
-          color: groep.kleur,
-        }
-
         return (
           <section key={groep.id} className="mb-12">
             <div className="flex items-center gap-3 mb-6">
-              <h3 className="text-lg font-semibold text-gray-700">{groep.naam}</h3>
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={badgeStyle}>Sponsor</span>
+              <h3 className="text-lg font-semibold" style={{ color: groep.kleur }}>{groep.naam}</h3>
             </div>
 
             {groep.pagina_weergave === 'groot' && (
@@ -138,15 +126,10 @@ export default function SponsorsPage() {
       {groepen.filter(g => g.pagina_weergave === 'geen').map(groep => {
         const groepSponsors = sponsors.filter(s => s.groep_id === groep.id)
         if (groepSponsors.length === 0) return null
-        const badgeStyle = {
-          backgroundColor: `rgba(${hexToRgb(groep.kleur)}, 0.15)`,
-          color: groep.kleur,
-        }
         return (
           <section key={groep.id} className="mb-12">
             <div className="flex items-center gap-3 mb-6">
-              <h3 className="text-lg font-semibold text-gray-700">{groep.naam}</h3>
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={badgeStyle}>Sponsor</span>
+              <h3 className="text-lg font-semibold" style={{ color: groep.kleur }}>{groep.naam}</h3>
             </div>
             <div className="flex flex-wrap gap-3">
               {groepSponsors.map(s => <SponsorTextItem key={s.id} sponsor={s} />)}
