@@ -1,7 +1,11 @@
 import { supabase } from '../lib/supabaseClient'
 
 export async function fetchEreleden() {
-  return supabase.from('ereleden').select('*').order('jaar', { ascending: true }).order('naam', { ascending: true })
+  return supabase
+    .from('ereleden')
+    .select('*, groep:ereleden_groepen(id, naam, volgorde, kolom)')
+    .order('jaar', { ascending: true })
+    .order('naam', { ascending: true })
 }
 
 export async function createErelid(data) {

@@ -1,15 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { fetchEreleden } from '../services/ereleden'
+import { fetchEredelenGroepen } from '../services/eredelenGroepen'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-
-const CATEGORIE_LABELS = {
-  erevoorzitter: 'Erevoorzitters',
-  erelid: 'Ereleden',
-  lid_van_verdienste: 'Leden van verdienste',
-}
-
-const CATEGORIE_ORDER = ['erevoorzitter', 'erelid', 'lid_van_verdienste']
 
 function EreledenTabel({ items }) {
   if (items.length === 0) return null
@@ -22,7 +15,7 @@ function EreledenTabel({ items }) {
         </tr>
       </thead>
       <tbody>
-        {items.map((item, i) => (
+        {items.map((item) => (
           <tr key={item.id} style={{ borderBottom: '1px solid #a7f3d0' }}>
             <td style={{ fontSize: 11, color: '#374151', padding: '0 0 5px', fontVariantNumeric: 'tabular-nums', verticalAlign: 'top' }}>{item.jaar}</td>
             <td style={{ fontSize: 11, color: '#111827', padding: '0 0 5px 8px', verticalAlign: 'top' }}>
@@ -38,11 +31,9 @@ function EreledenTabel({ items }) {
   )
 }
 
-function PrintLayout({ ereleden }) {
-  const erevoorzitters = ereleden.filter(e => e.categorie === 'erevoorzitter')
-  const ereledeLijst = ereleden.filter(e => e.categorie === 'erelid')
-  const ledenVerdienste = ereleden.filter(e => e.categorie === 'lid_van_verdienste')
-
+function PrintLayout({ ereleden, groepen }) {
+  const linkerGroepen = groepen.filter(g => g.kolom === 1)
+  const rechterGroepen = groepen.filter(g => g.kolom === 2)
   const datum = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase()
 
   return (
@@ -56,7 +47,7 @@ function PrintLayout({ ereleden }) {
       display: 'flex',
       flexDirection: 'column',
     }}>
-      {/* Header: dun-dik-dun met logo eroverheen */}
+      {/* Header */}
       <div style={{ position: 'relative', marginBottom: 20, paddingTop: 24 }}>
         <div style={{ borderTop: '1px solid #13a538' }} />
         <div style={{ borderTop: '4px solid #13a538', margin: '3px 0' }} />
@@ -80,45 +71,41 @@ function PrintLayout({ ereleden }) {
         />
       </div>
 
-      {/* Twee kolommen + footer — gecentreerd, smallere vaste breedte */}
+      {/* Twee kolommen */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
         <div style={{ display: 'flex', gap: 24, width: '150mm', alignItems: 'flex-start' }}>
-          {/* Linker kolom: Erevoorzitters + Ereleden */}
           <div style={{ flex: 1 }}>
-            {erevoorzitters.length > 0 && (
-              <div style={{ marginBottom: 20 }}>
-                <h2 style={{ fontFamily: "'Playfair Display', 'Georgia', serif", fontStyle: 'italic', fontWeight: 700, fontSize: 15, color: '#13a538', marginBottom: 4 }}>
-                  Erevoorzitters
-                </h2>
-                <EreledenTabel items={erevoorzitters} />
-              </div>
-            )}
-            {ereledeLijst.length > 0 && (
-              <div>
-                <h2 style={{ fontFamily: "'Playfair Display', 'Georgia', serif", fontStyle: 'italic', fontWeight: 700, fontSize: 15, color: '#13a538', marginBottom: 4 }}>
-                  Ereleden
-                </h2>
-                <EreledenTabel items={ereledeLijst} />
-              </div>
-            )}
+            {linkerGroepen.map(groep => {
+              const items = ereleden.filter(e => e.groep_id === groep.id)
+              if (items.length === 0) return null
+              return (
+                <div key={groep.id} style={{ marginBottom: 20 }}>
+                  <h2 style={{ fontFamily: "'Playfair Display', 'Georgia', serif", fontStyle: 'italic', fontWeight: 700, fontSize: 15, color: '#13a538', marginBottom: 4 }}>
+                    {groep.naam}
+                  </h2>
+                  <EreledenTabel items={items} />
+                </div>
+              )
+            })}
           </div>
-
-          {/* Rechter kolom: Leden van verdienste */}
           <div style={{ flex: 1 }}>
-            {ledenVerdienste.length > 0 && (
-              <div>
-                <h2 style={{ fontFamily: "'Playfair Display', 'Georgia', serif", fontStyle: 'italic', fontWeight: 700, fontSize: 15, color: '#13a538', marginBottom: 4 }}>
-                  Leden van verdienste
-                </h2>
-                <EreledenTabel items={ledenVerdienste} />
-              </div>
-            )}
+            {rechterGroepen.map(groep => {
+              const items = ereleden.filter(e => e.groep_id === groep.id)
+              if (items.length === 0) return null
+              return (
+                <div key={groep.id} style={{ marginBottom: 20 }}>
+                  <h2 style={{ fontFamily: "'Playfair Display', 'Georgia', serif", fontStyle: 'italic', fontWeight: 700, fontSize: 15, color: '#13a538', marginBottom: 4 }}>
+                    {groep.naam}
+                  </h2>
+                  <EreledenTabel items={items} />
+                </div>
+              )
+            })}
           </div>
         </div>
-
       </div>
 
-      {/* Footer: datum rechts tot rechterkolom, lijnen volle breedte */}
+      {/* Footer */}
       <div style={{ marginTop: 20 }}>
         <div style={{ textAlign: 'right', marginBottom: 4 }}>
           <span style={{ fontSize: 8, color: '#374151', letterSpacing: 0.5 }}>PER {datum}</span>
@@ -131,11 +118,11 @@ function PrintLayout({ ereleden }) {
   )
 }
 
-function EreledenSectie({ cat, items }) {
+function EreledenSectie({ groep, items }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100">
-        <h2 className="text-lg font-bold text-vvz-green italic">{CATEGORIE_LABELS[cat]}</h2>
+        <h2 className="text-lg font-bold text-vvz-green italic">{groep.naam}</h2>
       </div>
       <table className="w-full">
         <thead>
@@ -164,6 +151,7 @@ function EreledenSectie({ cat, items }) {
 
 export default function EreledenPage() {
   const [ereleden, setEreleden] = useState([])
+  const [groepen, setGroepen] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [exporting, setExporting] = useState(false)
@@ -171,9 +159,14 @@ export default function EreledenPage() {
 
   useEffect(() => {
     async function load() {
-      const { data, error } = await fetchEreleden()
-      if (error) setError(error.message)
-      else setEreleden(data ?? [])
+      const [{ data: elData, error: elErr }, { data: grData, error: grErr }] = await Promise.all([
+        fetchEreleden(),
+        fetchEredelenGroepen(),
+      ])
+      if (elErr) setError(elErr.message)
+      else setEreleden(elData ?? [])
+      if (grErr) setError(grErr?.message)
+      else setGroepen(grData ?? [])
       setLoading(false)
     }
     load()
@@ -218,6 +211,9 @@ export default function EreledenPage() {
     )
   }
 
+  const linkerGroepen = groepen.filter(g => g.kolom === 1)
+  const rechterGroepen = groepen.filter(g => g.kolom === 2)
+
   return (
     <div className="max-w-5xl mx-auto p-4 pt-6 space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -235,27 +231,25 @@ export default function EreledenPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
-        {/* Linker kolom: Erevoorzitters + Ereleden */}
         <div className="space-y-6">
-          {['erevoorzitter', 'erelid'].map(cat => {
-            const items = ereleden.filter(e => e.categorie === cat)
+          {linkerGroepen.map(groep => {
+            const items = ereleden.filter(e => e.groep_id === groep.id)
             if (items.length === 0) return null
-            return <EreledenSectie key={cat} cat={cat} items={items} />
+            return <EreledenSectie key={groep.id} groep={groep} items={items} />
           })}
         </div>
-        {/* Rechter kolom: Leden van verdienste */}
-        <div>
-          {(() => {
-            const items = ereleden.filter(e => e.categorie === 'lid_van_verdienste')
+        <div className="space-y-6">
+          {rechterGroepen.map(groep => {
+            const items = ereleden.filter(e => e.groep_id === groep.id)
             if (items.length === 0) return null
-            return <EreledenSectie cat="lid_van_verdienste" items={items} />
-          })()}
+            return <EreledenSectie key={groep.id} groep={groep} items={items} />
+          })}
         </div>
       </div>
 
       {/* Verborgen print layout */}
       <div ref={printRef} style={{ display: 'none' }}>
-        <PrintLayout ereleden={ereleden} />
+        <PrintLayout ereleden={ereleden} groepen={groepen} />
       </div>
     </div>
   )
