@@ -104,7 +104,7 @@ export default function SponsorsPage() {
         return (
           <section key={groep.id} className="mb-12">
             <div className="flex items-center gap-3 mb-6">
-              <h3 className="text-lg font-semibold" style={{ color: groep.kleur }}>{groep.naam}</h3>
+              <h3 className="text-sm font-semibold px-3 py-1 rounded-full" style={{ color: groep.kleur, backgroundColor: groep.kleur + '26' }}>{groep.naam}</h3>
             </div>
 
             {groep.pagina_weergave === 'groot' && (
@@ -129,7 +129,7 @@ export default function SponsorsPage() {
         return (
           <section key={groep.id} className="mb-12">
             <div className="flex items-center gap-3 mb-6">
-              <h3 className="text-lg font-semibold" style={{ color: groep.kleur }}>{groep.naam}</h3>
+              <h3 className="text-sm font-semibold px-3 py-1 rounded-full" style={{ color: groep.kleur, backgroundColor: groep.kleur + '26' }}>{groep.naam}</h3>
             </div>
             <div className="flex flex-wrap gap-3">
               {groepSponsors.map(s => <SponsorTextItem key={s.id} sponsor={s} />)}
