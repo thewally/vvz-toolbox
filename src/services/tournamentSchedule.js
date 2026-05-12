@@ -315,6 +315,10 @@ export function generateSchedule({ tournament, fields, pools }) {
     }
   }
 
+  // Sorteer op starttijd zodat het schema chronologisch is en het toernooi
+  // zo vroeg mogelijk eindigt — overtollige tijd aan het einde blijft leeg.
+  placedMatches.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime))
+
   return {
     matches: placedMatches,
     warnings,
