@@ -280,39 +280,43 @@ export function generateSchedule({ tournament, fields, pools }) {
   }
 
   const placedMatches = []
+  // Slot-first: vul elk tijdslot zo vol mogelijk voor je naar het volgende gaat.
+  // Dit minimaliseert de totale duur — overtollige tijd blijft aan het einde.
+  const unscheduled = [...matchesToSchedule]
 
-  for (const m of matchesToSchedule) {
-    let placed = false
-    for (let slotIdx = 0; slotIdx < slotTimes.length && !placed; slotIdx++) {
-      // Beide teams mogen niet al in dit slot zitten (zelfde tijd, ander veld)
-      if (teamHasSlot(m.homeTeamId, slotIdx) || teamHasSlot(m.awayTeamId, slotIdx)) continue
-      if (!restOk(m.homeTeamId, slotIdx) || !restOk(m.awayTeamId, slotIdx)) continue
+  for (let slotIdx = 0; slotIdx < slotTimes.length && unscheduled.length > 0; slotIdx++) {
+    for (const f of safeFields) {
+      if (assignment[slotIdx].has(f.id)) continue
 
-      for (const f of safeFields) {
-        if (assignment[slotIdx].has(f.id)) continue
-        // Plaats
-        const startTime = slotTimes[slotIdx]
-        const endTime = minutesToTime(timeToMinutes(startTime) + duration)
-        const placedMatch = {
-          poolId: m.poolId,
-          fieldId: f.id,
-          homeTeamId: m.homeTeamId,
-          awayTeamId: m.awayTeamId,
-          startTime,
-          endTime,
-        }
-        assignment[slotIdx].set(f.id, placedMatch)
-        recordTeamSlot(m.homeTeamId, slotIdx)
-        recordTeamSlot(m.awayTeamId, slotIdx)
-        placedMatches.push(placedMatch)
-        placed = true
-        break
+      // Zoek de eerste wedstrijd in de wachtrij die op dit slot+veld past
+      const idx = unscheduled.findIndex(m =>
+        !teamHasSlot(m.homeTeamId, slotIdx) &&
+        !teamHasSlot(m.awayTeamId, slotIdx) &&
+        restOk(m.homeTeamId, slotIdx) &&
+        restOk(m.awayTeamId, slotIdx)
+      )
+      if (idx === -1) continue
+
+      const m = unscheduled.splice(idx, 1)[0]
+      const startTime = slotTimes[slotIdx]
+      const endTime = minutesToTime(timeToMinutes(startTime) + duration)
+      const placedMatch = {
+        poolId: m.poolId,
+        fieldId: f.id,
+        homeTeamId: m.homeTeamId,
+        awayTeamId: m.awayTeamId,
+        startTime,
+        endTime,
       }
+      assignment[slotIdx].set(f.id, placedMatch)
+      recordTeamSlot(m.homeTeamId, slotIdx)
+      recordTeamSlot(m.awayTeamId, slotIdx)
+      placedMatches.push(placedMatch)
     }
+  }
 
-    if (!placed) {
-      warnings.push(`Wedstrijd kon niet worden ingepland (poule ${m.poolId}, ronde ${m.round + 1}). Onvoldoende capaciteit of te strikte rustduur.`)
-    }
+  for (const m of unscheduled) {
+    warnings.push(`Wedstrijd kon niet worden ingepland (poule ${m.poolId}, ronde ${m.round + 1}). Onvoldoende capaciteit of te strikte rustduur.`)
   }
 
   // Sorteer op starttijd zodat het schema chronologisch is en het toernooi
