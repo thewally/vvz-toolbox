@@ -9,8 +9,10 @@ ALTER TABLE user_roles DROP CONSTRAINT IF EXISTS user_roles_role_slug_check;
 ALTER TABLE user_roles ADD CONSTRAINT user_roles_role_slug_check
   CHECK (role_slug IN (
     'activiteiten', 'trainingsschema', 'sponsoring',
-    'ereleden', 'contact', 'content', 'gebruikers',
-    'vrijwilligers', 'toernooien'
+    'ereleden', 'contact', 'gebruikers',
+    'vrijwilligers', 'lid-worden',
+    'paginas', 'nieuws', 'verslagen', 'reglementen',
+    'toernooien'
   ));
 
 -- 2. Generieke updated_at trigger functie (idempotent: alleen aanmaken als nog niet bestaat).
