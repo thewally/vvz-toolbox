@@ -57,6 +57,10 @@ import VrijwilligerWordenPage from './pages/VrijwilligerWordenPage'
 import LidWordenPage from './pages/LidWordenPage'
 import VrijwilligersBeheerPage from './pages/VrijwilligersBeheerPage'
 import LidWordenBeheerPage from './pages/LidWordenBeheerPage'
+import ToernooienBeheerPage from './pages/ToernooienBeheerPage'
+import ToernooiBewerkenPage from './pages/ToernooiBewerkenPage'
+import ToernooienPage from './pages/ToernooienPage'
+import ToernooiDetailPage from './pages/ToernooiDetailPage'
 
 export default function App() {
   return (
@@ -108,6 +112,9 @@ export default function App() {
           </Route>
           <Route path="vrijwilligers" element={<ProtectedRoute requiredRole="vrijwilligers"><VrijwilligersBeheerPage /></ProtectedRoute>} />
           <Route path="lid-worden" element={<ProtectedRoute requiredRole="lid-worden"><LidWordenBeheerPage /></ProtectedRoute>} />
+          <Route path="toernooien" element={<ProtectedRoute requiredRole="toernooien"><ToernooienBeheerPage /></ProtectedRoute>} />
+          <Route path="toernooien/nieuw" element={<ProtectedRoute requiredRole="toernooien"><ToernooiBewerkenPage /></ProtectedRoute>} />
+          <Route path="toernooien/:id" element={<ProtectedRoute requiredRole="toernooien"><ToernooiBewerkenPage /></ProtectedRoute>} />
         </Route>
         <Route path="wedstrijden" element={<WedstrijdenLayout />}>
           <Route index element={<Navigate to="programma" replace />} />
@@ -126,6 +133,10 @@ export default function App() {
         </Route>
         <Route path="vrijwilliger" element={<VrijwilligerWordenPage />} />
         <Route path="lid-worden" element={<LidWordenPage />} />
+        <Route path="toernooien">
+          <Route index element={<ToernooienPage />} />
+          <Route path=":slug" element={<ToernooiDetailPage />} />
+        </Route>
         <Route path="techniektrainingen" element={<PlaceholderPage title="Techniektrainingen" />} />
         <Route path="sponsors" element={<SponsorsPage />} />
         <Route path="sponsors/:slug" element={<SponsorDetailPage />} />

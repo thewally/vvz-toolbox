@@ -9,3 +9,4 @@
 - [Pagina Groepen spec](project_pagina_groepen_spec.md) — page_groups tabel, gegroepeerde beheer-UI, dynamische menu integratie
 - [Gebruikersregistratie spec](project_gebruikers_registratie_spec.md) — zelfregistratie, e-mailverificatie, profiles tabel, profielpagina
 - [Vrijwilliger Worden spec](project_vrijwilliger_worden_spec.md) — vacatures met groepen, contactpersoon-koppeling, drag-and-drop
+- [Toernooi Generator spec](project_toernooi_generator_spec.md) — toernooi-CRUD, velden/categorieën/poules, round-robin + greedy scheduler, branch feature-tournament-creator
