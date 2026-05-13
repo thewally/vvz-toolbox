@@ -57,10 +57,13 @@ import VrijwilligerWordenPage from './pages/VrijwilligerWordenPage'
 import LidWordenPage from './pages/LidWordenPage'
 import VrijwilligersBeheerPage from './pages/VrijwilligersBeheerPage'
 import LidWordenBeheerPage from './pages/LidWordenBeheerPage'
+import TvSchermPage from './pages/TvSchermPage'
+import TvSchermBeheerPage from './pages/TvSchermBeheerPage'
 
 export default function App() {
   return (
     <Routes>
+      <Route path="tv" element={<TvSchermPage />} />
       <Route element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="trainingsschema" element={<TrainingschemaLayout />}>
@@ -108,6 +111,7 @@ export default function App() {
           </Route>
           <Route path="vrijwilligers" element={<ProtectedRoute requiredRole="vrijwilligers"><VrijwilligersBeheerPage /></ProtectedRoute>} />
           <Route path="lid-worden" element={<ProtectedRoute requiredRole="lid-worden"><LidWordenBeheerPage /></ProtectedRoute>} />
+          <Route path="tv-scherm" element={<ProtectedRoute adminOnly><TvSchermBeheerPage /></ProtectedRoute>} />
         </Route>
         <Route path="wedstrijden" element={<WedstrijdenLayout />}>
           <Route index element={<Navigate to="programma" replace />} />
