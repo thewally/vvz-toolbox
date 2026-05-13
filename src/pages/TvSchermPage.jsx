@@ -483,19 +483,38 @@ export default function TvSchermPage() {
   const dynamischItemsPerPagina = useMemo(() => {
     const RIJ_HOOGTE = 52
     const DAG_HEADER = 80
-    function bereken(items, metDatum) {
-      if (!metDatum) return Math.max(4, Math.floor(contentHoogte / RIJ_HOOGTE)) * 2
-      const uniekeDatums = new Set(items.map(w => (w.wedstrijddatum || '').slice(0, 10))).size
-      // headers worden verdeeld over 2 kolommen; gebruik ceil voor worst-case kolom
-      const headersPerKolom = Math.ceil(uniekeDatums / 2)
-      const beschikbaar = contentHoogte - (headersPerKolom * DAG_HEADER)
-      return Math.max(4, Math.floor(beschikbaar / RIJ_HOOGTE)) * 2
-    }
-    return {
-      metHeaders: (items) => bereken(items, true),
-      zonderHeaders: bereken([], false),
-    }
+    const zonderHeaders = Math.max(4, Math.floor(contentHoogte / RIJ_HOOGTE)) * 2
+    // Per dag: 1 header + wedstrijden in 2 kolommen
+    const metEenDagHeader = Math.max(4, Math.floor((contentHoogte - DAG_HEADER) / RIJ_HOOGTE)) * 2
+    return { zonderHeaders, metEenDagHeader }
   }, [contentHoogte])
+
+  function pagineerPerDag(wedstrijden, itemsPerPagina, titelFn, type, extraProps = {}) {
+    const dagGroepen = {}
+    wedstrijden.forEach(w => {
+      const datum = (w.wedstrijddatum || '').slice(0, 10)
+      if (!dagGroepen[datum]) dagGroepen[datum] = []
+      dagGroepen[datum].push(w)
+    })
+    const slides = []
+    Object.entries(dagGroepen).forEach(([datum, items]) => {
+      pagineer(items, itemsPerPagina).forEach((pagina, i) => {
+        if (pagina.length > 0) {
+          const dagPaginas = Math.ceil(items.length / itemsPerPagina)
+          slides.push({
+            datum,
+            wedstrijden: pagina,
+            paginaBinnenDag: i + 1,
+            totaalBinnenDag: dagPaginas,
+            ...extraProps,
+            title: titelFn(datum, dagPaginas > 1 ? `${i + 1}/${dagPaginas}` : null),
+            type,
+          })
+        }
+      })
+    })
+    return slides
+  }
 
   // ── Data laden ──────────────────────────────────────────────────────────────
 
@@ -708,36 +727,23 @@ export default function TvSchermPage() {
     }
 
     if (s.programma_week) {
-      const weekPaginas = pagineer(programmaDezeWeek, dynamischItemsPerPagina.metHeaders(programmaDezeWeek))
-      weekPaginas.forEach((pagina, i) => {
-        if (pagina.length > 0) {
-          lijst.push({
-            id: `programma-week-${i}`,
-            title: 'Programma deze week',
-            type: 'programma-week',
-            wedstrijden: pagina,
-            pagina: i + 1,
-            totaal: weekPaginas.length,
-          })
-        }
-      })
+      pagineerPerDag(
+        programmaDezeWeek,
+        dynamischItemsPerPagina.metEenDagHeader,
+        (datum, pag) => `Programma deze week — ${formatDatumLang(datum)}${pag ? ` (${pag})` : ''}`,
+        'programma-week',
+        { showDatum: false },
+      ).forEach((slide, i) => lijst.push({ id: `programma-week-${i}`, ...slide }))
     }
 
     if (s.uitslagen_week) {
-      const uitWeekPaginas = pagineer(uitslagenDezeWeek, dynamischItemsPerPagina.metHeaders(uitslagenDezeWeek))
-      uitWeekPaginas.forEach((pagina, i) => {
-        if (pagina.length > 0) {
-          lijst.push({
-            id: `uitslagen-week-${i}`,
-            title: 'Uitslagen deze week',
-            type: 'uitslagen',
-            wedstrijden: pagina,
-            showDatum: true,
-            pagina: i + 1,
-            totaal: uitWeekPaginas.length,
-          })
-        }
-      })
+      pagineerPerDag(
+        uitslagenDezeWeek,
+        dynamischItemsPerPagina.metEenDagHeader,
+        (datum, pag) => `Uitslagen deze week — ${formatDatumLang(datum)}${pag ? ` (${pag})` : ''}`,
+        'uitslagen',
+        { showDatum: false },
+      ).forEach((slide, i) => lijst.push({ id: `uitslagen-week-${i}`, ...slide }))
     }
 
     return lijst
@@ -802,7 +808,7 @@ export default function TvSchermPage() {
       case 'nog-te-spelen':
         return <SlideProgrammaLijst wedstrijden={slide.wedstrijden} />
       case 'programma-week':
-        return <SlideProgrammaWeek wedstrijden={slide.wedstrijden} />
+        return <SlideProgrammaLijst wedstrijden={slide.wedstrijden} />
       default:
         return null
     }
