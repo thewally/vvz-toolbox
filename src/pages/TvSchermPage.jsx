@@ -483,13 +483,17 @@ export default function TvSchermPage() {
   const dynamischItemsPerPagina = useMemo(() => {
     const RIJ_HOOGTE = 52
     const DAG_HEADER = 80
-    function bereken(dagwissels) {
-      const beschikbaar = contentHoogte - (dagwissels * DAG_HEADER)
+    function bereken(items, metDatum) {
+      if (!metDatum) return Math.max(4, Math.floor(contentHoogte / RIJ_HOOGTE)) * 2
+      const uniekeDatums = new Set(items.map(w => (w.wedstrijddatum || '').slice(0, 10))).size
+      // headers worden verdeeld over 2 kolommen; gebruik ceil voor worst-case kolom
+      const headersPerKolom = Math.ceil(uniekeDatums / 2)
+      const beschikbaar = contentHoogte - (headersPerKolom * DAG_HEADER)
       return Math.max(4, Math.floor(beschikbaar / RIJ_HOOGTE)) * 2
     }
     return {
-      metHeaders: bereken(7),   // max 7 dagen per week
-      zonderHeaders: bereken(0),
+      metHeaders: (items) => bereken(items, true),
+      zonderHeaders: bereken([], false),
     }
   }, [contentHoogte])
 
@@ -704,7 +708,7 @@ export default function TvSchermPage() {
     }
 
     if (s.programma_week) {
-      const weekPaginas = pagineer(programmaDezeWeek, dynamischItemsPerPagina.metHeaders)
+      const weekPaginas = pagineer(programmaDezeWeek, dynamischItemsPerPagina.metHeaders(programmaDezeWeek))
       weekPaginas.forEach((pagina, i) => {
         if (pagina.length > 0) {
           lijst.push({
@@ -720,7 +724,7 @@ export default function TvSchermPage() {
     }
 
     if (s.uitslagen_week) {
-      const uitWeekPaginas = pagineer(uitslagenDezeWeek, dynamischItemsPerPagina.metHeaders)
+      const uitWeekPaginas = pagineer(uitslagenDezeWeek, dynamischItemsPerPagina.metHeaders(uitslagenDezeWeek))
       uitWeekPaginas.forEach((pagina, i) => {
         if (pagina.length > 0) {
           lijst.push({
