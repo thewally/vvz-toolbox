@@ -41,6 +41,15 @@ function isThuiswedstrijd(w) {
   return w.thuisteamclubrelatiecode === CLUB
 }
 
+function getSpeeltype(w) {
+  const acc = (w.accommodatie || '').toLowerCase()
+  if (acc.includes('zaal')) return 'Zaal'
+  const dag = w.wedstrijddatum ? new Date(w.wedstrijddatum).getDay() : null
+  const uur = w.aanvangstijd ? parseInt(w.aanvangstijd.split(':')[0], 10) : null
+  if (dag === 5 && uur !== null && uur >= 18) return '7x7'
+  return null
+}
+
 function isHuidigSpelend(w) {
   const vandaag = getTodaySleutel()
   if (!w.wedstrijddatum || w.wedstrijddatum.slice(0, 10) !== vandaag) return false
@@ -211,6 +220,16 @@ function SlideActiviteiten({ items, pagina, totaalPaginas }) {
   )
 }
 
+function SpelTypeBadge({ w }) {
+  const type = getSpeeltype(w)
+  if (!type) return null
+  return (
+    <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-white/10 text-white/60 flex-shrink-0">
+      {type}
+    </span>
+  )
+}
+
 function ProgrammaRij({ w }) {
   const isThuis = isThuiswedstrijd(w)
   return (
@@ -221,6 +240,7 @@ function ProgrammaRij({ w }) {
         <span className="text-white/40 text-lg flex-shrink-0">vs</span>
         <span className={`text-xl flex-1 truncate ${!isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.uitteam}</span>
       </div>
+      <SpelTypeBadge w={w} />
       <span className="text-sm font-semibold tracking-widest w-14 text-right flex-shrink-0 text-white/70">
         {isThuis ? 'THUIS' : 'UIT'}
       </span>
@@ -239,6 +259,7 @@ function UitslagRij({ w }) {
         <span className="text-white/40 text-lg flex-shrink-0">vs</span>
         <span className={`text-xl flex-1 truncate ${!isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.uitteam}</span>
       </div>
+      <SpelTypeBadge w={w} />
       {uitslag ? (
         <span className={`text-2xl font-bold w-16 text-center flex-shrink-0 ${
           uitslag.gewonnen ? 'text-emerald-200' : uitslag.gelijk ? 'text-white/70' : 'text-red-300'
