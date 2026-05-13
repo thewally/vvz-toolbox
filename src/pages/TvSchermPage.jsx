@@ -481,12 +481,16 @@ export default function TvSchermPage() {
 
   // Bereken hoeveel wedstrijdrijen passen in de beschikbare hoogte (2 kolommen)
   const dynamischItemsPerPagina = useMemo(() => {
-    const RIJ_HOOGTE = 52        // py-3 + text-xl
-    const DAG_HEADER = 80        // mt-10 + pt-4 + text-lg (per dagwissel)
-    const GESCHATTE_DAGWISSELS = 4
-    const beschikbaar = contentHoogte - (GESCHATTE_DAGWISSELS * DAG_HEADER)
-    const rijenPerKolom = Math.max(2, Math.floor(beschikbaar / RIJ_HOOGTE))
-    return rijenPerKolom * 2
+    const RIJ_HOOGTE = 52
+    const DAG_HEADER = 80
+    function bereken(dagwissels) {
+      const beschikbaar = contentHoogte - (dagwissels * DAG_HEADER)
+      return Math.max(4, Math.floor(beschikbaar / RIJ_HOOGTE)) * 2
+    }
+    return {
+      metHeaders: bereken(7),   // max 7 dagen per week
+      zonderHeaders: bereken(0),
+    }
   }, [contentHoogte])
 
   // ── Data laden ──────────────────────────────────────────────────────────────
@@ -668,7 +672,7 @@ export default function TvSchermPage() {
     }
 
     if (s.uitslagen_vandaag) {
-      const uitPaginas = pagineer(uitslagenVandaag, dynamischItemsPerPagina)
+      const uitPaginas = pagineer(uitslagenVandaag, dynamischItemsPerPagina.zonderHeaders)
       uitPaginas.forEach((pagina, i) => {
         if (pagina.length > 0) {
           lijst.push({
@@ -684,7 +688,7 @@ export default function TvSchermPage() {
     }
 
     if (s.nog_te_spelen) {
-      const nogPaginas = pagineer(nogTeSpelen, dynamischItemsPerPagina)
+      const nogPaginas = pagineer(nogTeSpelen, dynamischItemsPerPagina.zonderHeaders)
       nogPaginas.forEach((pagina, i) => {
         if (pagina.length > 0) {
           lijst.push({
@@ -700,7 +704,7 @@ export default function TvSchermPage() {
     }
 
     if (s.programma_week) {
-      const weekPaginas = pagineer(programmaDezeWeek, dynamischItemsPerPagina)
+      const weekPaginas = pagineer(programmaDezeWeek, dynamischItemsPerPagina.metHeaders)
       weekPaginas.forEach((pagina, i) => {
         if (pagina.length > 0) {
           lijst.push({
@@ -716,7 +720,7 @@ export default function TvSchermPage() {
     }
 
     if (s.uitslagen_week) {
-      const uitWeekPaginas = pagineer(uitslagenDezeWeek, dynamischItemsPerPagina)
+      const uitWeekPaginas = pagineer(uitslagenDezeWeek, dynamischItemsPerPagina.metHeaders)
       uitWeekPaginas.forEach((pagina, i) => {
         if (pagina.length > 0) {
           lijst.push({
