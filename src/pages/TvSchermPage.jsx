@@ -382,33 +382,15 @@ function UitslagenKolom({ wedstrijden, showDatum }) {
 }
 
 function SlideUitslagenLijst({ wedstrijden, showDatum }) {
-  const helft = Math.ceil(wedstrijden.length / 2)
-  const links = wedstrijden.slice(0, helft)
-  const rechts = wedstrijden.slice(helft)
-  return (
-    <div className="grid grid-cols-2 gap-x-8 items-start">
-      <div><UitslagenKolom wedstrijden={links} showDatum={showDatum} /></div>
-      <div><UitslagenKolom wedstrijden={rechts} showDatum={showDatum} /></div>
-    </div>
-  )
+  return <UitslagenKolom wedstrijden={wedstrijden} showDatum={showDatum} />
 }
 
 function SlideProgrammaLijst({ wedstrijden }) {
-  const helft = Math.ceil(wedstrijden.length / 2)
-  const links = wedstrijden.slice(0, helft)
-  const rechts = wedstrijden.slice(helft)
   return (
-    <div className="grid grid-cols-2 gap-x-8">
-      <div>
-        {links.map(w => (
-          <ProgrammaRij key={w.wedstrijdcode || `${w.thuisteam}-${w.uitteam}`} w={w} />
-        ))}
-      </div>
-      <div>
-        {rechts.map(w => (
-          <ProgrammaRij key={w.wedstrijdcode || `${w.thuisteam}-${w.uitteam}`} w={w} />
-        ))}
-      </div>
+    <div>
+      {wedstrijden.map(w => (
+        <ProgrammaRij key={w.wedstrijdcode || `${w.thuisteam}-${w.uitteam}`} w={w} />
+      ))}
     </div>
   )
 }
@@ -500,13 +482,11 @@ export default function TvSchermPage() {
     return () => observer.disconnect()
   }, [])
 
-  // Bereken hoeveel wedstrijdrijen passen in de beschikbare hoogte (2 kolommen)
   const dynamischItemsPerPagina = useMemo(() => {
     const RIJ_HOOGTE = 52
     const DAG_HEADER = 80
-    const zonderHeaders = Math.max(4, Math.floor(contentHoogte / RIJ_HOOGTE)) * 2
-    // Per dag: 1 header + wedstrijden in 2 kolommen
-    const metEenDagHeader = Math.max(4, Math.floor((contentHoogte - DAG_HEADER) / RIJ_HOOGTE)) * 2
+    const zonderHeaders = Math.max(4, Math.floor(contentHoogte / RIJ_HOOGTE))
+    const metEenDagHeader = Math.max(4, Math.floor((contentHoogte - DAG_HEADER) / RIJ_HOOGTE))
     return { zonderHeaders, metEenDagHeader }
   }, [contentHoogte])
 
