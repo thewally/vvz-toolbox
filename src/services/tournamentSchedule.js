@@ -54,12 +54,14 @@ export function calculateSlots({
   startTime,
   endTime,
   matchDurationMinutes,
+  slotGapMinutes = 0,
   breakStartTime,
   breakDurationMinutes = 0,
 }) {
   const startM = timeToMinutes(startTime)
   const endM = timeToMinutes(endTime)
   const duration = Number(matchDurationMinutes) || 0
+  const gap = Math.max(0, Number(slotGapMinutes) || 0)
   if (duration <= 0 || endM <= startM) return []
 
   const hasBreak = !!breakStartTime && breakDurationMinutes > 0
@@ -67,7 +69,7 @@ export function calculateSlots({
   const breakEnd = hasBreak ? breakStart + breakDurationMinutes : null
 
   const slots = []
-  for (let t = startM; t + duration <= endM; t += duration) {
+  for (let t = startM; t + duration <= endM; t += duration + gap) {
     const slotEnd = t + duration
     // Overlap met pauze? (slot [t, slotEnd) versus [breakStart, breakEnd))
     if (hasBreak && t < breakEnd && slotEnd > breakStart) continue
@@ -83,6 +85,7 @@ export function calculateCapacity({
   startTime,
   endTime,
   matchDurationMinutes,
+  slotGapMinutes = 0,
   breakStartTime,
   breakDurationMinutes = 0,
   fields = [],
@@ -91,6 +94,7 @@ export function calculateCapacity({
     startTime,
     endTime,
     matchDurationMinutes,
+    slotGapMinutes,
     breakStartTime,
     breakDurationMinutes,
   })
@@ -103,14 +107,16 @@ export function calculateCapacity({
 }
 
 /**
- * Som van n*(n-1)/2 over alle poules (round-robin: iedereen tegen iedereen).
+ * Som van n*(n-1)/2 per poule × roundsPerPairing.
  * @param {Array<{ teamIds: string[] }>} pools
+ * @param {number} roundsPerPairing
  */
-export function totalMatchesNeeded(pools) {
+export function totalMatchesNeeded(pools, roundsPerPairing = 1) {
   if (!Array.isArray(pools)) return 0
+  const rpp = Math.max(1, Number(roundsPerPairing) || 1)
   return pools.reduce((sum, p) => {
     const n = Array.isArray(p?.teamIds) ? p.teamIds.length : 0
-    return sum + (n * (n - 1)) / 2
+    return sum + (n * (n - 1)) / 2 * rpp
   }, 0)
 }
 
@@ -182,7 +188,8 @@ export function generateRoundRobinPairings(teamIds) {
  *     startTime: string,
  *     endTime: string,
  *     matchDurationMinutes: number,
- *     restSlots: number,
+ *     roundsPerPairing?: number,
+ *     slotGapMinutes?: number,
  *     breakStartTime?: string|null,
  *     breakDurationMinutes?: number,
  *   },
@@ -195,16 +202,17 @@ export function generateRoundRobinPairings(teamIds) {
  *   isFeasible: boolean,
  * }}
  */
-export function generateSchedule({ tournament, fields, pools }) {
+export function generateSchedule({ tournament, fields, pools, categories = [] }) {
   const warnings = []
 
   const duration = Number(tournament?.matchDurationMinutes) || 0
-  const restSlots = Math.max(0, Number(tournament?.restSlots ?? 0))
+  const roundsPerPairing = Math.max(1, Number(tournament?.roundsPerPairing ?? 1))
 
   const slotTimes = calculateSlots({
     startTime: tournament?.startTime,
     endTime: tournament?.endTime,
     matchDurationMinutes: duration,
+    slotGapMinutes: tournament?.slotGapMinutes ?? 0,
     breakStartTime: tournament?.breakStartTime,
     breakDurationMinutes: tournament?.breakDurationMinutes,
   })
@@ -220,14 +228,58 @@ export function generateSchedule({ tournament, fields, pools }) {
     warnings.push('Geen velden gedefinieerd.')
   }
 
+  // Per categorie: welke slotindexen zijn geldig (binnen het tijdvenster van de categorie)?
+  const categoryMap = {}
+  for (const c of categories) categoryMap[c.id] = c
+
+  const validSlotsByCategory = {}
+  for (const c of categories) {
+    if (!c.start_time && !c.end_time) continue // geen beperking → alle slots geldig
+    const catStart = timeToMinutes((c.start_time || tournament?.startTime || '00:00').slice(0, 5))
+    const catEnd   = timeToMinutes((c.end_time   || tournament?.endTime   || '23:59').slice(0, 5))
+    validSlotsByCategory[c.id] = new Set(
+      slotTimes.reduce((acc, t, i) => {
+        const m = timeToMinutes(t)
+        if (m >= catStart && m + duration <= catEnd) acc.push(i)
+        return acc
+      }, [])
+    )
+  }
+
+  // Map poolId → categoryId
+  const poolCategoryMap = {}
+  for (const p of Array.isArray(pools) ? pools : []) {
+    if (p.categoryId) poolCategoryMap[p.id] = p.categoryId
+  }
+
+  function slotValidForMatch(slotIdx, poolId) {
+    const catId = poolCategoryMap[poolId]
+    if (!catId || !validSlotsByCategory[catId]) return true // geen tijdbeperking
+    return validSlotsByCategory[catId].has(slotIdx)
+  }
+
   const matchesToSchedule = []
   const validPools = Array.isArray(pools) ? pools : []
 
-  // Genereer parings per poule
-  const poolPairings = validPools.map(p => ({
-    poolId: p.id,
-    pairings: generateRoundRobinPairings(p.teamIds ?? []),
-  }))
+  // Genereer parings per poule (herhaald roundsPerPairing keer)
+  const poolPairings = validPools.map(p => {
+    const base = generateRoundRobinPairings(p.teamIds ?? [])
+    const pairings = []
+    for (let rep = 0; rep < roundsPerPairing; rep++) {
+      const roundOffset = base.length > 0
+        ? rep * (base[base.length - 1].round + 1)
+        : 0
+      for (const m of base) {
+        // Bij even herhalingen home/away wisselen voor balans
+        if (rep % 2 === 0) {
+          pairings.push({ ...m, round: m.round + roundOffset })
+        } else {
+          pairings.push({ ...m, round: m.round + roundOffset, homeTeamId: m.awayTeamId, awayTeamId: m.homeTeamId })
+        }
+      }
+    }
+    return { poolId: p.id, pairings }
+  })
 
   // Interleave: ronde 1 van alle poules, dan ronde 2, etc.
   const maxRound = poolPairings.reduce((max, pp) => {
@@ -254,15 +306,10 @@ export function generateSchedule({ tournament, fields, pools }) {
   const assignment = slotTimes.map(() => new Map())
   // teamSlots: voor elk team de set van slotIndexen waarin ze spelen
   const teamSlots = new Map()
-  const teamLastSlot = new Map()
 
   function recordTeamSlot(teamId, slotIndex) {
     if (!teamSlots.has(teamId)) teamSlots.set(teamId, new Set())
     teamSlots.get(teamId).add(slotIndex)
-    const cur = teamLastSlot.get(teamId)
-    if (cur === undefined || slotIndex > cur) {
-      teamLastSlot.set(teamId, slotIndex)
-    }
   }
 
   function teamHasSlot(teamId, slotIndex) {
@@ -270,30 +317,19 @@ export function generateSchedule({ tournament, fields, pools }) {
     return !!(s && s.has(slotIndex))
   }
 
-  function restOk(teamId, slotIndex) {
-    const s = teamSlots.get(teamId)
-    if (!s) return true
-    for (const used of s) {
-      if (Math.abs(slotIndex - used) <= restSlots) return false
-    }
-    return true
-  }
-
   const placedMatches = []
-  // Slot-first: vul elk tijdslot zo vol mogelijk voor je naar het volgende gaat.
-  // Dit minimaliseert de totale duur — overtollige tijd blijft aan het einde.
   const unscheduled = [...matchesToSchedule]
 
   for (let slotIdx = 0; slotIdx < slotTimes.length && unscheduled.length > 0; slotIdx++) {
     for (const f of safeFields) {
       if (assignment[slotIdx].has(f.id)) continue
 
-      // Zoek de eerste wedstrijd in de wachtrij die op dit slot+veld past
+      // Zoek de eerste wedstrijd waarbij beide teams vrij zijn én het slot
+      // binnen het tijdvenster van de categorie valt.
       const idx = unscheduled.findIndex(m =>
+        slotValidForMatch(slotIdx, m.poolId) &&
         !teamHasSlot(m.homeTeamId, slotIdx) &&
-        !teamHasSlot(m.awayTeamId, slotIdx) &&
-        restOk(m.homeTeamId, slotIdx) &&
-        restOk(m.awayTeamId, slotIdx)
+        !teamHasSlot(m.awayTeamId, slotIdx)
       )
       if (idx === -1) continue
 
@@ -316,7 +352,9 @@ export function generateSchedule({ tournament, fields, pools }) {
   }
 
   for (const m of unscheduled) {
-    warnings.push(`Wedstrijd kon niet worden ingepland (poule ${m.poolId}, ronde ${m.round + 1}). Onvoldoende capaciteit of te strikte rustduur.`)
+    const catId = poolCategoryMap[m.poolId]
+    const catName = catId && categoryMap[catId]?.name ? ` (${categoryMap[catId].name})` : ''
+    warnings.push(`Wedstrijd kon niet worden ingepland (poule ${m.poolId}${catName}, ronde ${m.round + 1}). Onvoldoende capaciteit of tijdvenster te klein.`)
   }
 
   // Sorteer op starttijd zodat het schema chronologisch is en het toernooi

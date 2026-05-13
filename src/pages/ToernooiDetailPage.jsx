@@ -20,6 +20,57 @@ function formatDateLong(iso) {
   return `${DUTCH_DAYS_LONG[d.getDay()]} ${d.getDate()} ${DUTCH_MONTHS_LONG[d.getMonth()]} ${d.getFullYear()}`
 }
 
+function computeStandings(matches) {
+  const teamData = {}
+
+  function initTeam(id, teamObj, poolId, poolObj) {
+    if (!teamData[id]) {
+      teamData[id] = {
+        name: teamObj?.name ?? id,
+        poolId,
+        poolName: poolObj?.name ?? '',
+        played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0,
+      }
+    }
+  }
+
+  for (const m of matches) {
+    initTeam(m.home_team_id, m.home_team, m.pool_id, m.pool)
+    initTeam(m.away_team_id, m.away_team, m.pool_id, m.pool)
+
+    if (m.result?.home_score == null || m.result?.away_score == null) continue
+    const hs = Number(m.result.home_score)
+    const as = Number(m.result.away_score)
+    const home = teamData[m.home_team_id]
+    const away = teamData[m.away_team_id]
+    home.played++; away.played++
+    home.gf += hs; home.ga += as
+    away.gf += as; away.ga += hs
+    if (hs > as) { home.won++; away.lost++ }
+    else if (hs < as) { home.lost++; away.won++ }
+    else { home.drawn++; away.drawn++ }
+  }
+
+  const byPool = {}
+  for (const [teamId, d] of Object.entries(teamData)) {
+    if (!byPool[d.poolId]) byPool[d.poolId] = { poolName: d.poolName, rows: [] }
+    byPool[d.poolId].rows.push({
+      teamId, name: d.name,
+      played: d.played, won: d.won, drawn: d.drawn, lost: d.lost,
+      gf: d.gf, ga: d.ga, gd: d.gf - d.ga,
+      pts: d.won * 3 + d.drawn,
+    })
+  }
+
+  for (const pool of Object.values(byPool)) {
+    pool.rows.sort((a, b) =>
+      b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || a.name.localeCompare(b.name)
+    )
+  }
+
+  return Object.values(byPool).sort((a, b) => a.poolName.localeCompare(b.poolName))
+}
+
 export default function ToernooiDetailPage() {
   const { slug } = useParams()
   const [tournament, setTournament] = useState(null)
@@ -62,6 +113,7 @@ export default function ToernooiDetailPage() {
       startTime: (tournament.start_time || '09:00').slice(0, 5),
       endTime: (tournament.end_time || '17:00').slice(0, 5),
       matchDurationMinutes: tournament.match_duration_minutes,
+      slotGapMinutes: tournament.slot_gap_minutes || 0,
       breakStartTime: tournament.break_start_time || null,
       breakDurationMinutes: tournament.break_duration_minutes || 0,
     })
@@ -79,6 +131,26 @@ export default function ToernooiDetailPage() {
     }
     return map
   }, [matches])
+
+  const standings = useMemo(() => computeStandings(matches), [matches])
+
+  const fieldSortOrder = useMemo(() => {
+    const map = {}
+    fields.forEach(f => { map[f.id] = f.sort_order ?? 0 })
+    return map
+  }, [fields])
+
+  const sortedMatches = useMemo(() =>
+    [...matches].sort((a, b) => {
+      const timeDiff = (a.start_time || '').localeCompare(b.start_time || '')
+      if (timeDiff !== 0) return timeDiff
+      return (fieldSortOrder[a.field_id] ?? 0) - (fieldSortOrder[b.field_id] ?? 0)
+    }),
+  [matches, fieldSortOrder])
+
+  const hasAnyResult = useMemo(() =>
+    matches.some(m => m.result?.home_score != null),
+  [matches])
 
   if (loading) {
     return (
@@ -122,25 +194,25 @@ export default function ToernooiDetailPage() {
         <>
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4 flex flex-wrap items-center gap-3">
             <div className="flex gap-1">
-              <button
-                type="button"
-                onClick={() => setViewMode('table')}
-                className={`px-3 py-1.5 text-sm rounded-lg ${viewMode === 'table' ? 'bg-vvz-green text-white' : 'border border-gray-300 text-gray-700 hover:bg-gray-50'}`}
-              >
-                Tabel
+              <button type="button" onClick={() => setViewMode('table')}
+                className={`px-3 py-1.5 text-sm rounded-lg ${viewMode === 'table' ? 'bg-vvz-green text-white' : 'border border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+                Programma
               </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                className={`px-3 py-1.5 text-sm rounded-lg ${viewMode === 'list' ? 'bg-vvz-green text-white' : 'border border-gray-300 text-gray-700 hover:bg-gray-50'}`}
-              >
-                Lijst
+              <button type="button" onClick={() => setViewMode('list')}
+                className={`px-3 py-1.5 text-sm rounded-lg ${viewMode === 'list' ? 'bg-vvz-green text-white' : 'border border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+                Uitslagen
               </button>
+              {hasAnyResult && (
+                <button type="button" onClick={() => setViewMode('standings')}
+                  className={`px-3 py-1.5 text-sm rounded-lg ${viewMode === 'standings' ? 'bg-vvz-green text-white' : 'border border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+                  Standen
+                </button>
+              )}
             </div>
             <span className="text-sm text-gray-500">{matches.length} wedstrijd{matches.length !== 1 ? 'en' : ''}</span>
           </div>
 
-          {viewMode === 'table' ? (
+          {viewMode === 'table' && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
@@ -158,12 +230,18 @@ export default function ToernooiDetailPage() {
                       {sortedFields.map(f => {
                         const m = matchByCell[`${slot}|${f.id}`]
                         if (!m) return <td key={f.id} className="px-3 py-2 text-gray-300">—</td>
+                        const hasResult = m.result?.home_score != null && m.result?.away_score != null
                         return (
                           <td key={f.id} className="px-3 py-2">
                             <div className="text-xs text-gray-500">{m.pool?.name}</div>
-                            <div className="font-medium">
+                            <div className="font-medium text-sm">
                               {m.home_team?.name} <span className="text-gray-400">vs</span> {m.away_team?.name}
                             </div>
+                            {hasResult && (
+                              <div className="text-sm font-bold text-vvz-green mt-0.5">
+                                {m.result.home_score} – {m.result.away_score}
+                              </div>
+                            )}
                           </td>
                         )
                       })}
@@ -172,7 +250,9 @@ export default function ToernooiDetailPage() {
                 </tbody>
               </table>
             </div>
-          ) : (
+          )}
+
+          {viewMode === 'list' && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
@@ -181,10 +261,11 @@ export default function ToernooiDetailPage() {
                     <th className="px-3 py-2 text-left">Veld</th>
                     <th className="px-3 py-2 text-left">Poule</th>
                     <th className="px-3 py-2 text-left">Wedstrijd</th>
+                    <th className="px-3 py-2 text-left">Uitslag</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {matches.map(m => (
+                  {sortedMatches.map(m => (
                     <tr key={m.id} className="hover:bg-gray-50">
                       <td className="px-3 py-2 font-medium text-gray-700">{(m.start_time || '').slice(0, 5)}</td>
                       <td className="px-3 py-2 text-gray-600">{m.field?.name}</td>
@@ -192,10 +273,64 @@ export default function ToernooiDetailPage() {
                       <td className="px-3 py-2">
                         <strong>{m.home_team?.name}</strong> <span className="text-gray-400">vs</span> <strong>{m.away_team?.name}</strong>
                       </td>
+                      <td className="px-3 py-2">
+                        {m.result?.home_score != null
+                          ? <span className="font-bold text-vvz-green">{m.result.home_score} – {m.result.away_score}</span>
+                          : <span className="text-gray-300">—</span>
+                        }
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {viewMode === 'standings' && (
+            <div className="space-y-6">
+              {standings.map(pool => (
+                <div key={pool.poolName} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <h2 className="font-semibold text-gray-800">{pool.poolName}</h2>
+                  </div>
+                  <div className="overflow-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                        <tr>
+                          <th className="px-4 py-2 text-left">Team</th>
+                          <th className="px-3 py-2 text-center w-10">G</th>
+                          <th className="px-3 py-2 text-center w-10">W</th>
+                          <th className="px-3 py-2 text-center w-10">G</th>
+                          <th className="px-3 py-2 text-center w-10">V</th>
+                          <th className="px-3 py-2 text-center w-12">+/-</th>
+                          <th className="px-3 py-2 text-center w-12 font-bold text-gray-700">Pnt</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {pool.rows.map((row, i) => (
+                          <tr key={row.teamId} className={i === 0 ? 'bg-green-50' : 'hover:bg-gray-50'}>
+                            <td className="px-4 py-2.5 font-medium text-gray-800">
+                              <span className="text-gray-400 mr-2 tabular-nums">{i + 1}.</span>
+                              {row.name}
+                            </td>
+                            <td className="px-3 py-2.5 text-center text-gray-600 tabular-nums">{row.played}</td>
+                            <td className="px-3 py-2.5 text-center text-gray-600 tabular-nums">{row.won}</td>
+                            <td className="px-3 py-2.5 text-center text-gray-600 tabular-nums">{row.drawn}</td>
+                            <td className="px-3 py-2.5 text-center text-gray-600 tabular-nums">{row.lost}</td>
+                            <td className="px-3 py-2.5 text-center text-gray-600 tabular-nums">
+                              {row.gd > 0 ? `+${row.gd}` : row.gd}
+                            </td>
+                            <td className="px-3 py-2.5 text-center font-bold text-gray-800 tabular-nums">{row.pts}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="px-4 py-2 text-xs text-gray-400 border-t border-gray-100">
+                    G = gespeeld · W = gewonnen · G = gelijk · V = verloren · +/- = doelsaldo · Pnt = punten (3-1-0)
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </>

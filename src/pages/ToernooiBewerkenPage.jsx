@@ -63,7 +63,8 @@ const EMPTY_TOURNAMENT = {
   start_time: '09:00',
   end_time: '17:00',
   match_duration_minutes: 15,
-  rest_slots: 1,
+  slot_gap_minutes: 0,
+  rounds_per_pairing: 1,
   break_start_time: '',
   break_duration_minutes: 0,
   is_published: false,
@@ -251,6 +252,7 @@ export default function ToernooiBewerkenPage() {
           categories={categories}
           teams={teams}
           pools={pools}
+          fields={fields}
           onChange={async () => {
             const { data } = await fetchCategories(tournament.id)
             setCategories(data ?? [])
@@ -294,6 +296,7 @@ export default function ToernooiBewerkenPage() {
           tournament={tournament}
           fields={fields}
           pools={pools}
+          categories={categories}
           teams={teams}
           matches={matches}
           onGenerated={async () => {
@@ -379,7 +382,9 @@ function AlgemeenTab({ tournament, setTournament, isNew, onSaved, onError }) {
       start_time: tournament.start_time,
       end_time: tournament.end_time,
       match_duration_minutes: Number(tournament.match_duration_minutes),
-      rest_slots: Number(tournament.rest_slots),
+      slot_gap_minutes: Number(tournament.slot_gap_minutes) || 0,
+      rest_slots: 0,
+      rounds_per_pairing: Number(tournament.rounds_per_pairing) || 1,
       break_start_time: tournament.break_start_time || null,
       break_duration_minutes: Number(tournament.break_duration_minutes) || 0,
     }
@@ -492,16 +497,41 @@ function AlgemeenTab({ tournament, setTournament, isNew, onSaved, onError }) {
             <p className="text-xs text-gray-500 mt-1">Minimaal 5, deelbaar door 5.</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Rust tussen wedstrijden (slots)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Wisseltijd tussen ronden (minuten)</label>
             <input
               type="number"
               min={0}
-              max={5}
-              value={tournament.rest_slots ?? 1}
-              onChange={e => update('rest_slots', e.target.value)}
+              step={1}
+              value={tournament.slot_gap_minutes ?? 0}
+              onChange={e => update('slot_gap_minutes', e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green"
             />
-            <p className="text-xs text-gray-500 mt-1">Minimum aantal vrije slots tussen wedstrijden van hetzelfde team.</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {(() => {
+                const duration = Number(tournament.match_duration_minutes) || 15
+                const gap = Number(tournament.slot_gap_minutes) || 0
+                return gap === 0
+                  ? 'Rondes volgen direct op elkaar.'
+                  : `Rondes starten elke ${duration + gap} minuten (${duration} min wedstrijd + ${gap} min wisseltijd).`
+              })()}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Keer per tegenstander</label>
+            <select
+              value={tournament.rounds_per_pairing ?? 1}
+              onChange={e => update('rounds_per_pairing', Number(e.target.value))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green"
+            >
+              <option value={1}>1× (enkelvoudig)</option>
+              <option value={2}>2× (heen &amp; terug)</option>
+              <option value={3}>3×</option>
+              <option value={4}>4×</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">Hoe vaak elk team-duo tegen elkaar speelt.</p>
           </div>
         </div>
 
@@ -725,11 +755,12 @@ function VeldenTab({ tournamentId, fields, onChange, onError, onSuccess }) {
 // TAB: Categorieën
 // ============================================================================
 
-function CategorieenTab({ tournamentId, categories, teams, pools, onChange, onError, onSuccess }) {
+function CategorieenTab({ tournamentId, categories, teams, pools, fields, onChange, onError, onSuccess }) {
   const [newName, setNewName] = useState('')
   const [editingId, setEditingId] = useState(null)
   const [editingName, setEditingName] = useState('')
   const [working, setWorking] = useState(false)
+  const [expandedFields, setExpandedFields] = useState({})
 
   const teamCountByCategory = useMemo(() => {
     const map = {}
@@ -794,6 +825,16 @@ function CategorieenTab({ tournamentId, categories, teams, pools, onChange, onEr
     onSuccess('Categorie verwijderd.')
   }
 
+  async function handleTogglePreferredField(category, fieldId, checked) {
+    const current = category.preferred_field_ids ?? []
+    const next = checked ? [...current, fieldId] : current.filter(id => id !== fieldId)
+    setWorking(true)
+    const { error: err } = await updateCategory(category.id, { preferred_field_ids: next })
+    setWorking(false)
+    if (err) { onError(err.message); return }
+    await onChange()
+  }
+
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -821,70 +862,139 @@ function CategorieenTab({ tournamentId, categories, teams, pools, onChange, onEr
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 divide-y divide-gray-100">
-          {categories.map(c => (
-            <div key={c.id} className="flex items-center p-3 gap-2">
-              {editingId === c.id ? (
-                <input
-                  type="text"
-                  autoFocus
-                  value={editingName}
-                  onChange={e => setEditingName(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') handleSaveEdit(c.id)
-                    if (e.key === 'Escape') setEditingId(null)
-                  }}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green"
-                />
-              ) : (
-                <>
-                  <span className="flex-1 text-sm text-gray-800">{c.name}</span>
-                  <span className="text-xs text-gray-500">
-                    {teamCountByCategory[c.id] ?? 0} team{(teamCountByCategory[c.id] ?? 0) !== 1 ? 's' : ''} · {poolCountByCategory[c.id] ?? 0} poule{(poolCountByCategory[c.id] ?? 0) !== 1 ? 's' : ''}
-                  </span>
-                </>
-              )}
-              <div className="flex gap-1">
-                {editingId === c.id ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => handleSaveEdit(c.id)}
-                      className="text-xs bg-vvz-green text-white font-medium px-3 py-1.5 rounded-lg hover:bg-vvz-green/90"
-                    >
-                      Opslaan
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditingId(null)}
-                      className="text-xs border border-gray-300 text-gray-700 font-medium px-3 py-1.5 rounded-lg hover:bg-gray-50"
-                    >
-                      Annuleer
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingId(c.id)
-                        setEditingName(c.name)
+          {categories.map(c => {
+            const preferredIds = new Set(c.preferred_field_ids ?? [])
+            const isExpanded = expandedFields[c.id] ?? false
+            return (
+              <div key={c.id}>
+                <div className="flex items-center p-3 gap-2">
+                  {editingId === c.id ? (
+                    <input
+                      type="text"
+                      autoFocus
+                      value={editingName}
+                      onChange={e => setEditingName(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') handleSaveEdit(c.id)
+                        if (e.key === 'Escape') setEditingId(null)
                       }}
-                      className="text-xs border border-gray-300 text-gray-700 font-medium px-3 py-1.5 rounded-lg hover:bg-gray-50"
-                    >
-                      Bewerken
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(c)}
-                      className="text-xs border border-red-300 text-red-700 font-medium px-3 py-1.5 rounded-lg hover:bg-red-50"
-                    >
-                      Verwijderen
-                    </button>
-                  </>
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green"
+                    />
+                  ) : (
+                    <>
+                      <span className="flex-1 text-sm text-gray-800">{c.name}</span>
+                      <span className="text-xs text-gray-500">
+                        {teamCountByCategory[c.id] ?? 0} team{(teamCountByCategory[c.id] ?? 0) !== 1 ? 's' : ''} · {poolCountByCategory[c.id] ?? 0} poule{(poolCountByCategory[c.id] ?? 0) !== 1 ? 's' : ''}
+                        {(c.start_time || c.end_time) && (
+                          <> · <span className="text-vvz-green">{(c.start_time || '').slice(0, 5) || '?'}–{(c.end_time || '').slice(0, 5) || '?'}</span></>
+                        )}
+                        {preferredIds.size > 0 && (
+                          <> · <span className="text-vvz-green">{preferredIds.size} veld{preferredIds.size !== 1 ? 'en' : ''}</span></>
+                        )}
+                      </span>
+                    </>
+                  )}
+                  <div className="flex gap-1">
+                    {editingId === c.id ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEdit(c.id)}
+                          className="text-xs bg-vvz-green text-white font-medium px-3 py-1.5 rounded-lg hover:bg-vvz-green/90"
+                        >
+                          Opslaan
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingId(null)}
+                          className="text-xs border border-gray-300 text-gray-700 font-medium px-3 py-1.5 rounded-lg hover:bg-gray-50"
+                        >
+                          Annuleer
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setExpandedFields(prev => ({ ...prev, [c.id]: !prev[c.id] }))}
+                          className={`text-xs font-medium px-3 py-1.5 rounded-lg border ${isExpanded ? 'bg-vvz-green text-white border-vvz-green' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                        >
+                          Instellingen
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingId(c.id)
+                            setEditingName(c.name)
+                          }}
+                          className="text-xs border border-gray-300 text-gray-700 font-medium px-3 py-1.5 rounded-lg hover:bg-gray-50"
+                        >
+                          Bewerken
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(c)}
+                          className="text-xs border border-red-300 text-red-700 font-medium px-3 py-1.5 rounded-lg hover:bg-red-50"
+                        >
+                          Verwijderen
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {isExpanded && (
+                  <div className="px-4 pb-4 bg-gray-50 border-t border-gray-100 space-y-4 pt-3">
+
+                    {/* Tijdvenster */}
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Tijdvenster</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <input
+                          type="time"
+                          defaultValue={(c.start_time || '').slice(0, 5)}
+                          onBlur={e => updateCategory(c.id, { start_time: e.target.value || null }).then(onChange)}
+                          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green bg-white"
+                        />
+                        <span className="text-sm text-gray-400">tot</span>
+                        <input
+                          type="time"
+                          defaultValue={(c.end_time || '').slice(0, 5)}
+                          onBlur={e => updateCategory(c.id, { end_time: e.target.value || null }).then(onChange)}
+                          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green bg-white"
+                        />
+                        <span className="text-xs text-gray-400">Leeg = tijdvenster van het toernooi</span>
+                      </div>
+                    </div>
+
+                    {/* Voorkeursvelden */}
+                    {fields.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Voorkeursvelden</p>
+                        <p className="text-xs text-gray-400 mb-2">
+                          Selecteer de velden die bij voorkeur aan deze categorie worden toegewezen bij het genereren van het schema.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {fields.map(f => (
+                            <label key={f.id} className="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm cursor-pointer hover:border-vvz-green has-[:checked]:border-vvz-green has-[:checked]:bg-green-50">
+                              <input
+                                type="checkbox"
+                                checked={preferredIds.has(f.id)}
+                                disabled={working}
+                                onChange={e => handleTogglePreferredField(c, f.id, e.target.checked)}
+                                className="rounded text-vvz-green focus:ring-vvz-green"
+                              />
+                              <span className="text-gray-800">{f.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
@@ -1185,6 +1295,7 @@ function TeamsTab({ tournamentId, teams, categories, onChange, onError, onSucces
 
 function PoulesTab({ tournamentId, categories, teams, pools, onChange, onError, onSuccess }) {
   const [newPoolByCat, setNewPoolByCat] = useState({})
+  const [assignTarget, setAssignTarget] = useState({}) // teamId -> poolId (selected in dropdown)
   const [working, setWorking] = useState(false)
 
   const teamsByCategory = useMemo(() => {
@@ -1207,7 +1318,7 @@ function PoulesTab({ tournamentId, categories, teams, pools, onChange, onError, 
     return map
   }, [pools, categories])
 
-  // Map team -> poule (binnen toernooi maximaal 1)
+  // Map team -> pool id
   const poolByTeam = useMemo(() => {
     const map = {}
     for (const p of pools) {
@@ -1218,16 +1329,20 @@ function PoulesTab({ tournamentId, categories, teams, pools, onChange, onError, 
     return map
   }, [pools])
 
+  // Map pool id -> pool object for easy lookup
+  const poolById = useMemo(() => {
+    const map = {}
+    for (const p of pools) map[p.id] = p
+    return map
+  }, [pools])
+
   async function handleAddPool(categoryId) {
     const name = (newPoolByCat[categoryId] || '').trim()
     if (!name) return
     setWorking(true)
     const { error: err } = await createPool(tournamentId, categoryId, name)
     setWorking(false)
-    if (err) {
-      onError(err.message)
-      return
-    }
+    if (err) { onError(err.message); return }
     setNewPoolByCat({ ...newPoolByCat, [categoryId]: '' })
     await onChange()
     onSuccess('Poule toegevoegd.')
@@ -1238,10 +1353,7 @@ function PoulesTab({ tournamentId, categories, teams, pools, onChange, onError, 
     setWorking(true)
     const { error: err } = await deletePool(p.id)
     setWorking(false)
-    if (err) {
-      onError(err.message)
-      return
-    }
+    if (err) { onError(err.message); return }
     await onChange()
     onSuccess('Poule verwijderd.')
   }
@@ -1251,28 +1363,30 @@ function PoulesTab({ tournamentId, categories, teams, pools, onChange, onError, 
     setWorking(true)
     const { error: err } = await updatePool(p.id, { name: newName.trim() })
     setWorking(false)
-    if (err) {
-      onError(err.message)
-      return
-    }
+    if (err) { onError(err.message); return }
     await onChange()
   }
 
-  async function handleToggleTeam(pool, teamId, checked) {
+  async function handleAssignTeam(teamId, poolId) {
+    if (!poolId) return
+    const pool = poolById[poolId]
+    if (!pool) return
     const current = (pool.tournament_pool_teams ?? []).map(pt => pt.team_id)
-    let next
-    if (checked) {
-      next = [...current, teamId]
-    } else {
-      next = current.filter(id => id !== teamId)
-    }
+    if (current.includes(teamId)) return
     setWorking(true)
-    const { error: err } = await setPoolTeams(pool.id, next)
+    const { error: err } = await setPoolTeams(poolId, [...current, teamId])
     setWorking(false)
-    if (err) {
-      onError(err.message)
-      return
-    }
+    if (err) { onError(err.message); return }
+    setAssignTarget(prev => { const n = { ...prev }; delete n[teamId]; return n })
+    await onChange()
+  }
+
+  async function handleRemoveTeamFromPool(pool, teamId) {
+    const current = (pool.tournament_pool_teams ?? []).map(pt => pt.team_id)
+    setWorking(true)
+    const { error: err } = await setPoolTeams(pool.id, current.filter(id => id !== teamId))
+    setWorking(false)
+    if (err) { onError(err.message); return }
     await onChange()
   }
 
@@ -1292,21 +1406,65 @@ function PoulesTab({ tournamentId, categories, teams, pools, onChange, onError, 
         const unassigned = catTeams.filter(t => !poolByTeam[t.id])
 
         return (
-          <div key={category.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+          <div key={category.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-5">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <h2 className="font-semibold text-gray-800">{category.name}</h2>
               <span className="text-xs text-gray-500">{catTeams.length} team{catTeams.length !== 1 ? 's' : ''} · {catPools.length} poule{catPools.length !== 1 ? 's' : ''}</span>
             </div>
 
-            {unassigned.length > 0 && (
-              <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
-                Nog niet ingedeeld: {unassigned.map(t => t.name).join(', ')}
+            {/* Niet ingedeelde teams */}
+            {catTeams.length > 0 && (
+              <div className={`rounded-lg border p-4 space-y-3 ${unassigned.length > 0 ? 'border-amber-200 bg-amber-50' : 'border-gray-100 bg-gray-50'}`}>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  Niet ingedeeld
+                  {unassigned.length > 0 && (
+                    <span className="ml-2 bg-amber-200 text-amber-800 rounded-full px-2 py-0.5 normal-case font-medium">{unassigned.length}</span>
+                  )}
+                </p>
+                {unassigned.length === 0 ? (
+                  <p className="text-xs text-gray-400">Alle teams zijn ingedeeld in een poule.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {unassigned.map(team => (
+                      <div key={team.id} className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-gray-800 min-w-0 flex-shrink-0">{team.name}</span>
+                        {catPools.length === 0 ? (
+                          <span className="text-xs text-gray-400 italic">Maak eerst een poule aan</span>
+                        ) : (
+                          <>
+                            <select
+                              value={assignTarget[team.id] ?? ''}
+                              onChange={e => setAssignTarget(prev => ({ ...prev, [team.id]: e.target.value }))}
+                              className="text-sm border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-vvz-green bg-white"
+                            >
+                              <option value="">Kies poule…</option>
+                              {catPools.map(p => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              disabled={working || !assignTarget[team.id]}
+                              onClick={() => handleAssignTeam(team.id, assignTarget[team.id])}
+                              className="text-sm bg-vvz-green text-white font-medium px-3 py-1 rounded-lg hover:bg-vvz-green/90 disabled:opacity-40"
+                            >
+                              Toevoegen
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
+            {/* Poule-kaarten */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {catPools.map(pool => {
-                const memberIds = new Set((pool.tournament_pool_teams ?? []).map(pt => pt.team_id))
+                const members = catTeams.filter(t =>
+                  (pool.tournament_pool_teams ?? []).some(pt => pt.team_id === t.id)
+                )
                 return (
                   <div key={pool.id} className="border border-gray-200 rounded-lg p-4 space-y-3">
                     <div className="flex items-center justify-between gap-2">
@@ -1324,30 +1482,24 @@ function PoulesTab({ tournamentId, categories, teams, pools, onChange, onError, 
                       </button>
                     </div>
 
-                    {catTeams.length === 0 ? (
-                      <p className="text-xs text-gray-500">Nog geen teams in deze categorie.</p>
+                    {members.length === 0 ? (
+                      <p className="text-xs text-gray-400 italic">Nog geen teams toegevoegd.</p>
                     ) : (
-                      <div className="space-y-1">
-                        {catTeams.map(team => {
-                          const inThisPool = memberIds.has(team.id)
-                          const inOtherPool = !inThisPool && poolByTeam[team.id]
-                          return (
-                            <label
-                              key={team.id}
-                              className={`flex items-center gap-2 text-sm px-2 py-1 rounded ${inOtherPool ? 'opacity-50' : ''}`}
+                      <div className="flex flex-wrap gap-2">
+                        {members.map(team => (
+                          <span key={team.id} className="inline-flex items-center gap-1 bg-gray-100 text-gray-800 text-sm rounded-full px-3 py-1">
+                            {team.name}
+                            <button
+                              type="button"
+                              disabled={working}
+                              onClick={() => handleRemoveTeamFromPool(pool, team.id)}
+                              className="text-gray-400 hover:text-red-600 leading-none ml-0.5 disabled:opacity-40"
+                              title="Verwijderen uit poule"
                             >
-                              <input
-                                type="checkbox"
-                                checked={inThisPool}
-                                disabled={working || (inOtherPool && !inThisPool)}
-                                onChange={e => handleToggleTeam(pool, team.id, e.target.checked)}
-                                className="rounded text-vvz-green focus:ring-vvz-green"
-                              />
-                              <span className="flex-1 text-gray-800">{team.name}</span>
-                              {inOtherPool && <span className="text-xs text-gray-400">in andere poule</span>}
-                            </label>
-                          )
-                        })}
+                              ×
+                            </button>
+                          </span>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -1355,11 +1507,13 @@ function PoulesTab({ tournamentId, categories, teams, pools, onChange, onError, 
               })}
             </div>
 
-            <div className="flex gap-2 items-end">
+            {/* Nieuwe poule aanmaken */}
+            <div className="flex gap-2 items-center">
               <input
                 type="text"
                 value={newPoolByCat[category.id] ?? ''}
                 onChange={e => setNewPoolByCat({ ...newPoolByCat, [category.id]: e.target.value })}
+                onKeyDown={e => e.key === 'Enter' && handleAddPool(category.id)}
                 placeholder={`Poulenaam (bv. Poule ${String.fromCharCode(65 + catPools.length)})`}
                 className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vvz-green"
               />
@@ -1383,7 +1537,7 @@ function PoulesTab({ tournamentId, categories, teams, pools, onChange, onError, 
 // TAB: Simulatie
 // ============================================================================
 
-function SimulatieTab({ tournament, fields, pools, teams, matches, onGenerated, onError, onSuccess }) {
+function SimulatieTab({ tournament, fields, pools, categories, teams, matches, onGenerated, onError, onSuccess }) {
   const [generating, setGenerating] = useState(false)
   const [confirmRegenerate, setConfirmRegenerate] = useState(false)
 
@@ -1397,12 +1551,13 @@ function SimulatieTab({ tournament, fields, pools, teams, matches, onGenerated, 
     startTime: tournament.start_time,
     endTime: tournament.end_time,
     matchDurationMinutes: tournament.match_duration_minutes,
+    slotGapMinutes: tournament.slot_gap_minutes || 0,
     breakStartTime: tournament.break_start_time || null,
     breakDurationMinutes: tournament.break_duration_minutes || 0,
     fields,
   }), [tournament, fields])
 
-  const needed = useMemo(() => totalMatchesNeeded(poolsForCalc), [poolsForCalc])
+  const needed = useMemo(() => totalMatchesNeeded(poolsForCalc, tournament.rounds_per_pairing ?? 1), [poolsForCalc, tournament.rounds_per_pairing])
 
   const ratio = capacity.totalSlots > 0 ? needed / capacity.totalSlots : Infinity
   const ratioColor = ratio > 1 ? 'red' : ratio > 0.8 ? 'amber' : 'green'
@@ -1430,12 +1585,14 @@ function SimulatieTab({ tournament, fields, pools, teams, matches, onGenerated, 
           startTime: tournament.start_time,
           endTime: tournament.end_time,
           matchDurationMinutes: tournament.match_duration_minutes,
-          restSlots: tournament.rest_slots,
+          slotGapMinutes: tournament.slot_gap_minutes || 0,
+          roundsPerPairing: tournament.rounds_per_pairing ?? 1,
           breakStartTime: tournament.break_start_time || null,
           breakDurationMinutes: tournament.break_duration_minutes || 0,
         },
         fields: fieldsForCalc,
         pools: poolsForCalc,
+        categories,
       })
 
       if (result.matches.length === 0) {
@@ -1579,14 +1736,91 @@ function StatCard({ label, value, sublabel }) {
 // TAB: Schema
 // ============================================================================
 
+function ResultModal({ match, onClose, onSaved, onError }) {
+  const [homeScore, setHomeScore] = useState(match.result?.home_score ?? '')
+  const [awayScore, setAwayScore] = useState(match.result?.away_score ?? '')
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave() {
+    const hs = homeScore === '' ? null : Number(homeScore)
+    const as = awayScore === '' ? null : Number(awayScore)
+    if (hs !== null && (isNaN(hs) || hs < 0)) return
+    if (as !== null && (isNaN(as) || as < 0)) return
+    const result = (hs === null && as === null) ? null : { home_score: hs, away_score: as }
+    setSaving(true)
+    const { error: err } = await updateMatch(match.id, { result })
+    setSaving(false)
+    if (err) { onError(err.message); return }
+    onSaved()
+  }
+
+  async function handleClear() {
+    setSaving(true)
+    const { error: err } = await updateMatch(match.id, { result: null })
+    setSaving(false)
+    if (err) { onError(err.message); return }
+    onSaved()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
+        <h2 className="text-base font-semibold text-gray-800 mb-1">Uitslag invoeren</h2>
+        <p className="text-xs text-gray-500 mb-4">{match.pool?.name} · {(match.start_time || '').slice(0, 5)}</p>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex-1 text-right">
+            <div className="text-sm font-medium text-gray-700 mb-1 truncate">{match.home_team?.name}</div>
+            <input
+              type="number"
+              min={0}
+              value={homeScore}
+              onChange={e => setHomeScore(e.target.value)}
+              className="w-20 border border-gray-300 rounded-lg px-3 py-2 text-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-vvz-green"
+              placeholder="—"
+              autoFocus
+            />
+          </div>
+          <span className="text-gray-400 font-bold text-lg">–</span>
+          <div className="flex-1 text-left">
+            <div className="text-sm font-medium text-gray-700 mb-1 truncate">{match.away_team?.name}</div>
+            <input
+              type="number"
+              min={0}
+              value={awayScore}
+              onChange={e => setAwayScore(e.target.value)}
+              className="w-20 border border-gray-300 rounded-lg px-3 py-2 text-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-vvz-green"
+              placeholder="—"
+            />
+          </div>
+        </div>
+        <div className="flex gap-2 justify-end">
+          {match.result && (
+            <button type="button" onClick={handleClear} disabled={saving} className="text-sm text-red-600 hover:underline mr-auto disabled:opacity-50">
+              Wissen
+            </button>
+          )}
+          <button type="button" onClick={onClose} className="text-sm px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+            Annuleren
+          </button>
+          <button type="button" onClick={handleSave} disabled={saving} className="text-sm px-4 py-2 bg-vvz-green text-white rounded-lg hover:bg-vvz-green/90 disabled:opacity-50">
+            {saving ? 'Opslaan...' : 'Opslaan'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function SchemaTab({ tournament, fields, teams, matches, onChange, onPublishToggle, onError }) {
   const [viewMode, setViewMode] = useState('table')
   const [working, setWorking] = useState(false)
+  const [resultMatch, setResultMatch] = useState(null)
 
   const slotTimes = useMemo(() => calculateSlots({
     startTime: tournament.start_time,
     endTime: tournament.end_time,
     matchDurationMinutes: tournament.match_duration_minutes,
+    slotGapMinutes: tournament.slot_gap_minutes || 0,
     breakStartTime: tournament.break_start_time || null,
     breakDurationMinutes: tournament.break_duration_minutes || 0,
   }), [tournament])
@@ -1720,11 +1954,28 @@ function SchemaTab({ tournament, fields, teams, matches, onChange, onPublishTogg
                     const m = matchByCell[`${slot}|${f.id}`]
                     if (!m) return <td key={f.id} className="px-3 py-2 text-gray-300">—</td>
                     const isConflict = conflictMatchIds.has(m.id)
+                    const hasResult = m.result?.home_score != null && m.result?.away_score != null
                     return (
                       <td key={f.id} className={`px-3 py-2 ${isConflict ? 'bg-red-50' : ''}`}>
                         <div className="text-xs text-gray-500">{m.pool?.name}</div>
-                        <div className="font-medium">
+                        <div className="font-medium text-sm">
                           {m.home_team?.name} <span className="text-gray-400">vs</span> {m.away_team?.name}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          {hasResult ? (
+                            <span className="text-sm font-bold text-vvz-green">
+                              {m.result.home_score} – {m.result.away_score}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">geen uitslag</span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setResultMatch(m)}
+                            className="text-xs text-vvz-green hover:underline"
+                          >
+                            {hasResult ? 'Wijzigen' : 'Invoeren'}
+                          </button>
                         </div>
                         {m.manual_override && (
                           <div className="text-[10px] text-amber-700 mt-0.5">handmatig</div>
@@ -1746,6 +1997,8 @@ function SchemaTab({ tournament, fields, teams, matches, onChange, onPublishTogg
                 <th className="px-3 py-2 text-left">Veld</th>
                 <th className="px-3 py-2 text-left">Poule</th>
                 <th className="px-3 py-2 text-left">Wedstrijd</th>
+                <th className="px-3 py-2 text-left">Uitslag</th>
+                <th className="px-3 py-2 text-left"></th>
                 <th className="px-3 py-2 text-left">Status</th>
               </tr>
             </thead>
@@ -1782,6 +2035,18 @@ function SchemaTab({ tournament, fields, teams, matches, onChange, onPublishTogg
                     <td className="px-3 py-2">
                       <strong>{m.home_team?.name}</strong> <span className="text-gray-400">vs</span> <strong>{m.away_team?.name}</strong>
                     </td>
+                    <td className="px-3 py-2">
+                      {m.result?.home_score != null ? (
+                        <span className="font-bold text-vvz-green">{m.result.home_score} – {m.result.away_score}</span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2">
+                      <button type="button" onClick={() => setResultMatch(m)} className="text-xs text-vvz-green hover:underline">
+                        {m.result?.home_score != null ? 'Wijzigen' : 'Invoeren'}
+                      </button>
+                    </td>
                     <td className="px-3 py-2 text-xs">
                       {isConflict && <span className="text-red-700 font-medium">conflict</span>}
                       {!isConflict && m.manual_override && <span className="text-amber-700">handmatig</span>}
@@ -1792,6 +2057,15 @@ function SchemaTab({ tournament, fields, teams, matches, onChange, onPublishTogg
             </tbody>
           </table>
         </div>
+      )}
+
+      {resultMatch && (
+        <ResultModal
+          match={resultMatch}
+          onClose={() => setResultMatch(null)}
+          onSaved={async () => { setResultMatch(null); await onChange() }}
+          onError={onError}
+        />
       )}
     </div>
   )
