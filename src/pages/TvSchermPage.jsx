@@ -483,7 +483,7 @@ export default function TvSchermPage() {
   const dynamischItemsPerPagina = useMemo(() => {
     const RIJ_HOOGTE = 52        // py-3 + text-xl
     const DAG_HEADER = 80        // mt-10 + pt-4 + text-lg (per dagwissel)
-    const GESCHATTE_DAGWISSELS = 2
+    const GESCHATTE_DAGWISSELS = 4
     const beschikbaar = contentHoogte - (GESCHATTE_DAGWISSELS * DAG_HEADER)
     const rijenPerKolom = Math.max(2, Math.floor(beschikbaar / RIJ_HOOGTE))
     return rijenPerKolom * 2
