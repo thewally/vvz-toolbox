@@ -695,35 +695,23 @@ export default function TvSchermPage() {
     }
 
     if (s.uitslagen_vandaag) {
-      const uitPaginas = pagineer(uitslagenVandaag, dynamischItemsPerPagina.zonderHeaders)
-      uitPaginas.forEach((pagina, i) => {
-        if (pagina.length > 0) {
-          lijst.push({
-            id: `uitslagen-${i}`,
-            title: 'Uitslagen van vandaag',
-            type: 'uitslagen',
-            wedstrijden: pagina,
-            pagina: i + 1,
-            totaal: uitPaginas.length,
-          })
-        }
-      })
+      pagineerPerDag(
+        uitslagenVandaag,
+        dynamischItemsPerPagina.zonderHeaders,
+        (datum, pag) => `Uitslagen van vandaag — ${formatDatumLang(datum)}${pag ? ` (${pag})` : ''}`,
+        'uitslagen',
+        { showDatum: false },
+      ).forEach((slide, i) => lijst.push({ id: `uitslagen-${i}`, ...slide }))
     }
 
     if (s.nog_te_spelen) {
-      const nogPaginas = pagineer(nogTeSpelen, dynamischItemsPerPagina.zonderHeaders)
-      nogPaginas.forEach((pagina, i) => {
-        if (pagina.length > 0) {
-          lijst.push({
-            id: `nog-te-spelen-${i}`,
-            title: 'Programma van vandaag',
-            type: 'nog-te-spelen',
-            wedstrijden: pagina,
-            pagina: i + 1,
-            totaal: nogPaginas.length,
-          })
-        }
-      })
+      pagineerPerDag(
+        nogTeSpelen,
+        dynamischItemsPerPagina.zonderHeaders,
+        (datum, pag) => `Programma van vandaag — ${formatDatumLang(datum)}${pag ? ` (${pag})` : ''}`,
+        'nog-te-spelen',
+        { showDatum: false },
+      ).forEach((slide, i) => lijst.push({ id: `nog-te-spelen-${i}`, ...slide }))
     }
 
     if (s.programma_week) {
