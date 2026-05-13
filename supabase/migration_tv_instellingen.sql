@@ -11,12 +11,6 @@ CREATE TABLE IF NOT EXISTS tv_instellingen (
     "programma_week": true,
     "uitslagen_week": true
   }',
-  pagina_grootte JSONB NOT NULL DEFAULT '{
-    "uitslagen_vandaag": 16,
-    "nog_te_spelen": 16,
-    "programma_week": 16,
-    "uitslagen_week": 16
-  }',
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 

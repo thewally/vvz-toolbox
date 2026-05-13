@@ -12,12 +12,6 @@ const SLIDE_OPTIES = [
   { key: 'uitslagen_week', label: 'Uitslagen deze week', beschrijving: 'Uitslagen van de afgelopen 7 dagen' },
 ]
 
-const PAGINA_GROOTTE_OPTIES = [
-  { key: 'uitslagen_vandaag', label: 'Uitslagen van vandaag' },
-  { key: 'nog_te_spelen', label: 'Programma van vandaag' },
-  { key: 'programma_week', label: 'Programma deze week' },
-  { key: 'uitslagen_week', label: 'Uitslagen deze week' },
-]
 
 export default function TvSchermBeheerPage() {
   const [instellingen, setInstellingen] = useState(DEFAULT_INSTELLINGEN)
@@ -34,10 +28,6 @@ export default function TvSchermBeheerPage() {
 
   function setSlide(key, value) {
     setInstellingen(prev => ({ ...prev, slides: { ...prev.slides, [key]: value } }))
-  }
-
-  function setPaginaGrootte(key, value) {
-    setInstellingen(prev => ({ ...prev, pagina_grootte: { ...prev.pagina_grootte, [key]: Math.max(2, Number(value)) } }))
   }
 
   async function handleSubmit(e) {
@@ -107,28 +97,6 @@ export default function TvSchermBeheerPage() {
                   <p className="text-xs text-gray-500 mt-0.5">{beschrijving}</p>
                 </div>
               </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-1">Maximaal aantal wedstrijden per pagina</h2>
-          <p className="text-sm text-gray-500 mb-4">Bij meer wedstrijden dan het maximum wordt automatisch een volgende dia aangemaakt.</p>
-          <div className="space-y-4">
-            {PAGINA_GROOTTE_OPTIES.map(({ key, label }) => (
-              <div key={key} className="flex items-center gap-4">
-                <label htmlFor={`pg-${key}`} className="text-sm font-medium text-gray-800 w-48 flex-shrink-0">{label}</label>
-                <input
-                  id={`pg-${key}`}
-                  type="number"
-                  min={2}
-                  max={100}
-                  value={instellingen.pagina_grootte[key] ?? 16}
-                  onChange={e => setPaginaGrootte(key, e.target.value)}
-                  className="w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-vvz-green/50 focus:border-vvz-green"
-                />
-                <span className="text-sm text-gray-500">wedstrijden</span>
-              </div>
             ))}
           </div>
         </div>

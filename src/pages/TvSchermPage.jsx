@@ -255,27 +255,36 @@ function UitslagRij({ w }) {
   )
 }
 
-function SlideHuidigeWedstrijden({ wedstrijden }) {
+function SlideHuidigeWedstrijd({ wedstrijd }) {
+  const w = wedstrijd
+  const isThuis = isThuiswedstrijd(w)
+  const veld = w.veldnummer || w.veld || null
+  const locatie = w.accommodatie ? `${w.accommodatie}${veld ? ` · ${veld}` : ''}` : veld
+
   return (
-    <div className="grid grid-cols-2 gap-4">
-      {wedstrijden.map(w => {
-        const isThuis = isThuiswedstrijd(w)
-        return (
-          <div key={w.wedstrijdcode || `${w.thuisteam}-${w.uitteam}`}
-            className="bg-black/20 rounded-xl p-5 flex items-center gap-5">
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <span className="w-4 h-4 bg-emerald-200 rounded-full animate-pulse" />
-              <span className="text-white/70 font-mono text-2xl">{w.aanvangstijd}</span>
-            </div>
-            <span className={`text-2xl flex-1 ${isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.thuisteam}</span>
-            <span className="text-white/40 text-xl px-1">vs</span>
-            <span className={`text-2xl flex-1 ${!isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.uitteam}</span>
-            <span className={`text-sm font-semibold tracking-widest w-14 text-right flex-shrink-0 ${isThuis ? 'text-emerald-200' : 'text-white/60'}`}>
-              {isThuis ? 'THUIS' : 'UIT'}
-            </span>
-          </div>
-        )
-      })}
+    <div className="flex flex-col items-center justify-center h-full gap-8 text-center">
+      <div className="flex items-center gap-3">
+        <span className="w-5 h-5 bg-emerald-200 rounded-full animate-pulse" />
+        <span className="text-white/70 font-mono text-3xl">{w.aanvangstijd}</span>
+        {locatie && (
+          <>
+            <span className="text-white/30 text-2xl">·</span>
+            <span className="text-emerald-200 text-2xl font-semibold">{locatie}</span>
+          </>
+        )}
+      </div>
+
+      <div className="flex items-center gap-8 w-full max-w-4xl">
+        <div className={`flex-1 text-right ${isThuis ? '' : 'opacity-70'}`}>
+          <p className="text-5xl font-bold text-white leading-tight">{w.thuisteam}</p>
+          {isThuis && <p className="text-emerald-200 text-xl font-semibold mt-2 tracking-widest uppercase">Thuis</p>}
+        </div>
+        <span className="text-white/30 text-5xl font-light flex-shrink-0">vs</span>
+        <div className={`flex-1 text-left ${!isThuis ? '' : 'opacity-70'}`}>
+          <p className="text-5xl font-bold text-white leading-tight">{w.uitteam}</p>
+          {!isThuis && <p className="text-emerald-200 text-xl font-semibold mt-2 tracking-widest uppercase">Thuis</p>}
+        </div>
+      </div>
     </div>
   )
 }
@@ -455,8 +464,30 @@ export default function TvSchermPage() {
 
   const [slideIdx, setSlideIdx] = useState(0)
   const [progress, setProgress] = useState(0)
+  const [contentHoogte, setContentHoogte] = useState(window.innerHeight - 200)
 
   const slidesRef = useRef([])
+  const mainRef = useRef(null)
+
+  useEffect(() => {
+    if (!mainRef.current) return
+    const observer = new ResizeObserver(entries => {
+      const hoogte = entries[0]?.contentRect.height
+      if (hoogte > 0) setContentHoogte(hoogte)
+    })
+    observer.observe(mainRef.current)
+    return () => observer.disconnect()
+  }, [])
+
+  // Bereken hoeveel wedstrijdrijen passen in de beschikbare hoogte (2 kolommen)
+  const dynamischItemsPerPagina = useMemo(() => {
+    const RIJ_HOOGTE = 52        // py-3 + text-xl
+    const DAG_HEADER = 80        // mt-10 + pt-4 + text-lg (per dagwissel)
+    const GESCHATTE_DAGWISSELS = 2
+    const beschikbaar = contentHoogte - (GESCHATTE_DAGWISSELS * DAG_HEADER)
+    const rijenPerKolom = Math.max(2, Math.floor(beschikbaar / RIJ_HOOGTE))
+    return rijenPerKolom * 2
+  }, [contentHoogte])
 
   // ── Data laden ──────────────────────────────────────────────────────────────
 
@@ -566,7 +597,7 @@ export default function TvSchermPage() {
   const weekend = isWeekendDag()
 
   const huidigeWedstrijden = useMemo(() =>
-    programma.filter(w => isVvzWedstrijd(w) && isHuidigSpelend(w)),
+    programma.filter(w => isThuiswedstrijd(w) && isHuidigSpelend(w)),
   [programma])
 
   const uitslagenVandaag = useMemo(() =>
@@ -623,14 +654,21 @@ export default function TvSchermPage() {
       })
     }
 
-    if (s.huidige_wedstrijden && huidigeWedstrijden.length > 0) {
-      lijst.push({ id: 'huidige', title: 'Wordt nu gespeeld', type: 'huidige', wedstrijden: huidigeWedstrijden })
+    if (s.huidige_wedstrijden) {
+      const totaal = huidigeWedstrijden.length
+      huidigeWedstrijden.forEach((w, i) => {
+        const paginering = totaal > 1 ? ` ${i + 1}/${totaal}` : ''
+        lijst.push({
+          id: `huidige-${i}`,
+          title: `Wordt nu gespeeld bij VVZ'49${paginering}`,
+          type: 'huidige',
+          wedstrijd: w,
+        })
+      })
     }
 
-    const pg = config.pagina_grootte
-
     if (s.uitslagen_vandaag) {
-      const uitPaginas = pagineer(uitslagenVandaag, pg.uitslagen_vandaag)
+      const uitPaginas = pagineer(uitslagenVandaag, dynamischItemsPerPagina)
       uitPaginas.forEach((pagina, i) => {
         if (pagina.length > 0) {
           lijst.push({
@@ -646,7 +684,7 @@ export default function TvSchermPage() {
     }
 
     if (s.nog_te_spelen) {
-      const nogPaginas = pagineer(nogTeSpelen, pg.nog_te_spelen)
+      const nogPaginas = pagineer(nogTeSpelen, dynamischItemsPerPagina)
       nogPaginas.forEach((pagina, i) => {
         if (pagina.length > 0) {
           lijst.push({
@@ -662,7 +700,7 @@ export default function TvSchermPage() {
     }
 
     if (s.programma_week) {
-      const weekPaginas = pagineer(programmaDezeWeek, pg.programma_week)
+      const weekPaginas = pagineer(programmaDezeWeek, dynamischItemsPerPagina)
       weekPaginas.forEach((pagina, i) => {
         if (pagina.length > 0) {
           lijst.push({
@@ -678,7 +716,7 @@ export default function TvSchermPage() {
     }
 
     if (s.uitslagen_week) {
-      const uitWeekPaginas = pagineer(uitslagenDezeWeek, pg.uitslagen_week)
+      const uitWeekPaginas = pagineer(uitslagenDezeWeek, dynamischItemsPerPagina)
       uitWeekPaginas.forEach((pagina, i) => {
         if (pagina.length > 0) {
           lijst.push({
@@ -695,7 +733,7 @@ export default function TvSchermPage() {
     }
 
     return lijst
-  }, [geladen, config.slides, nieuws, activiteiten, huidigeWedstrijden, uitslagenVandaag, nogTeSpelen, programmaDezeWeek, uitslagenDezeWeek])
+  }, [geladen, config.slides, dynamischItemsPerPagina, nieuws, activiteiten, huidigeWedstrijden, uitslagenVandaag, nogTeSpelen, programmaDezeWeek, uitslagenDezeWeek])
 
   useEffect(() => { slidesRef.current = slides }, [slides])
 
@@ -748,7 +786,7 @@ export default function TvSchermPage() {
       case 'activiteiten':
         return <SlideActiviteiten items={slide.items} pagina={slide.pagina} totaalPaginas={slide.totaal} />
       case 'huidige':
-        return <SlideHuidigeWedstrijden wedstrijden={slide.wedstrijden} />
+        return <SlideHuidigeWedstrijd wedstrijd={slide.wedstrijd} />
       case 'standen':
         return <SlideStanden standenData={standenData} />
       case 'uitslagen':
@@ -794,7 +832,7 @@ export default function TvSchermPage() {
       </header>
 
       {/* Dia-inhoud */}
-      <main className="flex-1 px-10 py-6 overflow-hidden">
+      <main ref={mainRef} className="flex-1 px-10 py-6 overflow-hidden">
         {renderDia()}
       </main>
 

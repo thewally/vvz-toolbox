@@ -11,25 +11,18 @@ export const DEFAULT_INSTELLINGEN = {
     programma_week: true,
     uitslagen_week: true,
   },
-  pagina_grootte: {
-    uitslagen_vandaag: 16,
-    nog_te_spelen: 16,
-    programma_week: 16,
-    uitslagen_week: 16,
-  },
 }
 
 export async function fetchTvInstellingen() {
   const { data, error } = await supabase
     .from('tv_instellingen')
-    .select('interval_seconden, slides, pagina_grootte')
+    .select('interval_seconden, slides')
     .eq('id', 1)
     .single()
   if (error || !data) return DEFAULT_INSTELLINGEN
   return {
     interval_seconden: data.interval_seconden ?? DEFAULT_INSTELLINGEN.interval_seconden,
     slides: { ...DEFAULT_INSTELLINGEN.slides, ...data.slides },
-    pagina_grootte: { ...DEFAULT_INSTELLINGEN.pagina_grootte, ...data.pagina_grootte },
   }
 }
 
@@ -39,7 +32,6 @@ export async function saveTvInstellingen(instellingen) {
     .update({
       interval_seconden: instellingen.interval_seconden,
       slides: instellingen.slides,
-      pagina_grootte: instellingen.pagina_grootte,
       updated_at: new Date().toISOString(),
     })
     .eq('id', 1)
