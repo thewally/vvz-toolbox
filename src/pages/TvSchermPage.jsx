@@ -47,7 +47,7 @@ function getSpeeltype(w) {
   const dag = w.wedstrijddatum ? new Date(w.wedstrijddatum).getDay() : null
   const uur = w.aanvangstijd ? parseInt(w.aanvangstijd.split(':')[0], 10) : null
   if (dag === 5 && uur !== null && uur >= 18) return '7x7'
-  return null
+  return 'Veld'
 }
 
 function isHuidigSpelend(w) {
