@@ -236,7 +236,7 @@ function ProgrammaRij({ w }) {
       <span className="text-white/60 text-xl w-16 flex-shrink-0 font-mono">{w.aanvangstijd || '--:--'}</span>
       <div className="flex items-center gap-1.5 flex-1 min-w-0">
         <span className={`text-xl flex-1 text-right truncate ${isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.thuisteam}</span>
-        <span className="text-white/40 text-lg flex-shrink-0 px-3">vs</span>
+        <span className="text-white/40 text-lg flex-shrink-0 px-8">vs</span>
         <span className={`text-xl flex-1 truncate ${!isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.uitteam}</span>
       </div>
       <SpelTypeBadge w={w} />
@@ -255,7 +255,7 @@ function UitslagRij({ w }) {
       <span className="text-white/60 text-xl w-16 flex-shrink-0 font-mono">{w.aanvangstijd || '--:--'}</span>
       <div className="flex items-center gap-1.5 flex-1 min-w-0">
         <span className={`text-xl flex-1 text-right truncate ${isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.thuisteam}</span>
-        <span className="text-white/40 text-lg flex-shrink-0 px-3">vs</span>
+        <span className="text-white/40 text-lg flex-shrink-0 px-8">vs</span>
         <span className={`text-xl flex-1 truncate ${!isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.uitteam}</span>
       </div>
       <SpelTypeBadge w={w} />
@@ -285,7 +285,7 @@ function SlideAfgelastingen({ wedstrijden }) {
             <span className="text-white/60 text-xl w-16 flex-shrink-0 font-mono">{w.aanvangstijd || '--:--'}</span>
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               <span className={`text-xl flex-1 text-right truncate ${isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.thuisteam}</span>
-              <span className="text-white/40 text-lg flex-shrink-0 px-3">vs</span>
+              <span className="text-white/40 text-lg flex-shrink-0 px-8">vs</span>
               <span className={`text-xl flex-1 truncate ${!isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.uitteam}</span>
             </div>
             <span className="text-red-300 text-sm font-semibold tracking-widest flex-shrink-0">AFGELAST</span>
