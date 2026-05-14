@@ -164,32 +164,28 @@ function PaginaLabel({ pagina, totaal }) {
   )
 }
 
-function SlideNieuws({ items }) {
+function SlideNieuws({ item }) {
+  if (!item) return null
   return (
-    <div className="grid grid-cols-3 gap-8 h-full">
-      {items.map(item => (
-        <div key={item.id} className="bg-black/20 rounded-2xl overflow-hidden flex flex-col">
-          {item.image_url && (
-            <div className="flex-shrink-0 flex items-center justify-center bg-black/10 p-2" style={{ maxHeight: '40%' }}>
-              <img
-                src={item.image_url}
-                alt=""
-                className="max-w-full max-h-full object-contain rounded-lg"
-                style={{ maxHeight: '220px' }}
-              />
-            </div>
-          )}
-          <div className="p-6 flex flex-col flex-1">
-            <p className="text-white/60 text-sm font-medium mb-2">
-              {item.published_at ? formatDatumKort(item.published_at) : ''}
-            </p>
-            <h2 className="text-2xl font-bold text-white leading-tight mb-3">{item.title}</h2>
-            <p className="text-white/80 text-lg leading-relaxed line-clamp-4">
-              {stripHtml(item.content).slice(0, 200)}
-            </p>
-          </div>
+    <div className="flex gap-10 h-full">
+      {item.image_url && (
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ maxWidth: '40%' }}>
+          <img
+            src={item.image_url}
+            alt=""
+            className="max-w-full max-h-full object-contain rounded-2xl"
+          />
         </div>
-      ))}
+      )}
+      <div className="flex flex-col justify-center flex-1">
+        <p className="text-white/50 text-lg font-medium mb-3">
+          {item.published_at ? formatDatumLang(item.published_at.slice(0, 10)) : ''}
+        </p>
+        <h2 className="text-4xl font-bold text-white leading-tight mb-5">{item.title}</h2>
+        <p className="text-white/80 text-2xl leading-relaxed">
+          {stripHtml(item.content).slice(0, 400)}
+        </p>
+      </div>
     </div>
   )
 }
@@ -664,10 +660,6 @@ export default function TvSchermPage() {
     const s = config.slides
     const lijst = []
 
-    if (s.nieuws && nieuws.length > 0) {
-      lijst.push({ id: 'nieuws', hoofdtitel: 'Nieuws', type: 'nieuws' })
-    }
-
     if (s.activiteiten) {
       const actPaginas = pagineer(activiteiten, ITEMS_PER_PAGE)
       actPaginas.forEach((pagina, i) => {
@@ -698,19 +690,25 @@ export default function TvSchermPage() {
       })
     }
 
-    if (s.uitslagen_vandaag) {
-      pagineerPerDag(uitslagenVandaag, dynamischItemsPerPagina.zonderHeaders, 'Uitslagen van vandaag', 'uitslagen', { showDatum: false })
-        .forEach((slide, i) => lijst.push({ id: `uitslagen-${i}`, ...slide }))
-    }
-
     if (s.nog_te_spelen) {
       pagineerPerDag(nogTeSpelen, dynamischItemsPerPagina.zonderHeaders, 'Programma van vandaag', 'nog-te-spelen', { showDatum: false })
         .forEach((slide, i) => lijst.push({ id: `nog-te-spelen-${i}`, ...slide }))
     }
 
+    if (s.uitslagen_vandaag) {
+      pagineerPerDag(uitslagenVandaag, dynamischItemsPerPagina.zonderHeaders, 'Uitslagen van vandaag', 'uitslagen', { showDatum: false })
+        .forEach((slide, i) => lijst.push({ id: `uitslagen-${i}`, ...slide }))
+    }
+
     if (s.programma_week) {
       pagineerPerDag(programmaDezeWeek, dynamischItemsPerPagina.metEenDagHeader, 'Programma deze week', 'programma-week', { showDatum: false })
         .forEach((slide, i) => lijst.push({ id: `programma-week-${i}`, ...slide }))
+    }
+
+    if (s.nieuws) {
+      nieuws.slice(0, 3).forEach((item, i) => {
+        lijst.push({ id: `nieuws-${i}`, hoofdtitel: 'Nieuws', type: 'nieuws', item })
+      })
     }
 
     if (s.uitslagen_week) {
@@ -768,7 +766,7 @@ export default function TvSchermPage() {
     if (!slide) return null
     switch (slide.type) {
       case 'nieuws':
-        return <SlideNieuws items={nieuws} />
+        return <SlideNieuws item={slide.item} />
       case 'activiteiten':
         return <SlideActiviteiten items={slide.items} />
       case 'huidige':
