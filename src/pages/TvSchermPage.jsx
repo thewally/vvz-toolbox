@@ -662,81 +662,99 @@ export default function TvSchermPage() {
   const slides = useMemo(() => {
     if (!geladen) return []
     const s = config.slides
-    const lijst = []
+
+    // Bouw groepen: elke groep is een reeks slides die bij elkaar horen
+    // (zelfde dag of zelfde onderwerp). Nieuws wordt tussen groepen ingevoegd.
+    const groepen = []
 
     if (s.activiteiten) {
-      const actPaginas = pagineer(activiteiten, ITEMS_PER_PAGE)
-      actPaginas.forEach((pagina, i) => {
-        if (pagina.length > 0) {
-          lijst.push({
-            id: `activiteiten-${i}`,
-            hoofdtitel: 'Activiteiten',
-            type: 'activiteiten',
-            items: pagina,
-            paginaBinnenDag: i + 1,
-            totaalBinnenDag: actPaginas.length,
-          })
-        }
-      })
+      const actPaginas = pagineer(activiteiten, ITEMS_PER_PAGE).filter(p => p.length > 0)
+      if (actPaginas.length > 0) {
+        groepen.push(actPaginas.map((pagina, i) => ({
+          id: `activiteiten-${i}`,
+          hoofdtitel: 'Activiteiten',
+          type: 'activiteiten',
+          items: pagina,
+          paginaBinnenDag: i + 1,
+          totaalBinnenDag: actPaginas.length,
+        })))
+      }
     }
 
     if (s.huidige_wedstrijden) {
       const totaal = huidigeWedstrijden.length
       huidigeWedstrijden.forEach((w, i) => {
-        lijst.push({
+        groepen.push([{
           id: `huidige-${i}`,
           hoofdtitel: "Wordt nu gespeeld bij VVZ'49",
           paginaBinnenDag: i + 1,
           totaalBinnenDag: totaal,
           type: 'huidige',
           wedstrijd: w,
-        })
+        }])
       })
     }
 
     if (s.nog_te_spelen) {
       pagineerPerDag(nogTeSpelen, dynamischItemsPerPagina.zonderHeaders, 'Programma van vandaag', 'nog-te-spelen', { showDatum: false })
-        .forEach((slide, i) => lijst.push({ id: `nog-te-spelen-${i}`, ...slide }))
+        .forEach((slide, i) => {
+          // Slides van dezelfde dag groeperen
+          const groep = groepen.find(g => g[0].id?.toString().startsWith('nog-te-spelen-') && g[0].datum === slide.datum)
+          if (groep) groep.push({ id: `nog-te-spelen-${i}`, ...slide })
+          else groepen.push([{ id: `nog-te-spelen-${i}`, ...slide }])
+        })
     }
 
     if (s.uitslagen_vandaag) {
       pagineerPerDag(uitslagenVandaag, dynamischItemsPerPagina.zonderHeaders, 'Uitslagen van vandaag', 'uitslagen', { showDatum: false })
-        .forEach((slide, i) => lijst.push({ id: `uitslagen-${i}`, ...slide }))
+        .forEach((slide, i) => {
+          const groep = groepen.find(g => g[0].id?.toString().startsWith('uitslagen-') && g[0].datum === slide.datum)
+          if (groep) groep.push({ id: `uitslagen-${i}`, ...slide })
+          else groepen.push([{ id: `uitslagen-${i}`, ...slide }])
+        })
     }
 
     if (s.programma_week) {
       pagineerPerDag(programmaDezeWeek, dynamischItemsPerPagina.metEenDagHeader, 'Programma deze week', 'programma-week', { showDatum: false })
-        .forEach((slide, i) => lijst.push({ id: `programma-week-${i}`, ...slide }))
+        .forEach((slide, i) => {
+          const groep = groepen.find(g => g[0].id?.toString().startsWith('programma-week-') && g[0].datum === slide.datum)
+          if (groep) groep.push({ id: `programma-week-${i}`, ...slide })
+          else groepen.push([{ id: `programma-week-${i}`, ...slide }])
+        })
     }
 
     if (s.uitslagen_week) {
       pagineerPerDag(uitslagenDezeWeek, dynamischItemsPerPagina.metEenDagHeader, 'Uitslagen deze week', 'uitslagen', { showDatum: false })
-        .forEach((slide, i) => lijst.push({ id: `uitslagen-week-${i}`, ...slide }))
+        .forEach((slide, i) => {
+          const groep = groepen.find(g => g[0].id?.toString().startsWith('uitslagen-week-') && g[0].datum === slide.datum)
+          if (groep) groep.push({ id: `uitslagen-week-${i}`, ...slide })
+          else groepen.push([{ id: `uitslagen-week-${i}`, ...slide }])
+        })
     }
 
-    // Nieuwsitems gelijkmatig verspreiden over de rotatie
+    // Nieuwsgroepen gelijkmatig tussen de andere groepen invoegen
     if (s.nieuws) {
       const nieuwsSlides = [
-        ...nieuws.slice(0, 3).map((item, i) => ({ id: `nieuws-${i}`, hoofdtitel: "VVZ'49 Club Nieuws", type: 'nieuws', item })),
-        ...knvbNieuws.slice(0, 3).map((item, i) => ({ id: `knvb-nieuws-${i}`, hoofdtitel: 'KNVB Nieuws', type: 'nieuws', item: {
-          id: `knvb-${i}`,
-          title: item.title,
-          content: item.description,
-          image_url: item.image,
-          published_at: item.pubDate ? new Date(item.pubDate).toISOString().slice(0, 10) : null,
-        }})),
+        ...nieuws.slice(0, 3).map((item, i) => [{ id: `nieuws-${i}`, hoofdtitel: "VVZ'49 Club Nieuws", type: 'nieuws', item }]),
+        ...knvbNieuws.slice(0, 3).map((item, i) => [{
+          id: `knvb-nieuws-${i}`, hoofdtitel: 'KNVB Nieuws', type: 'nieuws', item: {
+            id: `knvb-${i}`,
+            title: item.title,
+            content: item.description,
+            image_url: item.image,
+            published_at: item.pubDate ? new Date(item.pubDate).toISOString().slice(0, 10) : null,
+          },
+        }]),
       ]
-      if (nieuwsSlides.length > 0 && lijst.length > 0) {
-        const stap = Math.floor(lijst.length / nieuwsSlides.length)
-        nieuwsSlides.forEach((slide, i) => {
-          lijst.splice(stap * i + i, 0, slide)
-        })
+      if (nieuwsSlides.length > 0 && groepen.length > 0) {
+        const stap = Math.max(1, Math.floor(groepen.length / nieuwsSlides.length))
+        nieuwsSlides.forEach((groep, i) => groepen.splice(stap * i + i, 0, groep))
       } else {
-        nieuwsSlides.forEach(slide => lijst.push(slide))
+        nieuwsSlides.forEach(groep => groepen.push(groep))
       }
     }
 
-    return lijst
+    return groepen.flat()
   }, [geladen, config.slides, dynamischItemsPerPagina, nieuws, knvbNieuws, activiteiten, huidigeWedstrijden, uitslagenVandaag, nogTeSpelen, programmaDezeWeek, uitslagenDezeWeek])
 
   useEffect(() => { slidesRef.current = slides }, [slides])
