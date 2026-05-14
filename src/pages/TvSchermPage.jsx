@@ -707,7 +707,7 @@ export default function TvSchermPage() {
 
     if (s.nieuws) {
       nieuws.slice(0, 3).forEach((item, i) => {
-        lijst.push({ id: `nieuws-${i}`, hoofdtitel: 'Nieuws', type: 'nieuws', item })
+        lijst.push({ id: `nieuws-${i}`, hoofdtitel: "VVZ'49 Club Nieuws", type: 'nieuws', item })
       })
     }
 
