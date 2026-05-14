@@ -9,8 +9,10 @@ const FEEDS = [
 ]
 
 function extractText(xml: string, tag: string): string {
-  const m = xml.match(new RegExp(`<${tag}[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/${tag}>`, 'i'))
-  return m ? m[1].trim() : ''
+  const escaped = tag.replace(':', '\\:').replace('.', '\\.')
+  const m = xml.match(new RegExp(`<${escaped}[^>]*>\\s*(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?\\s*<\\/${escaped}>`, 'i'))
+  if (!m) return ''
+  return m[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
 function parseItems(xml: string): { title: string; link: string; description: string; pubDate: string; image: string | null }[] {
@@ -19,10 +21,12 @@ function parseItems(xml: string): { title: string; link: string; description: st
     const imageMatch = block.match(/<enclosure[^>]+url="([^"]+)"/) ||
                        block.match(/<media:content[^>]+url="([^"]+)"/) ||
                        block.match(/<media:thumbnail[^>]+url="([^"]+)"/)
+    // content:encoded heeft de volledige tekst; description is fallback
+    const description = extractText(block, 'content:encoded') || extractText(block, 'description')
     return {
       title: extractText(block, 'title'),
       link: extractText(block, 'link'),
-      description: extractText(block, 'description'),
+      description,
       pubDate: extractText(block, 'pubDate'),
       image: imageMatch ? imageMatch[1] : null,
     }
