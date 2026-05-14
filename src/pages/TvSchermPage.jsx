@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { fetchPublicNewsItems } from '../services/news'
 import { fetchActivities } from '../services/activities'
-import { getProgramma, getUitslagen, getTeams, getPoulestand, getTeamProgramma } from '../services/wedstrijden'
+import { getProgramma, getUitslagen, getTeams, getPoulestand, getTeamProgramma, getAfgelastingen } from '../services/wedstrijden'
 import { kiesPouleViaWedstrijd } from '../services/wedstrijdenHelpers'
 import { fetchTvInstellingen, DEFAULT_INSTELLINGEN } from '../services/tvInstellingen'
 import { fetchKnvbNieuws } from '../services/knvbNieuws'
@@ -275,6 +275,27 @@ function UitslagRij({ w }) {
   )
 }
 
+function SlideAfgelastingen({ wedstrijden }) {
+  return (
+    <div>
+      {wedstrijden.map(w => {
+        const isThuis = isThuiswedstrijd(w)
+        return (
+          <div key={w.wedstrijdcode || `${w.thuisteam}-${w.uitteam}`} className="flex items-center gap-4 py-3 border-b border-white/20">
+            <span className="text-white/60 text-xl w-16 flex-shrink-0 font-mono">{w.aanvangstijd || '--:--'}</span>
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <span className={`text-xl flex-1 text-right truncate ${isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.thuisteam}</span>
+              <span className="text-white/40 text-lg flex-shrink-0">vs</span>
+              <span className={`text-xl flex-1 truncate ${!isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.uitteam}</span>
+            </div>
+            <span className="text-red-300 text-sm font-semibold tracking-widest flex-shrink-0">AFGELAST</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function SlideHuidigeWedstrijd({ wedstrijd }) {
   const w = wedstrijd
   const isThuis = isThuiswedstrijd(w)
@@ -452,6 +473,7 @@ export default function TvSchermPage() {
   const [config, setConfig] = useState(DEFAULT_INSTELLINGEN)
   const [nieuws, setNieuws] = useState([])
   const [knvbNieuws, setKnvbNieuws] = useState([])
+  const [afgelastingen, setAfgelastingen] = useState([])
   const [activiteiten, setActiviteiten] = useState([])
   const [programma, setProgramma] = useState([])
   const [uitslagen, setUitslagen] = useState([])
@@ -576,7 +598,7 @@ export default function TvSchermPage() {
   }, [])
 
   const laadAlleData = useCallback(async () => {
-    const [nieuwsRes, actRes, progRes, uitRes, teamsRes, configRes, knvbRes] = await Promise.all([
+    const [nieuwsRes, actRes, progRes, uitRes, teamsRes, configRes, knvbRes, afgelastRes] = await Promise.all([
       fetchPublicNewsItems(10),
       fetchActivities({ hidePast: true }),
       getProgramma(),
@@ -584,12 +606,17 @@ export default function TvSchermPage() {
       getTeams(),
       fetchTvInstellingen(),
       fetchKnvbNieuws(),
+      getAfgelastingen(),
     ])
     setConfig(configRes)
     const prog = progRes.data ?? []
     const teams = teamsRes.data ?? []
     setNieuws(nieuwsRes.data ?? [])
     setKnvbNieuws(knvbRes)
+    const afgelastData = (afgelastRes.data ?? []).filter(w =>
+      (w.thuisteamclubrelatiecode === CLUB || w.uitteamclubrelatiecode === CLUB) && w.thuisteam && w.uitteam
+    )
+    setAfgelastingen(afgelastData)
     const gesorteerdeActiviteiten = (actRes.data ?? [])
       .sort((a, b) => {
         const datumA = a.sort_date || ''
@@ -695,6 +722,15 @@ export default function TvSchermPage() {
       })
     }
 
+    if (s.afgelastingen && afgelastingen.length > 0) {
+      pagineerPerDag(afgelastingen, dynamischItemsPerPagina.zonderHeaders, 'Afgelastingen', 'afgelastingen', { showDatum: false })
+        .forEach((slide, i) => {
+          const groep = groepen.find(g => g[0].id?.toString().startsWith('afgelastingen-') && g[0].datum === slide.datum)
+          if (groep) groep.push({ id: `afgelastingen-${i}`, ...slide })
+          else groepen.push([{ id: `afgelastingen-${i}`, ...slide }])
+        })
+    }
+
     if (s.nog_te_spelen) {
       pagineerPerDag(nogTeSpelen, dynamischItemsPerPagina.zonderHeaders, 'Programma van vandaag', 'nog-te-spelen', { showDatum: false })
         .forEach((slide, i) => {
@@ -757,7 +793,7 @@ export default function TvSchermPage() {
     }
 
     return groepen.flat()
-  }, [geladen, config.slides, config.nieuws_aantal, dynamischItemsPerPagina, nieuws, knvbNieuws, activiteiten, huidigeWedstrijden, uitslagenVandaag, nogTeSpelen, programmaDezeWeek, uitslagenDezeWeek])
+  }, [geladen, config.slides, config.nieuws_aantal, dynamischItemsPerPagina, nieuws, knvbNieuws, afgelastingen, activiteiten, huidigeWedstrijden, uitslagenVandaag, nogTeSpelen, programmaDezeWeek, uitslagenDezeWeek])
 
   useEffect(() => { slidesRef.current = slides }, [slides])
 
@@ -819,6 +855,8 @@ export default function TvSchermPage() {
         return <SlideProgrammaLijst wedstrijden={slide.wedstrijden} />
       case 'programma-week':
         return <SlideProgrammaLijst wedstrijden={slide.wedstrijden} />
+      case 'afgelastingen':
+        return <SlideAfgelastingen wedstrijden={slide.wedstrijden} />
       default:
         return null
     }

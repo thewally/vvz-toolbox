@@ -7,6 +7,7 @@ export const DEFAULT_INSTELLINGEN = {
     knvb_nieuws: true,
     activiteiten: true,
     huidige_wedstrijden: true,
+    afgelastingen: true,
     uitslagen_vandaag: true,
     nog_te_spelen: true,
     programma_week: true,

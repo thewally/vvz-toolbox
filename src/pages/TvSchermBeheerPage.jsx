@@ -5,6 +5,7 @@ import { fetchTvInstellingen, saveTvInstellingen, DEFAULT_INSTELLINGEN } from '.
 const SLIDE_OPTIES = [
   { key: 'activiteiten', label: 'Activiteiten', beschrijving: 'Komende activiteiten' },
   { key: 'huidige_wedstrijden', label: 'Wordt nu gespeeld', beschrijving: 'Wedstrijden die op dit moment gespeeld worden' },
+  { key: 'afgelastingen', label: 'Afgelastingen', beschrijving: 'Afgelaste VVZ-wedstrijden' },
   { key: 'uitslagen_vandaag', label: 'Uitslagen van vandaag', beschrijving: 'Wedstrijduitslagen van de huidige dag' },
   { key: 'nog_te_spelen', label: 'Programma van vandaag', beschrijving: 'Wedstrijden die vandaag nog beginnen' },
   { key: 'programma_week', label: 'Programma deze week', beschrijving: 'Alle VVZ-wedstrijden t/m komende zaterdag' },
