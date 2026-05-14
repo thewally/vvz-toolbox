@@ -195,8 +195,9 @@ function SlideActiviteiten({ items }) {
   return (
     <div className="grid grid-cols-[auto_auto_auto_1fr] gap-x-10">
       {['Datum', 'Van', 'Tot', 'Activiteit'].map(kop => (
-        <span key={kop} className="text-white/50 text-base uppercase tracking-widest pb-2 border-b border-white/30">{kop}</span>
+        <span key={kop} className="text-white/50 text-base uppercase tracking-widest pb-2">{kop}</span>
       ))}
+      <span className="col-span-4 border-b border-white/30 mb-0" />
       {items.map(item => {
         const datum = item.date
           ? formatDatumVolledig(item.date)
@@ -205,13 +206,14 @@ function SlideActiviteiten({ items }) {
             : item.date_start
               ? formatPeriodeVolledig(item.date_start, item.date_end)
               : ''
-        const cel = 'py-3 border-b border-white/20 flex items-center'
+        const cel = 'py-3 flex items-center'
         return (
           <>
             <span key={`${item.id}-datum`} className={`text-emerald-200 font-medium text-xl whitespace-nowrap ${cel}`}>{datum}</span>
             <span key={`${item.id}-van`} className={`text-white/80 text-xl font-mono whitespace-nowrap ${cel}`}>{item.time_start ? item.time_start.slice(0, 5) : '–'}</span>
             <span key={`${item.id}-tot`} className={`text-white/80 text-xl font-mono whitespace-nowrap ${cel}`}>{item.time_end ? item.time_end.slice(0, 5) : '–'}</span>
             <span key={`${item.id}-titel`} className={`text-white text-xl ${cel}`}>{item.title}</span>
+            <span key={`${item.id}-lijn`} className="col-span-4 border-b border-white/20" />
           </>
         )
       })}
@@ -234,10 +236,10 @@ function ProgrammaRij({ w }) {
   return (
     <div className="flex items-center gap-4 py-3 border-b border-white/20">
       <span className="text-white/60 text-xl w-16 flex-shrink-0 font-mono">{w.aanvangstijd || '--:--'}</span>
-      <div className="flex items-center gap-1.5 flex-1 min-w-0">
-        <span className={`text-xl flex-1 text-right truncate ${isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.thuisteam}</span>
-        <span className="text-white/40 text-lg flex-shrink-0 px-8">vs</span>
-        <span className={`text-xl flex-1 truncate ${!isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.uitteam}</span>
+      <div className="grid flex-1 min-w-0" style={{gridTemplateColumns: '1fr 6rem 1fr'}}>
+        <span className={`text-xl text-right truncate pr-4 ${isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.thuisteam}</span>
+        <span className="text-white/40 text-lg text-center">vs</span>
+        <span className={`text-xl truncate pl-4 ${!isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.uitteam}</span>
       </div>
       <SpelTypeBadge w={w} />
       <span className="text-sm font-semibold tracking-widest w-14 text-right flex-shrink-0 text-white/70">
@@ -253,10 +255,10 @@ function UitslagRij({ w }) {
   return (
     <div className="flex items-center gap-4 py-3 border-b border-white/20">
       <span className="text-white/60 text-xl w-16 flex-shrink-0 font-mono">{w.aanvangstijd || '--:--'}</span>
-      <div className="flex items-center gap-1.5 flex-1 min-w-0">
-        <span className={`text-xl flex-1 text-right truncate ${isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.thuisteam}</span>
-        <span className="text-white/40 text-lg flex-shrink-0 px-8">vs</span>
-        <span className={`text-xl flex-1 truncate ${!isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.uitteam}</span>
+      <div className="grid flex-1 min-w-0" style={{gridTemplateColumns: '1fr 6rem 1fr'}}>
+        <span className={`text-xl text-right truncate pr-4 ${isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.thuisteam}</span>
+        <span className="text-white/40 text-lg text-center">vs</span>
+        <span className={`text-xl truncate pl-4 ${!isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.uitteam}</span>
       </div>
       <SpelTypeBadge w={w} />
       {uitslag ? (
@@ -283,10 +285,10 @@ function SlideAfgelastingen({ wedstrijden }) {
         return (
           <div key={w.wedstrijdcode || `${w.thuisteam}-${w.uitteam}`} className="flex items-center gap-4 py-3 border-b border-white/20">
             <span className="text-white/60 text-xl w-16 flex-shrink-0 font-mono">{w.aanvangstijd || '--:--'}</span>
-            <div className="flex items-center gap-1.5 flex-1 min-w-0">
-              <span className={`text-xl flex-1 text-right truncate ${isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.thuisteam}</span>
-              <span className="text-white/40 text-lg flex-shrink-0 px-8">vs</span>
-              <span className={`text-xl flex-1 truncate ${!isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.uitteam}</span>
+            <div className="grid flex-1 min-w-0" style={{gridTemplateColumns: '1fr 6rem 1fr'}}>
+              <span className={`text-xl text-right truncate pr-4 ${isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.thuisteam}</span>
+              <span className="text-white/40 text-lg text-center">vs</span>
+              <span className={`text-xl truncate pl-4 ${!isThuis ? 'text-white font-bold' : 'text-white/80'}`}>{w.uitteam}</span>
             </div>
             <span className="text-red-300 text-sm font-semibold tracking-widest flex-shrink-0">AFGELAST</span>
           </div>
