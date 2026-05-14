@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { fetchTvInstellingen, saveTvInstellingen, DEFAULT_INSTELLINGEN } from '../services/tvInstellingen'
 
 const SLIDE_OPTIES = [
-  { key: 'nieuws', label: 'Nieuws', beschrijving: 'Laatste nieuwsberichten' },
   { key: 'activiteiten', label: 'Activiteiten', beschrijving: 'Komende activiteiten' },
   { key: 'huidige_wedstrijden', label: 'Wordt nu gespeeld', beschrijving: 'Wedstrijden die op dit moment gespeeld worden' },
   { key: 'uitslagen_vandaag', label: 'Uitslagen van vandaag', beschrijving: 'Wedstrijduitslagen van de huidige dag' },
@@ -11,7 +10,6 @@ const SLIDE_OPTIES = [
   { key: 'programma_week', label: 'Programma deze week', beschrijving: 'Alle VVZ-wedstrijden t/m komende zaterdag' },
   { key: 'uitslagen_week', label: 'Uitslagen deze week', beschrijving: 'Uitslagen van de afgelopen 7 dagen' },
 ]
-
 
 export default function TvSchermBeheerPage() {
   const [instellingen, setInstellingen] = useState(DEFAULT_INSTELLINGEN)
@@ -28,6 +26,10 @@ export default function TvSchermBeheerPage() {
 
   function setSlide(key, value) {
     setInstellingen(prev => ({ ...prev, slides: { ...prev.slides, [key]: value } }))
+  }
+
+  function setNieuwsAantal(key, value) {
+    setInstellingen(prev => ({ ...prev, nieuws_aantal: { ...prev.nieuws_aantal, [key]: Math.max(1, Math.min(10, Number(value))) } }))
   }
 
   async function handleSubmit(e) {
@@ -78,6 +80,40 @@ export default function TvSchermBeheerPage() {
               className="w-24 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-vvz-green/50 focus:border-vvz-green"
             />
             <span className="text-sm text-gray-600">seconden per dia (minimaal 5)</span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Nieuws</h2>
+          <div className="space-y-4">
+            {[
+              { slideKey: 'vvz_nieuws', aantalKey: 'vvz', label: "VVZ'49 Club Nieuws" },
+              { slideKey: 'knvb_nieuws', aantalKey: 'knvb', label: 'KNVB Nieuws' },
+            ].map(({ slideKey, aantalKey, label }) => (
+              <div key={slideKey} className="flex items-center gap-4">
+                <label className="flex items-center gap-3 flex-1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={instellingen.slides[slideKey] ?? true}
+                    onChange={e => setSlide(slideKey, e.target.checked)}
+                    className="w-4 h-4 accent-vvz-green cursor-pointer flex-shrink-0"
+                  />
+                  <span className="text-sm font-medium text-gray-800">{label}</span>
+                </label>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <input
+                    type="number"
+                    min={1}
+                    max={10}
+                    disabled={!(instellingen.slides[slideKey] ?? true)}
+                    value={instellingen.nieuws_aantal[aantalKey] ?? 3}
+                    onChange={e => setNieuwsAantal(aantalKey, e.target.value)}
+                    className="w-16 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-vvz-green/50 focus:border-vvz-green disabled:opacity-40"
+                  />
+                  <span className="text-sm text-gray-500">berichten</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

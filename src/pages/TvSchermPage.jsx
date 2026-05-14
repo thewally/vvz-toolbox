@@ -733,10 +733,12 @@ export default function TvSchermPage() {
     }
 
     // Nieuwsgroepen gelijkmatig tussen de andere groepen invoegen
-    if (s.nieuws) {
+    const vvzAantal = config.nieuws_aantal?.vvz ?? 3
+    const knvbAantal = config.nieuws_aantal?.knvb ?? 3
+    {
       const nieuwsSlides = [
-        ...nieuws.slice(0, 3).map((item, i) => [{ id: `nieuws-${i}`, hoofdtitel: "VVZ'49 Club Nieuws", type: 'nieuws', item }]),
-        ...knvbNieuws.slice(0, 3).map((item, i) => [{
+        ...(s.vvz_nieuws ? nieuws.slice(0, vvzAantal).map((item, i) => [{ id: `nieuws-${i}`, hoofdtitel: "VVZ'49 Club Nieuws", type: 'nieuws', item }]) : []),
+        ...(s.knvb_nieuws ? knvbNieuws.slice(0, knvbAantal).map((item, i) => [{
           id: `knvb-nieuws-${i}`, hoofdtitel: 'KNVB Nieuws', type: 'nieuws', item: {
             id: `knvb-${i}`,
             title: item.title,
@@ -744,7 +746,7 @@ export default function TvSchermPage() {
             image_url: item.image,
             published_at: item.pubDate ? new Date(item.pubDate).toISOString().slice(0, 10) : null,
           },
-        }]),
+        }]) : []),
       ]
       if (nieuwsSlides.length > 0 && groepen.length > 0) {
         const stap = Math.max(1, Math.floor(groepen.length / nieuwsSlides.length))
@@ -755,7 +757,7 @@ export default function TvSchermPage() {
     }
 
     return groepen.flat()
-  }, [geladen, config.slides, dynamischItemsPerPagina, nieuws, knvbNieuws, activiteiten, huidigeWedstrijden, uitslagenVandaag, nogTeSpelen, programmaDezeWeek, uitslagenDezeWeek])
+  }, [geladen, config.slides, config.nieuws_aantal, dynamischItemsPerPagina, nieuws, knvbNieuws, activiteiten, huidigeWedstrijden, uitslagenVandaag, nogTeSpelen, programmaDezeWeek, uitslagenDezeWeek])
 
   useEffect(() => { slidesRef.current = slides }, [slides])
 

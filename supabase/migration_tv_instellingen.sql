@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS tv_instellingen (
   id INT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
   interval_seconden INT NOT NULL DEFAULT 10,
   slides JSONB NOT NULL DEFAULT '{
-    "nieuws": true,
+    "vvz_nieuws": true,
+    "knvb_nieuws": true,
     "activiteiten": true,
     "huidige_wedstrijden": true,
     "uitslagen_vandaag": true,
@@ -11,6 +12,7 @@ CREATE TABLE IF NOT EXISTS tv_instellingen (
     "programma_week": true,
     "uitslagen_week": true
   }',
+  nieuws_aantal JSONB NOT NULL DEFAULT '{"vvz": 3, "knvb": 3}',
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
