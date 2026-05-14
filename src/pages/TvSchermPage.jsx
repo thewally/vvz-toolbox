@@ -5,6 +5,7 @@ import { fetchActivities } from '../services/activities'
 import { getProgramma, getUitslagen, getTeams, getPoulestand, getTeamProgramma } from '../services/wedstrijden'
 import { kiesPouleViaWedstrijd } from '../services/wedstrijdenHelpers'
 import { fetchTvInstellingen, DEFAULT_INSTELLINGEN } from '../services/tvInstellingen'
+import { fetchKnvbNieuws } from '../services/knvbNieuws'
 
 const CLUB = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 const ITEMS_PER_PAGE = 10
@@ -450,6 +451,7 @@ export default function TvSchermPage() {
 
   const [config, setConfig] = useState(DEFAULT_INSTELLINGEN)
   const [nieuws, setNieuws] = useState([])
+  const [knvbNieuws, setKnvbNieuws] = useState([])
   const [activiteiten, setActiviteiten] = useState([])
   const [programma, setProgramma] = useState([])
   const [uitslagen, setUitslagen] = useState([])
@@ -574,18 +576,20 @@ export default function TvSchermPage() {
   }, [])
 
   const laadAlleData = useCallback(async () => {
-    const [nieuwsRes, actRes, progRes, uitRes, teamsRes, configRes] = await Promise.all([
+    const [nieuwsRes, actRes, progRes, uitRes, teamsRes, configRes, knvbRes] = await Promise.all([
       fetchPublicNewsItems(3),
       fetchActivities({ hidePast: true }),
       getProgramma(),
       getUitslagen(),
       getTeams(),
       fetchTvInstellingen(),
+      fetchKnvbNieuws(),
     ])
     setConfig(configRes)
     const prog = progRes.data ?? []
     const teams = teamsRes.data ?? []
     setNieuws(nieuwsRes.data ?? [])
+    setKnvbNieuws(knvbRes)
     const gesorteerdeActiviteiten = (actRes.data ?? [])
       .sort((a, b) => {
         const datumA = a.sort_date || ''
@@ -709,6 +713,15 @@ export default function TvSchermPage() {
       nieuws.slice(0, 3).forEach((item, i) => {
         lijst.push({ id: `nieuws-${i}`, hoofdtitel: "VVZ'49 Club Nieuws", type: 'nieuws', item })
       })
+      knvbNieuws.slice(0, 3).forEach((item, i) => {
+        lijst.push({ id: `knvb-nieuws-${i}`, hoofdtitel: 'KNVB Nieuws', type: 'nieuws', item: {
+          id: `knvb-${i}`,
+          title: item.title,
+          content: item.description,
+          image_url: item.image,
+          published_at: item.pubDate ? new Date(item.pubDate).toISOString().slice(0, 10) : null,
+        }})
+      })
     }
 
     if (s.uitslagen_week) {
@@ -717,7 +730,7 @@ export default function TvSchermPage() {
     }
 
     return lijst
-  }, [geladen, config.slides, dynamischItemsPerPagina, nieuws, activiteiten, huidigeWedstrijden, uitslagenVandaag, nogTeSpelen, programmaDezeWeek, uitslagenDezeWeek])
+  }, [geladen, config.slides, dynamischItemsPerPagina, nieuws, knvbNieuws, activiteiten, huidigeWedstrijden, uitslagenVandaag, nogTeSpelen, programmaDezeWeek, uitslagenDezeWeek])
 
   useEffect(() => { slidesRef.current = slides }, [slides])
 
