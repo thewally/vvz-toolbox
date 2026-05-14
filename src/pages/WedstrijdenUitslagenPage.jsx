@@ -59,7 +59,7 @@ export default function WedstrijdenUitslagenPage() {
 
   const vandaag = new Date().toISOString().slice(0, 10)
   const verleden = wedstrijden
-    .filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) <= vandaag && w.uitslag)
+    .filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) <= vandaag && w.uitslag && w.thuisteam && w.uitteam)
     .filter(w => {
       if (filterLocatie === 'alles') return true
       const isThuis = w.thuisteamclubrelatiecode === CLUB_RC

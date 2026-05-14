@@ -26,7 +26,7 @@ function isWeekendDag() {
 }
 
 function isVvzWedstrijd(w) {
-  return w.thuisteamclubrelatiecode === CLUB || w.uitteamclubrelatiecode === CLUB
+  return (w.thuisteamclubrelatiecode === CLUB || w.uitteamclubrelatiecode === CLUB) && !!w.thuisteam && !!w.uitteam
 }
 
 function getVvzNaam(w) {
