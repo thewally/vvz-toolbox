@@ -42,11 +42,9 @@ Deno.serve(async (req) => {
     const results = await Promise.allSettled(FEEDS.map(url => fetch(url).then(r => r.text())))
     const items = results.flatMap(r => r.status === 'fulfilled' ? parseItems(r.value) : [])
 
-    // Sorteer op datum, nieuwste eerst, neem top 3
     items.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
-    const top3 = items.slice(0, 3)
 
-    return new Response(JSON.stringify(top3), {
+    return new Response(JSON.stringify(items.slice(0, 10)), {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'public, max-age=300',
