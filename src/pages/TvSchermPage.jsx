@@ -577,7 +577,7 @@ export default function TvSchermPage() {
 
   const laadAlleData = useCallback(async () => {
     const [nieuwsRes, actRes, progRes, uitRes, teamsRes, configRes, knvbRes] = await Promise.all([
-      fetchPublicNewsItems(3),
+      fetchPublicNewsItems(10),
       fetchActivities({ hidePast: true }),
       getProgramma(),
       getUitslagen(),
