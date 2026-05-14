@@ -709,24 +709,31 @@ export default function TvSchermPage() {
         .forEach((slide, i) => lijst.push({ id: `programma-week-${i}`, ...slide }))
     }
 
+    if (s.uitslagen_week) {
+      pagineerPerDag(uitslagenDezeWeek, dynamischItemsPerPagina.metEenDagHeader, 'Uitslagen deze week', 'uitslagen', { showDatum: false })
+        .forEach((slide, i) => lijst.push({ id: `uitslagen-week-${i}`, ...slide }))
+    }
+
+    // Nieuwsitems gelijkmatig verspreiden over de rotatie
     if (s.nieuws) {
-      nieuws.slice(0, 3).forEach((item, i) => {
-        lijst.push({ id: `nieuws-${i}`, hoofdtitel: "VVZ'49 Club Nieuws", type: 'nieuws', item })
-      })
-      knvbNieuws.slice(0, 3).forEach((item, i) => {
-        lijst.push({ id: `knvb-nieuws-${i}`, hoofdtitel: 'KNVB Nieuws', type: 'nieuws', item: {
+      const nieuwsSlides = [
+        ...nieuws.slice(0, 3).map((item, i) => ({ id: `nieuws-${i}`, hoofdtitel: "VVZ'49 Club Nieuws", type: 'nieuws', item })),
+        ...knvbNieuws.slice(0, 3).map((item, i) => ({ id: `knvb-nieuws-${i}`, hoofdtitel: 'KNVB Nieuws', type: 'nieuws', item: {
           id: `knvb-${i}`,
           title: item.title,
           content: item.description,
           image_url: item.image,
           published_at: item.pubDate ? new Date(item.pubDate).toISOString().slice(0, 10) : null,
-        }})
-      })
-    }
-
-    if (s.uitslagen_week) {
-      pagineerPerDag(uitslagenDezeWeek, dynamischItemsPerPagina.metEenDagHeader, 'Uitslagen deze week', 'uitslagen', { showDatum: false })
-        .forEach((slide, i) => lijst.push({ id: `uitslagen-week-${i}`, ...slide }))
+        }})),
+      ]
+      if (nieuwsSlides.length > 0 && lijst.length > 0) {
+        const stap = Math.floor(lijst.length / nieuwsSlides.length)
+        nieuwsSlides.forEach((slide, i) => {
+          lijst.splice(stap * i + i, 0, slide)
+        })
+      } else {
+        nieuwsSlides.forEach(slide => lijst.push(slide))
+      }
     }
 
     return lijst
