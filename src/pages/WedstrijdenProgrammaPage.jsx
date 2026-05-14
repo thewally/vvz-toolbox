@@ -66,7 +66,7 @@ export default function WedstrijdenProgrammaPage() {
   const vandaag = new Date().toISOString().slice(0, 10)
   const toekomst = wedstrijden
     .filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) >= vandaag)
-    .filter(w => w.thuisteam && w.uitteam)
+    .filter(w => w.thuisteam && w.uitteam && w.uitteam !== 'N.N.B.' && w.thuisteam !== 'N.N.B.')
     .filter(w => {
       if (filterLocatie === 'alles') return true
       const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
