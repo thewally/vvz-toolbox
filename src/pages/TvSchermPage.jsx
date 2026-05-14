@@ -194,7 +194,7 @@ function SlideNieuws({ items }) {
   )
 }
 
-function SlideActiviteiten({ items, pagina, totaalPaginas }) {
+function SlideActiviteiten({ items }) {
   return (
     <div className="grid grid-cols-[auto_auto_auto_1fr] gap-x-10">
       {['Datum', 'Van', 'Tot', 'Activiteit'].map(kop => (
@@ -492,7 +492,7 @@ export default function TvSchermPage() {
     return { zonderHeaders, metEenDagHeader }
   }, [contentHoogte])
 
-  function pagineerPerDag(wedstrijden, itemsPerPagina, titelFn, type, extraProps = {}) {
+  function pagineerPerDag(wedstrijden, itemsPerPagina, naam, type, extraProps = {}) {
     const dagGroepen = {}
     wedstrijden.forEach(w => {
       const datum = (w.wedstrijddatum || '').slice(0, 10)
@@ -510,7 +510,7 @@ export default function TvSchermPage() {
             paginaBinnenDag: i + 1,
             totaalBinnenDag: dagPaginas,
             ...extraProps,
-            title: titelFn(datum, dagPaginas > 1 ? `${i + 1}/${dagPaginas}` : null),
+            hoofdtitel: naam,
             type,
           })
         }
@@ -665,7 +665,7 @@ export default function TvSchermPage() {
     const lijst = []
 
     if (s.nieuws && nieuws.length > 0) {
-      lijst.push({ id: 'nieuws', title: 'Nieuws', type: 'nieuws' })
+      lijst.push({ id: 'nieuws', hoofdtitel: 'Nieuws', type: 'nieuws' })
     }
 
     if (s.activiteiten) {
@@ -674,11 +674,11 @@ export default function TvSchermPage() {
         if (pagina.length > 0) {
           lijst.push({
             id: `activiteiten-${i}`,
-            title: 'Activiteiten',
+            hoofdtitel: 'Activiteiten',
             type: 'activiteiten',
             items: pagina,
-            pagina: i + 1,
-            totaal: actPaginas.length,
+            paginaBinnenDag: i + 1,
+            totaalBinnenDag: actPaginas.length,
           })
         }
       })
@@ -687,10 +687,11 @@ export default function TvSchermPage() {
     if (s.huidige_wedstrijden) {
       const totaal = huidigeWedstrijden.length
       huidigeWedstrijden.forEach((w, i) => {
-        const paginering = totaal > 1 ? ` ${i + 1}/${totaal}` : ''
         lijst.push({
           id: `huidige-${i}`,
-          title: `Wordt nu gespeeld bij VVZ'49${paginering}`,
+          hoofdtitel: "Wordt nu gespeeld bij VVZ'49",
+          paginaBinnenDag: i + 1,
+          totaalBinnenDag: totaal,
           type: 'huidige',
           wedstrijd: w,
         })
@@ -698,43 +699,23 @@ export default function TvSchermPage() {
     }
 
     if (s.uitslagen_vandaag) {
-      pagineerPerDag(
-        uitslagenVandaag,
-        dynamischItemsPerPagina.zonderHeaders,
-        (datum, pag) => `Uitslagen van vandaag — ${formatDatumLang(datum)}${pag ? ` (${pag})` : ''}`,
-        'uitslagen',
-        { showDatum: false },
-      ).forEach((slide, i) => lijst.push({ id: `uitslagen-${i}`, ...slide }))
+      pagineerPerDag(uitslagenVandaag, dynamischItemsPerPagina.zonderHeaders, 'Uitslagen van vandaag', 'uitslagen', { showDatum: false })
+        .forEach((slide, i) => lijst.push({ id: `uitslagen-${i}`, ...slide }))
     }
 
     if (s.nog_te_spelen) {
-      pagineerPerDag(
-        nogTeSpelen,
-        dynamischItemsPerPagina.zonderHeaders,
-        (datum, pag) => `Programma van vandaag — ${formatDatumLang(datum)}${pag ? ` (${pag})` : ''}`,
-        'nog-te-spelen',
-        { showDatum: false },
-      ).forEach((slide, i) => lijst.push({ id: `nog-te-spelen-${i}`, ...slide }))
+      pagineerPerDag(nogTeSpelen, dynamischItemsPerPagina.zonderHeaders, 'Programma van vandaag', 'nog-te-spelen', { showDatum: false })
+        .forEach((slide, i) => lijst.push({ id: `nog-te-spelen-${i}`, ...slide }))
     }
 
     if (s.programma_week) {
-      pagineerPerDag(
-        programmaDezeWeek,
-        dynamischItemsPerPagina.metEenDagHeader,
-        (datum, pag) => `Programma deze week — ${formatDatumLang(datum)}${pag ? ` (${pag})` : ''}`,
-        'programma-week',
-        { showDatum: false },
-      ).forEach((slide, i) => lijst.push({ id: `programma-week-${i}`, ...slide }))
+      pagineerPerDag(programmaDezeWeek, dynamischItemsPerPagina.metEenDagHeader, 'Programma deze week', 'programma-week', { showDatum: false })
+        .forEach((slide, i) => lijst.push({ id: `programma-week-${i}`, ...slide }))
     }
 
     if (s.uitslagen_week) {
-      pagineerPerDag(
-        uitslagenDezeWeek,
-        dynamischItemsPerPagina.metEenDagHeader,
-        (datum, pag) => `Uitslagen deze week — ${formatDatumLang(datum)}${pag ? ` (${pag})` : ''}`,
-        'uitslagen',
-        { showDatum: false },
-      ).forEach((slide, i) => lijst.push({ id: `uitslagen-week-${i}`, ...slide }))
+      pagineerPerDag(uitslagenDezeWeek, dynamischItemsPerPagina.metEenDagHeader, 'Uitslagen deze week', 'uitslagen', { showDatum: false })
+        .forEach((slide, i) => lijst.push({ id: `uitslagen-week-${i}`, ...slide }))
     }
 
     return lijst
@@ -789,7 +770,7 @@ export default function TvSchermPage() {
       case 'nieuws':
         return <SlideNieuws items={nieuws} />
       case 'activiteiten':
-        return <SlideActiviteiten items={slide.items} pagina={slide.pagina} totaalPaginas={slide.totaal} />
+        return <SlideActiviteiten items={slide.items} />
       case 'huidige':
         return <SlideHuidigeWedstrijd wedstrijd={slide.wedstrijd} />
       case 'standen':
@@ -813,9 +794,13 @@ export default function TvSchermPage() {
     )
   }
 
-  const heeftPaginering = slide?.totaal > 1
-  const slideTitle = slide?.title ?? ''
-  const paginaLabel = heeftPaginering ? `${slide.pagina}/${slide.totaal}` : null
+  const hoofdtitel = slide?.hoofdtitel ?? ''
+  const heeftDatum = !!slide?.datum
+  const heeftPaginering = (slide?.totaalBinnenDag ?? 0) > 1
+  const subLabel = [
+    heeftDatum ? formatDatumLang(slide.datum) : null,
+    heeftPaginering ? `(${slide.paginaBinnenDag}/${slide.totaalBinnenDag})` : null,
+  ].filter(Boolean).join(' ')
 
   return (
     <div className="min-h-screen text-white flex flex-col select-none overflow-hidden" style={{ backgroundColor: '#2E7D32' }}>
@@ -827,10 +812,10 @@ export default function TvSchermPage() {
           alt="VVZ'49"
           className="h-14"
         />
-        <div className="flex items-center gap-3">
-          <h1 className="text-4xl font-bold text-white tracking-wide">{slideTitle}</h1>
-          {paginaLabel && (
-            <span className="text-2xl text-white/50 font-medium">{paginaLabel}</span>
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-white tracking-wide leading-tight">{hoofdtitel}</h1>
+          {subLabel && (
+            <p className="text-xl text-white/60 mt-0.5 capitalize">{subLabel}</p>
           )}
         </div>
         <Klok />
