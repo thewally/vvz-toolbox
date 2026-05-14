@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { fetchPublicNewsItems } from '../services/news'
 import { fetchActivities } from '../services/activities'
@@ -6,6 +6,7 @@ import { getProgramma, getUitslagen, getTeams, getPoulestand, getTeamProgramma, 
 import { kiesPouleViaWedstrijd } from '../services/wedstrijdenHelpers'
 import { fetchTvInstellingen, DEFAULT_INSTELLINGEN } from '../services/tvInstellingen'
 import { fetchKnvbNieuws } from '../services/knvbNieuws'
+import { getSponsors } from '../services/sponsors'
 
 const CLUB = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 const ITEMS_PER_PAGE = 10
@@ -208,13 +209,13 @@ function SlideActiviteiten({ items }) {
               : ''
         const cel = 'py-3 flex items-center'
         return (
-          <>
-            <span key={`${item.id}-datum`} className={`text-emerald-200 font-medium text-xl whitespace-nowrap ${cel}`}>{datum}</span>
+          <Fragment key={item.id}>
+            <span className={`text-emerald-200 font-medium text-xl whitespace-nowrap ${cel}`}>{datum}</span>
             <span key={`${item.id}-van`} className={`text-white/80 text-xl font-mono whitespace-nowrap ${cel}`}>{item.time_start ? item.time_start.slice(0, 5) : '–'}</span>
             <span key={`${item.id}-tot`} className={`text-white/80 text-xl font-mono whitespace-nowrap ${cel}`}>{item.time_end ? item.time_end.slice(0, 5) : '–'}</span>
             <span key={`${item.id}-titel`} className={`text-white text-xl ${cel}`}>{item.title}</span>
             <span key={`${item.id}-lijn`} className="col-span-4 border-b border-white/20" />
-          </>
+          </Fragment>
         )
       })}
     </div>
@@ -467,6 +468,33 @@ function Klok() {
   return <span className="text-4xl font-mono text-white/80 tabular-nums">{tijd}</span>
 }
 
+function SlideHoofdSponsor({ sponsor }) {
+  const [logoFout, setLogoFout] = useState(false)
+  const toonNaam = !sponsor.logo_url || logoFout
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-8">
+      <div
+        className="rounded-2xl shadow-2xl inline-flex items-center justify-center p-12"
+        style={{ backgroundColor: sponsor.logo_achtergrond || '#ffffff' }}
+      >
+        {!toonNaam ? (
+          <img
+            src={sponsor.logo_url}
+            alt={sponsor.naam}
+            width="600"
+            height="200"
+            className="max-h-96 max-w-3xl object-contain"
+            onError={() => setLogoFout(true)}
+          />
+        ) : (
+          <span className="text-6xl font-bold text-gray-800 text-center px-8">{sponsor.naam}</span>
+        )}
+      </div>
+      <p className="text-white/50 text-xl uppercase tracking-widest">Hoofdsponsor</p>
+    </div>
+  )
+}
+
 // ─── Hoofdpagina ─────────────────────────────────────────────────────────────
 
 export default function TvSchermPage() {
@@ -476,6 +504,7 @@ export default function TvSchermPage() {
   const [nieuws, setNieuws] = useState([])
   const [knvbNieuws, setKnvbNieuws] = useState([])
   const [afgelastingen, setAfgelastingen] = useState([])
+  const [hoofdsponsors, setHoofdsponsors] = useState([])
   const [activiteiten, setActiviteiten] = useState([])
   const [programma, setProgramma] = useState([])
   const [uitslagen, setUitslagen] = useState([])
@@ -600,7 +629,7 @@ export default function TvSchermPage() {
   }, [])
 
   const laadAlleData = useCallback(async () => {
-    const [nieuwsRes, actRes, progRes, uitRes, teamsRes, configRes, knvbRes, afgelastRes] = await Promise.all([
+    const [nieuwsRes, actRes, progRes, uitRes, teamsRes, configRes, knvbRes, afgelastRes, sponsorsRes] = await Promise.all([
       fetchPublicNewsItems(10),
       fetchActivities({ hidePast: true }),
       getProgramma(),
@@ -609,8 +638,10 @@ export default function TvSchermPage() {
       fetchTvInstellingen(),
       fetchKnvbNieuws(),
       getAfgelastingen(),
+      getSponsors(),
     ])
     setConfig(configRes)
+    setHoofdsponsors((sponsorsRes.data ?? []).filter(s => s.categorie === 'goud'))
     const prog = progRes.data ?? []
     const teams = teamsRes.data ?? []
     setNieuws(nieuwsRes.data ?? [])
@@ -770,6 +801,13 @@ export default function TvSchermPage() {
         })
     }
 
+    // Sponsorslides gelijkmatig tussen de groepen invoegen
+    if (hoofdsponsors.length > 0 && groepen.length > 0) {
+      const sponsorSlides = hoofdsponsors.map((s, i) => [{ id: `sponsor-${i}`, hoofdtitel: null, type: 'sponsor', sponsor: s }])
+      const stap = Math.max(1, Math.floor(groepen.length / sponsorSlides.length))
+      sponsorSlides.forEach((groep, i) => groepen.splice(stap * i + i, 0, groep))
+    }
+
     // Nieuwsgroepen gelijkmatig tussen de andere groepen invoegen
     const vvzAantal = config.nieuws_aantal?.vvz ?? 3
     const knvbAantal = config.nieuws_aantal?.knvb ?? 3
@@ -795,7 +833,7 @@ export default function TvSchermPage() {
     }
 
     return groepen.flat()
-  }, [geladen, config.slides, config.nieuws_aantal, dynamischItemsPerPagina, nieuws, knvbNieuws, afgelastingen, activiteiten, huidigeWedstrijden, uitslagenVandaag, nogTeSpelen, programmaDezeWeek, uitslagenDezeWeek])
+  }, [geladen, config.slides, config.nieuws_aantal, dynamischItemsPerPagina, nieuws, knvbNieuws, afgelastingen, hoofdsponsors, activiteiten, huidigeWedstrijden, uitslagenVandaag, nogTeSpelen, programmaDezeWeek, uitslagenDezeWeek])
 
   useEffect(() => { slidesRef.current = slides }, [slides])
 
@@ -859,6 +897,8 @@ export default function TvSchermPage() {
         return <SlideProgrammaLijst wedstrijden={slide.wedstrijden} />
       case 'afgelastingen':
         return <SlideAfgelastingen wedstrijden={slide.wedstrijden} />
+      case 'sponsor':
+        return <SlideHoofdSponsor sponsor={slide.sponsor} />
       default:
         return null
     }
