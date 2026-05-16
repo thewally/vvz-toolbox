@@ -303,19 +303,12 @@ function SlideHuidigeWedstrijd({ wedstrijd }) {
   const w = wedstrijd
   const isThuis = isThuiswedstrijd(w)
   const veld = w.veldnummer || w.veld || null
-  const locatie = w.accommodatie ? `${w.accommodatie}${veld ? ` · ${veld}` : ''}` : veld
 
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-8 text-center">
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-8 text-center">
       <div className="flex items-center gap-3">
         <span className="w-5 h-5 bg-emerald-200 rounded-full animate-pulse" />
-        <span className="text-white/70 font-mono text-3xl">{w.aanvangstijd}</span>
-        {locatie && (
-          <>
-            <span className="text-white/30 text-2xl">·</span>
-            <span className="text-emerald-200 text-2xl font-semibold">{locatie}</span>
-          </>
-        )}
+        <span className="text-white/70 text-3xl">Gestart om <span className="font-mono">{w.aanvangstijd}</span> uur</span>
       </div>
 
       <div className="flex items-center gap-8 w-full max-w-4xl">
@@ -329,6 +322,10 @@ function SlideHuidigeWedstrijd({ wedstrijd }) {
           {!isThuis && <p className="text-emerald-200 text-xl font-semibold mt-2 tracking-widest uppercase">Thuis</p>}
         </div>
       </div>
+
+      {veld && (
+        <p className="text-white/60 text-3xl font-semibold uppercase tracking-widest">Op {veld}</p>
+      )}
     </div>
   )
 }
