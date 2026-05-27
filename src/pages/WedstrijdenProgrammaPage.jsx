@@ -159,7 +159,7 @@ export default function WedstrijdenProgrammaPage() {
                 ? 'OEFEN'
                 : _loc.includes('futsal') || _loc.includes('zaal')
                   ? 'ZAAL'
-                  : null
+                  : 'VELD'
               const veldnummer = w.veldnummer || w.veld_nr || w.veld || null
               const teamcodeRaw = isThuis ? w.thuisteamid : w.uitteamid
               const teamcode = teamcodeRaw && (!geldigeTeamcodes || geldigeTeamcodes.has(String(teamcodeRaw))) ? teamcodeRaw : null
