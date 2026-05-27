@@ -153,8 +153,7 @@ export default function WedstrijdenProgrammaPage() {
             {items.map((w, i) => {
               const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
               const _loc = (w.locatie || '').toLowerCase()
-              const _comp = (w.competitienaam || w.competitie || '').toLowerCase()
-              const isOefen = _comp.includes('oefenwedstrijd') || _comp.includes('oefen')
+              const isOefen = (w.competitiesoort || '').toLowerCase() === 'oefenwedstrijd'
               const locatieLabel = isOefen
                 ? 'OEFEN'
                 : _loc.includes('futsal') || _loc.includes('zaal')
