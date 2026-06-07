@@ -10,7 +10,7 @@ The toolbox contains the following sections:
 
 1. **Activiteiten** (`/activiteiten`) — Upcoming club activities and events, publicly visible. Admin at `/beheer/activiteiten`.
 2. **Trainingsschema** (`/trainingsschema`) — Weekly training schedule. Admin at `/beheer/trainingsschema`. Field layout at `/trainingsschema/veldindeling`.
-3. **Wedstrijden** (`/wedstrijden`) — Match programme, results, and cancellations.
+3. **Wedstrijden** (`/wedstrijden`) — Match programme, results, standings, cancellations, match reports, and team pages. Data comes live from SportLink API (no Supabase).
 4. **Nieuws** (`/nieuws`) — News articles. Admin at `/beheer/nieuws`.
 5. **Sponsors** (`/sponsors`) — Sponsor overview and "become a sponsor". Admin at `/beheer/sponsoring`.
 6. **Club** — Ereleden (`/club/ereleden`), reglementen, historie. Admin at `/beheer/club/ereleden`.
@@ -19,6 +19,9 @@ The toolbox contains the following sections:
 9. **Plattegrond** (`/plattegrond`) — Map of Sportpark Zonnegloren (PDF A4, A3, SVG, EPS).
 10. **Huistijl** (`/huistijl`) — Official club branding assets (logo PNG, AI vector).
 11. **Gebruikersbeheer** (`/beheer/gebruikers`) — Invite users, assign granular roles.
+12. **Lid worden** (`/lid-worden`) — Membership sign-up form. Admin at `/beheer/lid-worden`.
+13. **Vrijwilligers** (`/vrijwilligers`) — Volunteer sign-up. Admin at `/beheer/vrijwilligers`.
+14. **TV-scherm** (`/tv`) — Live match display for on-site screens. Config at `/beheer/tv`.
 
 All public views are visible without login. The admin environment (`/beheer`) is protected via Supabase Auth with granular role-based access.
 
@@ -80,9 +83,14 @@ src/
     activities.js        # Agenda CRUD
     auth.js              # Invite, role assignment, password flows
     roles.js             # user_roles CRUD
-    trainingSlots.js
-    fields.js
-    teams.js
+    trainingSlots.js / fields.js / teams.js  # Training schedule
+    sportlink.js         # Raw SportLink API fetches (no auth)
+    wedstrijden.js       # Thin wrappers around sportlink.js
+    wedstrijdenHelpers.js # Pure functions: grouping, sorting, date formatting
+    matchReports.js      # Match reports (Supabase)
+    news.js / sponsors.js / ereleden.js / pages.js / menu.js  # Content domains
+    tvInstellingen.js    # TV screen config (Supabase)
+    lidWorden.js / volunteers.js  # Sign-up forms
   lib/
     supabaseClient.js
     constants.js
@@ -94,9 +102,38 @@ public/
   huistijl/              # logo-vvz.png, logo-vvz.ai
 supabase/
   migration.sql          # Base tables
-  sponsors.sql           # Sponsors table
   migration_rolbeheer.sql # user_roles, RLS policies, DB functions
+  # Additional migrations per feature (sponsors, ereleden, tv, lid-worden, etc.)
+  functions/
+    invite-user/         # Send invitation email
+    set-user-role/       # Set/remove admin via app_metadata
+    team-ical/           # iCal feed per team
+    knvb-nieuws/         # Proxy for KNVB news feed
+    image-proxy/         # Proxy for external images
+    submit-proeftraining/ # Proeftraining sign-up handler
 ```
+
+## Cloudflare Worker (SportLink Proxy)
+
+De SportLink API-calls lopen via een Cloudflare Worker (`cloudflare-worker/`) zodat de `client_id` niet zichtbaar is in de browser. De frontend gebruikt `VITE_SPORTLINK_PROXY_URL` als base URL; de Worker voegt de `client_id` server-side toe als secret.
+
+Deployen:
+```bash
+cd cloudflare-worker
+npx wrangler secret put SPORTLINK_CLIENT_ID   # eenmalig instellen
+npx wrangler deploy
+```
+
+Na deploy: kopieer de Worker-URL naar `VITE_SPORTLINK_PROXY_URL` in `.env` en als GitHub Secret.
+
+## SportLink Integration
+
+Wedstrijden data comes entirely from the SportLink public API (`https://data.sportlink.com`). Key fields to know:
+
+- `thuisteamclubrelatiecode` / `uitteamclubrelatiecode` — compare with `VITE_SPORTLINK_CLUB_RELATIECODE` to identify VVZ teams
+- `thuisteamid` / `uitteamid` — SportLink team IDs; value `-1` means the team doesn't exist in SportLink (e.g. new/unregistered teams — do not link)
+- `competitiesoort` — `'oefenwedstrijd'` for friendlies, `'regulier'` for competition matches
+- `locatie` — sport type (`'Outdoor'`, `'Futsal'`, etc.); use to detect ZAAL matches
 
 ## Agenda Domain
 

@@ -1,0 +1,6 @@
+name = "vvz49-sportlink-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Secrets worden ingesteld via: wrangler secret put SPORTLINK_CLIENT_ID
+# [vars] is voor niet-geheime waarden; client_id hoort in secrets
