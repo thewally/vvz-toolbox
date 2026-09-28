@@ -15,14 +15,24 @@ function getCategorie(team) {
 
   if (naam.includes('veteran') || naam.includes('vet.') || naam.includes('35+') || naam.includes('45+') || naam.includes('30+') || cat.includes('veteran')) return 'veteranen'
 
-  const joMatch = naam.match(/[jm]o\s*(\d+)/)
-  if (joMatch) {
-    const leeftijd = parseInt(joMatch[1], 10)
+  // SportLink levert leeftijdscategorie als "Onder N" (bv. "Onder 13"); O23 krijgt hier "Senioren".
+  const onderMatch = cat.match(/onder\s*(\d+)/)
+  if (onderMatch) {
+    const leeftijd = parseInt(onderMatch[1], 10)
     return leeftijd <= 12 ? 'pupillen' : 'junioren'
   }
 
   if (cat.includes('pupil')) return 'pupillen'
   if (cat.includes('junior')) return 'junioren'
+
+  // Terugval op teamnaam als leeftijdscategorie ontbreekt (bv. "JO13"/"MO13" of kale "O13")
+  if (!naam.includes('o23')) {
+    const joMatch = naam.match(/[jm]?o\s*(\d+)/)
+    if (joMatch) {
+      const leeftijd = parseInt(joMatch[1], 10)
+      return leeftijd <= 12 ? 'pupillen' : 'junioren'
+    }
+  }
 
   return 'senioren'
 }
