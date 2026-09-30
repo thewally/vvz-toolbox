@@ -39,7 +39,12 @@ function getCategorie(team) {
 
 function getSorteerSleutel(team) {
   const naam = team.teamnaam || ''
-  const match = naam.match(/[jm]o\s*(\d+)/i)
+  const cat = team.leeftijdscategorie || ''
+  // Leeftijdscategorie "Onder N" is de betrouwbaarste bron (zie getCategorie hierboven)
+  const onderMatch = cat.match(/onder\s*(\d+)/i)
+  if (onderMatch) return parseInt(onderMatch[1], 10)
+  // Terugval op teamnaam, met en zonder j/m-genderprefix (bv. "JO13" of kale "O13")
+  const match = naam.match(/[jm]?o\s*(\d+)/i)
   if (match) return parseInt(match[1], 10)
   const numMatch = naam.match(/(\d+)\s*$/)
   if (numMatch) return parseInt(numMatch[1], 10)
