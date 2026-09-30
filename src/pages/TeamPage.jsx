@@ -32,13 +32,19 @@ function getTeamCategorie(team) {
   if (!team) return 'senioren'
   const naam = (team.teamnaam || '').toLowerCase()
   const cat = (team.leeftijdscategorie || '').toLowerCase()
+  const isO23 = naam.includes('o23')
   if (naam.includes('veteran') || naam.includes('vet.') || naam.includes('35+') || naam.includes('45+') || naam.includes('30+') || cat.includes('veteran')) return 'veteranen'
-  const joMatch = naam.match(/[jm]o\s*(\d+)/)
-  if (joMatch) return parseInt(joMatch[1], 10) <= 12 ? 'pupillen' : 'junioren'
+  // SportLink levert leeftijdscategorie als "Onder N" (bv. "Onder 13"); O23 krijgt hier "Senioren".
+  const onderMatch = cat.match(/onder\s*(\d+)/)
+  if (onderMatch) return parseInt(onderMatch[1], 10) <= 12 ? 'pupillen' : 'junioren'
   if (cat.includes('pupil')) return 'pupillen'
   if (cat.includes('junior')) return 'junioren'
+  // Terugval op teamnaam als leeftijdscategorie ontbreekt (bv. "JO13"/"MO13" of kale "O13")
+  if (!isO23) {
+    const joMatch = naam.match(/[jm]?o\s*(\d+)/)
+    if (joMatch) return parseInt(joMatch[1], 10) <= 12 ? 'pupillen' : 'junioren'
+  }
   // Zaalvoetbal: niet-jeugd, niet-veteraan, niet-O23, geen reguliere speeldag
-  const isO23 = naam.includes('o23')
   const isRegulier = SPEELDAG_REGULIER.includes(team.speeldag || '')
   if (!isO23 && !isRegulier) return 'zaalvoetbal'
   return 'senioren'
