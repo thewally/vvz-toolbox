@@ -54,27 +54,34 @@ export default {
 
     const sportlinkUrl = `${SPORTLINK_BASE}${path}?${params.toString()}`
 
-    try {
-      const sportlinkRes = await fetch(sportlinkUrl, {
-        headers: { 'User-Agent': 'VVZ49-Proxy/1.0' },
-      })
+    // data.sportlink.com is soms even niet bereikbaar; één retry voorkomt dat
+    // zo'n blip meteen als "Failed to fetch" bij de gebruiker terechtkomt.
+    const RETRIES = 2
+    let lastError = null
+    for (let attempt = 1; attempt <= RETRIES; attempt++) {
+      try {
+        const sportlinkRes = await fetch(sportlinkUrl, {
+          headers: { 'User-Agent': 'VVZ49-Proxy/1.0' },
+        })
 
-      const body = await sportlinkRes.text()
+        const body = await sportlinkRes.text()
 
-      return new Response(body, {
-        status: sportlinkRes.status,
-        headers: {
-          ...corsHeaders(origin),
-          'Content-Type': 'application/json',
-          // Cache responses 5 minuten
-          'Cache-Control': 'public, max-age=300',
-        },
-      })
-    } catch (e) {
-      return new Response(JSON.stringify({ error: 'SportLink niet bereikbaar' }), {
-        status: 502,
-        headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
-      })
+        return new Response(body, {
+          status: sportlinkRes.status,
+          headers: {
+            ...corsHeaders(origin),
+            'Content-Type': 'application/json',
+            // Cache responses 5 minuten
+            'Cache-Control': 'public, max-age=300',
+          },
+        })
+      } catch (e) {
+        lastError = e
+      }
     }
+    return new Response(JSON.stringify({ error: 'SportLink niet bereikbaar', detail: String(lastError) }), {
+      status: 502,
+      headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
+    })
   },
 }
