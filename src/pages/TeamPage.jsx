@@ -18,12 +18,23 @@ const CLUB_RELATIECODE = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
 const SPEELDAG_REGULIER = ['Zondag', 'Zaterdag']
 
+// Een team kan meerdere 'regulier' rijen tegelijk hebben zodra een nieuwe
+// seizoensfase (bv. "2e fase") bekendgemaakt wordt naast de nog aanwezige
+// "1e fase" rij. Haal het fasenummer uit competitienaam, bv. 2 uit
+// "...(2e fase A-cat)", zodat de nieuwste fase de voorkeur krijgt.
+function faseNummer(poule) {
+  const m = (poule.competitienaam || '').match(/\((\d+)e fase/i)
+  return m ? parseInt(m[1], 10) : -1
+}
+
 function kiesPouleFallback(teamPoules) {
   if (!teamPoules.length) return null
   const sorted = [...teamPoules].sort((a, b) => {
     const s = (b.seizoen || '').localeCompare(a.seizoen || '')
     if (s !== 0) return s
-    return (a.competitiesoort === 'regulier' ? 0 : 1) - (b.competitiesoort === 'regulier' ? 0 : 1)
+    const r = (a.competitiesoort === 'regulier' ? 0 : 1) - (b.competitiesoort === 'regulier' ? 0 : 1)
+    if (r !== 0) return r
+    return faseNummer(b) - faseNummer(a)
   })
   return sorted[0]
 }
@@ -347,7 +358,9 @@ export default function TeamPage() {
 
     // Verzamel alle poules voor dit team
     const teams = teamsRes.data ?? []
-    const teamPoules = teams.filter(t => String(t.teamcode) === String(teamcode))
+    // SportLink levert soms een lege rij per team (competitiesoort "-", geen poulecode) —
+    // zonder poulecode is er niets te tonen of te selecteren, dus die horen er niet bij.
+    const teamPoules = teams.filter(t => String(t.teamcode) === String(teamcode) && t.poulecode)
     setPoules(teamPoules)
 
     // Kies standaard: poule van de eerstvolgende wedstrijd, anders meest recente regulier
