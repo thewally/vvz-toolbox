@@ -3,15 +3,30 @@
 const PROXY_URL = import.meta.env.VITE_SPORTLINK_PROXY_URL
 const COMMON_PARAMS = 'eigenwedstrijden=JA&thuis=JA&uit=JA&gebruiklokaleteamgegevens=NEE'
 
+const RETRIES = 2
+const RETRY_DELAY_MS = 500
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+// data.sportlink.com (achter de Cloudflare Worker proxy) is soms even niet
+// bereikbaar — zelfde reden dat scripts/sync.py in het sportlink-teampagina
+// project met retries werkt. Eén blip mag niet meteen "Failed to fetch" tonen.
 async function apiFetch(path) {
-  try {
-    const res = await fetch(`${PROXY_URL}${path}`)
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json()
-    return { data, error: null }
-  } catch (e) {
-    return { data: null, error: e }
+  let lastError = null
+  for (let attempt = 1; attempt <= RETRIES; attempt++) {
+    try {
+      const res = await fetch(`${PROXY_URL}${path}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      return { data, error: null }
+    } catch (e) {
+      lastError = e
+      if (attempt < RETRIES) await wait(RETRY_DELAY_MS * attempt)
+    }
   }
+  return { data: null, error: lastError }
 }
 
 export function fetchProgramma() {
