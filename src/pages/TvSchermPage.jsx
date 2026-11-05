@@ -200,19 +200,15 @@ function SlideActiviteiten({ items }) {
       ))}
       <span className="col-span-4 border-b border-white/30 mb-0" />
       {items.map(item => {
-        const datum = item.date
-          ? formatDatumVolledig(item.date)
-          : item.dates_item
-            ? formatDatumVolledig(item.dates_item)
-            : item.date_start
-              ? formatPeriodeVolledig(item.date_start, item.date_end)
-              : ''
+        const datum = item.endDate
+          ? formatPeriodeVolledig(item.startDate, item.endDate)
+          : formatDatumVolledig(item.startDate)
         const cel = 'py-3 flex items-center'
         return (
           <Fragment key={item.id}>
             <span className={`text-emerald-200 font-medium text-xl whitespace-nowrap ${cel}`}>{datum}</span>
-            <span key={`${item.id}-van`} className={`text-white/80 text-xl font-mono whitespace-nowrap ${cel}`}>{item.time_start ? item.time_start.slice(0, 5) : '–'}</span>
-            <span key={`${item.id}-tot`} className={`text-white/80 text-xl font-mono whitespace-nowrap ${cel}`}>{item.time_end ? item.time_end.slice(0, 5) : '–'}</span>
+            <span key={`${item.id}-van`} className={`text-white/80 text-xl font-mono whitespace-nowrap ${cel}`}>{item.timeStart ?? '–'}</span>
+            <span key={`${item.id}-tot`} className={`text-white/80 text-xl font-mono whitespace-nowrap ${cel}`}>{item.timeEnd ?? '–'}</span>
             <span key={`${item.id}-titel`} className={`text-white text-xl ${cel}`}>{item.title}</span>
             <span key={`${item.id}-lijn`} className="col-span-4 border-b border-white/20" />
           </Fragment>
@@ -628,7 +624,7 @@ export default function TvSchermPage() {
   const laadAlleData = useCallback(async () => {
     const [nieuwsRes, actRes, progRes, uitRes, teamsRes, configRes, knvbRes, afgelastRes, sponsorsRes] = await Promise.all([
       fetchPublicNewsItems(10),
-      fetchActivities({ hidePast: true }),
+      fetchActivities(),
       getProgramma(),
       getUitslagen(),
       getTeams(),
@@ -647,19 +643,8 @@ export default function TvSchermPage() {
       (w.thuisteamclubrelatiecode === CLUB || w.uitteamclubrelatiecode === CLUB) && w.thuisteam && w.uitteam
     )
     setAfgelastingen(afgelastData)
-    const gesorteerdeActiviteiten = (actRes.data ?? [])
-      .sort((a, b) => {
-        const datumA = a.sort_date || ''
-        const datumB = b.sort_date || ''
-        if (datumA !== datumB) return datumA.localeCompare(datumB)
-        const vanA = a.time_start || ''
-        const vanB = b.time_start || ''
-        if (vanA !== vanB) return vanA.localeCompare(vanB)
-        const totA = a.time_end || ''
-        const totB = b.time_end || ''
-        return totA.localeCompare(totB)
-      })
-      .slice(0, 40)
+    // fetchActivities levert al gesorteerd op datum en begintijd; bij een fout is data null (geen dia)
+    const gesorteerdeActiviteiten = (actRes.data ?? []).slice(0, 40)
     setActiviteiten(gesorteerdeActiviteiten)
     setProgramma(prog)
     setUitslagen(uitRes.data ?? [])

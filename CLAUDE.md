@@ -8,7 +8,7 @@ This is the **VVZ'49 Toolbox** — a web application for VVZ'49, a football club
 
 The toolbox contains the following sections:
 
-1. **Activiteiten** (`/activiteiten`) — Upcoming club activities and events, publicly visible. Admin at `/beheer/activiteiten`.
+1. **Activiteiten** (`/activiteiten`) — Upcoming club activities and events, publicly visible. Data comes from SportLink (verenigingsactiviteiten); no admin in the toolbox.
 2. **Trainingsschema** (`/trainingsschema`) — Weekly training schedule. Admin at `/beheer/trainingsschema`. Field layout at `/trainingsschema/veldindeling`.
 3. **Wedstrijden** (`/wedstrijden`) — Match programme, results, standings, cancellations, match reports, and team pages. Data comes live from SportLink API (no Supabase).
 4. **Nieuws** (`/nieuws`) — News articles. Admin at `/beheer/nieuws`.
@@ -50,7 +50,7 @@ All public views are visible without login. The admin environment (`/beheer`) is
 Two-level role system:
 
 1. **Admin**: `app_metadata.role = 'admin'` — full access to everything. Set via Edge Function `set-user-role`.
-2. **Granular roles**: `user_roles` table with `role_slug` values: `activiteiten`, `trainingsschema`, `sponsoring`, `ereleden`, `contact`, `content`, `gebruikers`. Each role grants access to specific `/beheer/*` routes.
+2. **Granular roles**: `user_roles` table with `role_slug` values: `trainingsschema`, `sponsoring`, `ereleden`, `contact`, `content`, `gebruikers`. Each role grants access to specific `/beheer/*` routes.
 
 DB functions: `user_has_role(slug)` (with admin bypass), `user_has_any_role()`, `get_user_roles_for_management()`.
 
@@ -69,7 +69,7 @@ src/
     ProtectedRoute.jsx        # Auth + role guard
   pages/
     HomePage.jsx
-    ActiviteitenPage.jsx / ActiviteitenBeheerPage.jsx
+    ActiviteitenPage.jsx
     SchedulePage.jsx / TrainingschemaBeheerPage.jsx / AdminPage.jsx
     VeldindelingPage.jsx
     GebruikersBeheerPage.jsx
@@ -80,7 +80,7 @@ src/
     LoginPage.jsx / WachtwoordVergetenPage.jsx / WachtwoordResettenPage.jsx / WachtwoordInstellenPage.jsx
     PlattegrondPage.jsx / HuistijlPage.jsx
   services/
-    activities.js        # Agenda CRUD
+    activities.js        # SportLink verenigingsactiviteiten (mapping, filter, sort)
     auth.js              # Invite, role assignment, password flows
     roles.js             # user_roles CRUD
     trainingSlots.js / fields.js / teams.js  # Training schedule
@@ -137,12 +137,7 @@ Wedstrijden data comes entirely from the SportLink public API (`https://data.spo
 
 ## Agenda Domain
 
-Activities are stored in a Supabase `activities` table with three date modes:
-- **Enkele datum**: single day (`date` column)
-- **Periode**: date range (`date_start`, `date_end`)
-- **Lijst**: recurring series (`dates_item`, grouped by `group_id`)
-
-Optional fields: `time_start`, `time_end`, `url`, `description`.
+Activities come from the SportLink `/verenigingsactiviteiten` endpoint (via the Cloudflare Worker, which must allow that path). `src/services/activities.js` maps records (`activiteit`, `datumvan`, `datumtm`, `heledag`, `opmerkingen`, `url`) to `{ id, title, description, startDate, endDate, timeStart, timeEnd, url }`, filters from today up to `VITE_ACTIVITEITEN_DAGEN_VOORUIT` days ahead (default and minimum 100) and sorts by date and start time. Only `http(s)` links are kept. Nothing is stored or managed in the toolbox.
 
 ## Training Schedule Domain
 

@@ -33,15 +33,9 @@ Activiteiten worden als **kaarten** getoond, gesorteerd op datum en gegroepeerd 
 
 Klik op een maandtabblad om de activiteiten van die maand te bekijken.
 
-### Typen activiteiten
+### Bron en periode
 
-**Enkeldaagse activiteit** — activiteit op een specifieke dag.
-
-**Meerdaagse activiteit** — aaneengesloten meerdaagse activiteit, zoals een zomerkamp.
-
-**Terugkerende activiteit** — activiteit op meerdere losse datums. Elke datum verschijnt als afzonderlijke kaart in de agenda.
-
-Verlopen activiteiten worden standaard niet getoond.
+De activiteiten komen uit SportLink. Je ziet de activiteiten van vandaag tot minimaal 100 dagen vooruit. Een activiteit over meerdere dagen wordt getoond als periode ("t/m"). Verlopen activiteiten worden niet getoond.
 
 ---
 

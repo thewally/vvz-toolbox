@@ -58,18 +58,6 @@ const TILES = [
     ),
   },
   {
-    title: 'Activiteiten',
-    description: 'Activiteiten en evenementen beheren',
-    to: '/beheer/activiteiten',
-    role: 'activiteiten',
-    icon: (
-      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01" />
-      </svg>
-    ),
-  },
-  {
     title: 'Trainingsschema',
     description: 'Trainingen beheren en schema-instellingen',
     to: '/beheer/trainingsschema/instellingen',

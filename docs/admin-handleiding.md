@@ -47,50 +47,10 @@ Je ziet alleen de onderdelen waarvoor je een rol hebt gekregen. Beheerders met d
 
 ## Activiteiten beheren
 
-### Activiteit toevoegen
+Activiteiten worden niet meer in de toolbox beheerd. Ze komen automatisch uit SportLink (de verenigingsactiviteiten). Voeg een activiteit toe, wijzig of verwijder hem in SportLink; de toolbox toont daarna de actuele lijst (de proxy cachet maximaal 5 minuten).
 
-1. Ga naar **Beheer → Activiteiten**
-2. Klik op **Nieuwe activiteit**
-3. Vul het formulier in (zie "Velden" hieronder)
-4. Klik op **Opslaan**
-
-### Velden
-
-| Veld | Verplicht | Omschrijving |
-|---|---|---|
-| **Titel** | ja | Naam van de activiteit |
-| **Type datum** | ja | Kies uit: *Enkele datum*, *Periode* of *Datumlijst* |
-| **Datum** | ja* | Datum (bij enkele datum) |
-| **Startdatum / Einddatum** | ja* | Startdatum verplicht, einddatum optioneel (bij periode) |
-| **Datums** | ja* | Lijst van losse datums in `jjjj-mm-dd`-formaat, een per regel (bij datumlijst) |
-| **Starttijd** | nee | Bijv. `14:00` |
-| **Eindtijd** | nee | Bijv. `16:00` |
-| **Omschrijving** | nee | Korte beschrijving |
-| **URL** | nee | Link naar meer informatie |
-
-*Afhankelijk van het gekozen datumtype is een van deze groepen verplicht.
-
-### Datumtypen
-
-**Enkele datum** — activiteit op een dag, zoals een wedstrijd of vergadering.
-
-**Periode** — aaneengesloten meerdaagse activiteit, zoals een zomerkamp. Vul een startdatum in; de einddatum is optioneel.
-
-**Datumlijst** — terugkerende activiteit op losse datums. Voer de datums in het formaat `jjjj-mm-dd` in, een per regel. Elke datum verschijnt als aparte kaart in de agenda, maar wordt als groep beheerd.
-
-### Activiteit bewerken
-
-1. Ga naar **Beheer → Activiteiten**
-2. Klik op het potlood-icoon bij de gewenste activiteit
-3. Pas de gegevens aan en klik op **Wijziging opslaan**
-
-### Activiteit verwijderen
-
-1. Ga naar **Beheer → Activiteiten**
-2. Klik op het prullenbak-icoon bij de gewenste activiteit
-3. Bevestig de verwijdering
-
-Bij activiteiten van het type *Datumlijst* worden alle datums in de reeks verwijderd.
+- Er worden activiteiten getoond van vandaag tot en met minimaal 100 dagen vooruit. Een groter aantal stel je in met de buildvariabele `VITE_ACTIVITEITEN_DAGEN_VOORUIT` (GitHub Actions-variabele `ACTIVITEITEN_DAGEN_VOORUIT`); een lege of lagere waarde geeft 100. Wijzigen vergt een nieuwe deploy.
+- Een link bij de activiteit in SportLink (alleen `http(s)`) maakt de titel klikbaar.
 
 ---
 
@@ -136,7 +96,6 @@ Beschikbare rollen:
 
 | Rol | Geeft toegang tot |
 |---|---|
-| Activiteiten | Activiteitenbeheer |
 | Trainingsschema | Trainingsschemabeheer |
 | Sponsoring | Sponsoringbeheer |
 | Ereleden | Ereledenbeheer |
@@ -198,5 +157,5 @@ Beheer contactgegevens en de "wie doet wat"-lijst via **Beheer → Contact**.
 | "Geen toegang" melding | Ontbrekende rol voor dit onderdeel | Vraag een admin om de juiste rol toe te kennen |
 | Inloggen lukt niet | Verkeerde gegevens of account bestaat niet | Gebruik "Wachtwoord vergeten?" of neem contact op met een admin |
 | Uitnodigingsmail niet ontvangen | E-mail in spam, of verkeerd adres | Controleer de spamfolder; vraag de admin het adres te checken |
-| Activiteit niet zichtbaar in agenda | Datum is verstreken | Controleer of de datum in de toekomst ligt |
+| Activiteit niet zichtbaar in agenda | Staat niet in SportLink, is verlopen of ligt verder dan het ingestelde aantal dagen vooruit | Controleer de activiteit in SportLink (verenigingsactiviteiten) |
 | Trainingsslot verschijnt niet | Veld staat op inactief | Activeer het veld via Beheer → Trainingsschema → Instellingen → Velden |

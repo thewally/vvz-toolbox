@@ -10,7 +10,7 @@ jobs:
   cleanup:
     runs-on: ubuntu-24.04
     steps:
-      - name: Opschonen oude activiteiten en verlopen schema's
+      - name: Opschonen verlopen schema's
         uses: actions/github-script@v9
         env:
           SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
@@ -27,26 +27,10 @@ jobs:
               'Prefer': 'return=representation',
             };
 
-            // Datum 7 dagen geleden (activiteiten ouder dan dit worden verwijderd)
-            const cutoff = new Date();
-            cutoff.setDate(cutoff.getDate() - 7);
-            const cutoffStr = cutoff.toISOString().slice(0, 10);
-
             // Vandaag (voor verlopen schema's)
             const today = new Date().toISOString().slice(0, 10);
 
-            // 1. Verwijder oude activiteiten (sort_date > 60 dagen geleden)
-            const activitiesRes = await fetch(
-              `${url}/rest/v1/activities?sort_date=lt.${cutoffStr}`,
-              { method: 'DELETE', headers }
-            );
-            if (!activitiesRes.ok) {
-              const text = await activitiesRes.text();
-              throw new Error(`Activiteiten opschonen mislukt: ${text}`);
-            }
-            console.log(`Activiteiten ouder dan ${cutoffStr} verwijderd.`);
-
-            // 2. Verwijder inactieve schema's waarvan valid_until in het verleden ligt
+            // Verwijder inactieve schema's waarvan valid_until in het verleden ligt
             //    (training_slots worden via CASCADE mee verwijderd)
             const schedulesRes = await fetch(
               `${url}/rest/v1/schedules?active=eq.false&valid_until=lt.${today}&valid_until=not.is.null`,

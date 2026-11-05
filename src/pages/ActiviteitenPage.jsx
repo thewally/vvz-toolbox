@@ -27,28 +27,27 @@ function formatDateBadge(iso) {
 }
 
 function formatTimeRange(activity) {
-  const { date_start, date_end, time_start, time_end } = activity
+  const { startDate, endDate, timeStart, timeEnd } = activity
 
-  if (date_start && date_end) {
-    const s = parseDate(date_start)
-    const e = parseDate(date_end)
+  if (endDate) {
+    const s = parseDate(startDate)
+    const e = parseDate(endDate)
     let startPart = `${DUTCH_DAYS_LONG[s.getDay()]} ${s.getDate()} ${DUTCH_MONTHS_LONG[s.getMonth()]}`
-    if (time_start) startPart += ` ${time_start.slice(0, 5)} uur`
+    if (timeStart) startPart += ` ${timeStart} uur`
     let endPart = `${DUTCH_DAYS_LONG[e.getDay()]} ${e.getDate()} ${DUTCH_MONTHS_LONG[e.getMonth()]}`
-    if (time_end) endPart += ` ${time_end.slice(0, 5)} uur`
+    if (timeEnd) endPart += ` ${timeEnd} uur`
     return `${startPart} t/m ${endPart}`
   }
 
-  if (time_start && time_end) return `${time_start.slice(0, 5)} \u2013 ${time_end.slice(0, 5)} uur`
-  if (time_start) return `${time_start.slice(0, 5)} uur`
+  if (timeStart && timeEnd) return `${timeStart} – ${timeEnd} uur`
+  if (timeStart) return `${timeStart} uur`
   return ''
 }
 
 function groupByMonth(activities) {
   const map = new Map()
   for (const a of activities) {
-    const iso = a.date ?? a.dates_item ?? a.date_start ?? a.sort_date
-    const d = parseDate(iso)
+    const d = parseDate(a.startDate)
     const key = `${d.getFullYear()}-${d.getMonth()}`
     if (!map.has(key)) map.set(key, [])
     map.get(key).push(a)
@@ -56,30 +55,8 @@ function groupByMonth(activities) {
   return map
 }
 
-function groupActivitiesByGroupId(activities) {
-  const result = []
-  const groupMap = new Map()
-
-  for (const a of activities) {
-    if (a.group_id) {
-      if (!groupMap.has(a.group_id)) {
-        const group = { ...a, _groupRows: [a] }
-        groupMap.set(a.group_id, group)
-        result.push(group)
-      } else {
-        groupMap.get(a.group_id)._groupRows.push(a)
-      }
-    } else {
-      result.push(a)
-    }
-  }
-  return result
-}
-
 function ActivityCard({ activity }) {
-  const isGroup = activity._groupRows && activity._groupRows.length > 1
-  const badgeDate = activity.date ?? activity.dates_item ?? activity.date_start ?? activity.sort_date
-  const badge = formatDateBadge(badgeDate)
+  const badge = formatDateBadge(activity.startDate)
   const time = formatTimeRange(activity)
 
   return (
@@ -109,24 +86,10 @@ function ActivityCard({ activity }) {
               activity.title
             )}
           </h3>
-          {isGroup && (
-            <span className="shrink-0 bg-vvz-green/10 text-vvz-green text-xs font-bold px-2 py-0.5 rounded-full">
-              {activity._groupRows.length}x
-            </span>
-          )}
         </div>
 
         {time && (
           <p className="text-sm text-gray-500 mt-1">{time}</p>
-        )}
-
-        {isGroup && (
-          <p className="text-sm text-gray-500 mt-1">
-            {activity._groupRows.map(r => {
-              const d = parseDate(r.dates_item ?? r.sort_date)
-              return `${d.getDate()} ${DUTCH_MONTHS_LONG[d.getMonth()].slice(0, 3)}`
-            }).join(', ')}
-          </p>
         )}
 
         {activity.description && (
@@ -149,9 +112,9 @@ export default function ActiviteitenPage() {
   async function loadActivities() {
     setLoading(true)
     setError(null)
-    const { data, error } = await fetchActivities({ hidePast: true })
+    const { data, error } = await fetchActivities()
     if (error) {
-      setError(error.message)
+      setError(error.message || 'Activiteiten konden niet worden geladen.')
     } else {
       setActivities(data ?? [])
     }
@@ -166,8 +129,7 @@ export default function ActiviteitenPage() {
     )
   }
 
-  const grouped = groupActivitiesByGroupId(activities)
-  const monthGroups = groupByMonth(grouped)
+  const monthGroups = groupByMonth(activities)
 
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6">
@@ -180,7 +142,7 @@ export default function ActiviteitenPage() {
         </div>
       )}
 
-      {grouped.length === 0 ? (
+      {activities.length === 0 ? (
         <div className="text-center pt-4">
           <p className="text-gray-500">Geen komende activiteiten.</p>
         </div>

@@ -57,6 +57,10 @@ export function fetchAfgelastingen() {
   return apiFetch(`/afgelastingen`)
 }
 
+export function fetchVerenigingsactiviteiten(aantalDagen) {
+  return apiFetch(`/verenigingsactiviteiten?gebruiklokaleteamgegevens=NEE&aantaldagen=${aantalDagen}`)
+}
+
 export function fetchClubGegevens() {
   return apiFetch(`/clubgegevens`)
 }

@@ -38,7 +38,6 @@ vvz-toolbox/
     pages/
       HomePage.jsx
       ActiviteitenPage.jsx               # Publieke agendaweergave
-      ActiviteitenBeheerPage.jsx         # Admin: activiteiten beheren
       SchedulePage.jsx                   # Publiek trainingsschema
       TrainingschemaBeheerPage.jsx       # Admin: schema beheren
       VeldindelingPage.jsx               # Veldindeling SVG
@@ -61,7 +60,7 @@ vvz-toolbox/
       PlattegrondPage.jsx
       HuistijlPage.jsx
     services/
-      activities.js                      # Agenda CRUD
+      activities.js                      # SportLink-verenigingsactiviteiten: mapping, filter, sortering
       auth.js                            # Invite, rollen, wachtwoord
       roles.js                           # Rolbeheer (user_roles)
       trainingSlots.js                   # Trainingsschema CRUD
@@ -126,7 +125,6 @@ Niet-admin gebruikers krijgen toegang via specifieke rollen in de `user_roles` t
 
 | Rol-slug | Geeft toegang tot |
 |---|---|
-| `activiteiten` | Activiteitenbeheer |
 | `trainingsschema` | Trainingsschemabeheer |
 | `sponsoring` | Sponsoringbeheer |
 | `ereleden` | Ereledenbeheer |
@@ -151,8 +149,8 @@ Routes in de beheeromgeving zijn gewikkeld in `<ProtectedRoute>`:
 </ProtectedRoute>
 
 // Toegang alleen met specifieke rol (of admin)
-<ProtectedRoute requiredRole="activiteiten">
-  <ActiviteitenBeheerPage />
+<ProtectedRoute requiredRole="trainingsschema">
+  <TrainingschemaLayout />
 </ProtectedRoute>
 ```
 
@@ -174,29 +172,11 @@ Deze functies moeten gedeployd worden naar je Supabase project. Ze worden aanger
 
 ## Database
 
-### Tabel: `activities` (Agenda)
+### Activiteiten (SportLink, geen database)
 
-| Kolom | Type | Omschrijving |
-|---|---|---|
-| `id` | uuid | Primaire sleutel |
-| `title` | text | Naam van de activiteit |
-| `description` | text | Korte omschrijving |
-| `date` | date | Datum (enkele datum) |
-| `date_start` | date | Begindatum (datumbereik) |
-| `date_end` | date | Einddatum (datumbereik) |
-| `dates_item` | date | Individuele datum (datumlijst) |
-| `group_id` | uuid | Groeps-ID voor datumlijst-items |
-| `time_start` | time | Starttijd |
-| `time_end` | time | Eindtijd |
-| `url` | text | Optionele link |
-| `sort_date` | date | Sorteersleutel |
-| `created_at` | timestamptz | Aanmaakdatum |
-| `updated_at` | timestamptz | Laatste wijziging |
+Activiteiten staan niet in Supabase maar komen uit SportLink: `GET /verenigingsactiviteiten?gebruiklokaleteamgegevens=NEE&aantaldagen=<n>` via de Cloudflare Worker (`fetchVerenigingsactiviteiten` in `src/services/sportlink.js`). Een record heeft onder meer `activiteit`, `datumvan`, `datumtm` (ISO met lokale offset), `heledag`, `opmerkingen`, `plaats` en `url`.
 
-Datumtypen worden bepaald door welke kolommen gevuld zijn:
-- **Enkele datum**: `date` gevuld
-- **Datumbereik**: `date_start` + `date_end` gevuld
-- **Datumlijst**: `dates_item` + `group_id` gevuld (meerdere rijen met hetzelfde `group_id`)
+`src/services/activities.js` vertaalt dit naar `{ id, title, description, startDate, endDate|null, timeStart|null, timeEnd|null, url|null }`, filtert op vandaag t/m het aantal dagen vooruit en sorteert op datum en begintijd. Het aantal dagen is standaard en minimaal 100 en instelbaar met de buildvariabele `VITE_ACTIVITEITEN_DAGEN_VOORUIT`. Alleen `http(s)`-links worden overgenomen.
 
 ### Tabel: `training_slots` (Trainingsschema)
 
@@ -240,13 +220,13 @@ Via junction tables:
 | `assigned_by` | uuid | Wie de rol heeft toegekend |
 | `created_at` | timestamptz | Aanmaakdatum |
 
-CHECK constraint op `role_slug`: `activiteiten`, `trainingsschema`, `sponsoring`, `ereleden`, `contact`, `content`, `gebruikers`. UNIQUE op `(user_id, role_slug)`.
+CHECK constraint op `role_slug` (de verouderde slug `activiteiten` blijft er toegestaan, maar is niet meer toe te kennen en geeft geen rechten): `activiteiten`, `trainingsschema`, `sponsoring`, `ereleden`, `contact`, `content`, `gebruikers`. UNIQUE op `(user_id, role_slug)`.
 
 ### Row Level Security
 
 RLS is ingeschakeld op alle tabellen:
 
-- **Publiek lezen**: `SELECT` voor de `anon`-rol (activities, training_slots, fields, teams, sponsors, etc.)
+- **Publiek lezen**: `SELECT` voor de `anon`-rol (training_slots, fields, teams, sponsors, etc.)
 - **Schrijven**: `INSERT`, `UPDATE`, `DELETE` alleen voor geauthenticeerde gebruikers met de juiste rol
 - **user_roles**: eigen rollen lezen, beheerders en gebruikers met rol `gebruikers` mogen alles lezen/toekennen/verwijderen
 
