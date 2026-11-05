@@ -113,11 +113,13 @@ supabase/
     submit-proeftraining/ # Proeftraining sign-up handler
 ```
 
-## Cloudflare Worker (SportLink Proxy)
+## SportLink Proxy (Quarkus op Render, of Cloudflare Worker)
 
-De SportLink API-calls lopen via een Cloudflare Worker (`cloudflare-worker/`) zodat de `client_id` niet zichtbaar is in de browser. De frontend gebruikt `VITE_SPORTLINK_PROXY_URL` als base URL; de Worker voegt de `client_id` server-side toe als secret.
+De SportLink API-calls lopen via een proxy zodat de `client_id` niet zichtbaar is in de browser. De frontend gebruikt `VITE_SPORTLINK_PROXY_URL` als base URL: `https://<service>.onrender.com/api/sportlink` (Quarkus REST-laag, zie ontwikkelstraat#22) of de URL van de Cloudflare Worker (`cloudflare-worker/`, blijft bestaan; terugdraaien kan door het secret terug te zetten). De proxy voegt de `client_id` server-side toe.
 
-Deployen:
+`apiFetch` in `src/services/sportlink.js` doet 4 pogingen met oplopende wachttijd (1 s, 2 s, 3 s), zodat een slapende Render-service niet meteen een fout geeft. Tests: `node --test tests/sportlink.test.mjs`.
+
+Worker deployen:
 ```bash
 cd cloudflare-worker
 npx wrangler secret put SPORTLINK_CLIENT_ID   # eenmalig instellen
@@ -137,7 +139,7 @@ Wedstrijden data comes entirely from the SportLink public API (`https://data.spo
 
 ## Agenda Domain
 
-Activities come from the SportLink `/verenigingsactiviteiten` endpoint (via the Cloudflare Worker, which must allow that path). `src/services/activities.js` maps records (`activiteit`, `datumvan`, `datumtm`, `heledag`, `opmerkingen`, `url`) to `{ id, title, description, startDate, endDate, timeStart, timeEnd, url }`, filters from today up to `VITE_ACTIVITEITEN_DAGEN_VOORUIT` days ahead (default and minimum 100) and sorts by date and start time. Only `http(s)` links are kept. Nothing is stored or managed in the toolbox.
+Activities come from the SportLink `/verenigingsactiviteiten` endpoint (via the SportLink proxy, which must allow that path). `src/services/activities.js` maps records (`activiteit`, `datumvan`, `datumtm`, `heledag`, `opmerkingen`, `url`) to `{ id, title, description, startDate, endDate, timeStart, timeEnd, url }`, filters from today up to `VITE_ACTIVITEITEN_DAGEN_VOORUIT` days ahead (default and minimum 100) and sorts by date and start time. Only `http(s)` links are kept. Nothing is stored or managed in the toolbox.
 
 ## Training Schedule Domain
 
