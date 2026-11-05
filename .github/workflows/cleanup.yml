@@ -8,7 +8,7 @@ on:
 
 jobs:
   cleanup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Opschonen oude activiteiten en verlopen schema's
         uses: actions/github-script@v9
