@@ -38,6 +38,8 @@ jobs:
           VITE_SPORTLINK_PROXY_URL: ${{ secrets.VITE_SPORTLINK_PROXY_URL }}
           VITE_SPORTLINK_CLUB_RELATIECODE: ${{ secrets.VITE_SPORTLINK_CLUB_RELATIECODE }}
           VITE_TURNSTILE_SITE_KEY: ${{ secrets.VITE_TURNSTILE_SITE_KEY }}
+          # Optioneel: GitHub Actions-variabele (geen secret). Leeg of lager dan 100 = 100 dagen.
+          VITE_ACTIVITEITEN_DAGEN_VOORUIT: ${{ vars.ACTIVITEITEN_DAGEN_VOORUIT }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v6

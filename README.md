@@ -12,7 +12,7 @@ Een webapplicatie voor [sv VVZ'49](https://www.vvz49.nl) in Soest met tools voor
 
 | Tool | URL | Omschrijving |
 |---|---|---|
-| **Activiteiten** | `/activiteiten` | Komende clubactiviteiten en evenementen |
+| **Activiteiten** | `/activiteiten` | Komende clubactiviteiten en evenementen (uit SportLink, standaard 100 dagen vooruit; instelbaar met `VITE_ACTIVITEITEN_DAGEN_VOORUIT`) |
 | **Trainingsschema** | `/trainingsschema` | Weekoverzicht van trainingstijden en veldindeling |
 | **Wedstrijden** | `/wedstrijden` | Programma, uitslagen en afgelastingen |
 | **Nieuws** | `/nieuws` | Nieuwsberichten van de club |
@@ -32,7 +32,6 @@ De beheeromgeving is bereikbaar via `/beheer` en bevat de volgende onderdelen:
 
 | Onderdeel | URL | Vereiste rol |
 |---|---|---|
-| Activiteiten | `/beheer/activiteiten` | `activiteiten` |
 | Trainingsschema | `/beheer/trainingsschema` | `trainingsschema` |
 | Sponsoring | `/beheer/sponsoring` | `sponsoring` |
 | Ereleden | `/beheer/club/ereleden` | `ereleden` |
@@ -122,7 +121,7 @@ Deze moeten gedeployd worden naar je Supabase project.
 
 Voer de SQL-migraties uit in het Supabase SQL Editor:
 
-1. `supabase/migration.sql` — Basistabellen (activities, training_slots, fields, teams)
+1. `supabase/migration.sql` — Basistabellen (training_slots, fields, teams)
 2. `supabase/sponsors.sql` — Sponsortabel
 3. `supabase/migration_rolbeheer.sql` — Rolbeheer (`user_roles` tabel, RLS policies, functies)
 
@@ -131,7 +130,7 @@ Voer de SQL-migraties uit in het Supabase SQL Editor:
 Het rolsysteem werkt op twee niveaus:
 
 1. **Admin** — Via `app_metadata.role = 'admin'` op de Supabase Auth user. Heeft toegang tot alles.
-2. **Granulaire rollen** — Via de `user_roles` tabel. Mogelijke rollen: `activiteiten`, `trainingsschema`, `sponsoring`, `ereleden`, `contact`, `content`, `gebruikers`.
+2. **Granulaire rollen** — Via de `user_roles` tabel. Mogelijke rollen: `trainingsschema`, `sponsoring`, `ereleden`, `contact`, `content`, `gebruikers`.
 
 Rollen worden beheerd via de gebruikersbeheerpagina (`/beheer/gebruikers`). Zie `supabase/migration_rolbeheer.sql` voor de database-setup.
 
@@ -149,5 +148,5 @@ In het Supabase dashboard onder **Authentication → URL Configuration**:
 | Document | Doelgroep | Inhoud |
 |---|---|---|
 | [docs/gebruiker-handleiding.md](docs/gebruiker-handleiding.md) | Eindgebruikers | Wat de toolbox toont en hoe te navigeren |
-| [docs/admin-handleiding.md](docs/admin-handleiding.md) | Beheerders | Activiteiten, trainingsschema, gebruikers en rollen beheren |
+| [docs/admin-handleiding.md](docs/admin-handleiding.md) | Beheerders | Trainingsschema, gebruikers en rollen beheren |
 | [docs/technische-documentatie.md](docs/technische-documentatie.md) | Ontwikkelaars | Architectuur, Supabase, database, deployment |

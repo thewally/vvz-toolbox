@@ -94,20 +94,12 @@ export default function HomePage() {
           fetchQuickLinks(),
           fetchAllPages(),
           fetchPublicNewsItems(3),
-          fetchActivities({ hidePast: true }),
+          fetchActivities(),
         ])
 
         if (newsResult.data) setNewsItems(newsResult.data)
         if (activitiesResult.data) {
-          // Groepeer lijst-items op group_id en toon alleen de eerste (eerstvolgende) datum
-          const seen = new Set()
-          const deduped = activitiesResult.data.filter(item => {
-            if (!item.group_id) return true
-            if (seen.has(item.group_id)) return false
-            seen.add(item.group_id)
-            return true
-          })
-          setActivities(deduped.slice(0, 5))
+          setActivities(activitiesResult.data.slice(0, 5))
         }
 
         if (qlResult.error || !qlResult.data) {
@@ -228,8 +220,7 @@ export default function HomePage() {
           {activities.length > 0 ? (
             <div className="space-y-2">
               {activities.map(item => {
-                const dateStr = item.date ?? item.dates_item ?? item.date_start ?? item.sort_date
-                const dateObj = dateStr ? new Date(dateStr) : null
+                const dateObj = item.startDate ? new Date(`${item.startDate}T00:00:00`) : null
                 const weekdag = dateObj ? dateObj.toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '') : null
                 const day = dateObj ? dateObj.toLocaleDateString('nl-NL', { day: 'numeric' }) : null
                 const month = dateObj ? dateObj.toLocaleDateString('nl-NL', { month: 'short' }) : null
@@ -244,8 +235,8 @@ export default function HomePage() {
                     )}
                     <div className="flex-1 p-3 min-w-0">
                       <p className="text-xs font-semibold text-gray-800 leading-snug">{item.title}</p>
-                      {item.time_start && (
-                        <p className="text-[11px] text-gray-500 mt-0.5">{item.time_start.slice(0, 5)} uur</p>
+                      {item.timeStart && (
+                        <p className="text-[11px] text-gray-500 mt-0.5">{item.timeStart} uur</p>
                       )}
                     </div>
                   </>

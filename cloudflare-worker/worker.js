@@ -9,6 +9,7 @@ const ALLOWED_PATHS = [
   '/afgelastingen',
   '/clubgegevens',
   '/team-gegevens',
+  '/verenigingsactiviteiten',
 ]
 
 // CORS-origins die toegang krijgen

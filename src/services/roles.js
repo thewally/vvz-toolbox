@@ -2,7 +2,6 @@ import { supabase } from '../lib/supabaseClient'
 
 // Alle beschikbare rol-slugs (constante, matcht CHECK constraint)
 export const AVAILABLE_ROLES = [
-  { slug: 'activiteiten', label: 'Activiteiten' },
   { slug: 'trainingsschema', label: 'Trainingsschema' },
   { slug: 'sponsoring', label: 'Sponsoring' },
   { slug: 'ereleden', label: 'Ereleden' },

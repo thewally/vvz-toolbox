@@ -10,7 +10,6 @@ import VeldindelingPage from './pages/VeldindelingPage'
 import HuistijlPage from './pages/HuistijlPage'
 import AgendaLayout from './components/AgendaLayout'
 import ActiviteitenPage from './pages/ActiviteitenPage'
-import ActiviteitenBeheerPage from './pages/ActiviteitenBeheerPage'
 import BeheerLayout from './components/BeheerLayout'
 import BeheerDashboardPage from './pages/BeheerDashboardPage'
 import WedstrijdenLayout from './components/WedstrijdenLayout'
@@ -72,7 +71,6 @@ export default function App() {
           <Route path="beheer" element={<Navigate to="/beheer/trainingsschema/instellingen" replace />} />
         </Route>
         <Route path="agenda" element={<Navigate to="/activiteiten" replace />} />
-        <Route path="agenda/beheer" element={<Navigate to="/beheer/activiteiten" replace />} />
         <Route path="activiteiten" element={<AgendaLayout />}>
           <Route index element={<ActiviteitenPage />} />
         </Route>
@@ -82,7 +80,6 @@ export default function App() {
           </ProtectedRoute>
         }>
           <Route index element={<BeheerDashboardPage />} />
-          <Route path="activiteiten" element={<ProtectedRoute requiredRole="activiteiten"><ActiviteitenBeheerPage /></ProtectedRoute>} />
           <Route path="trainingsschema" element={<ProtectedRoute requiredRole="trainingsschema"><TrainingschemaLayout /></ProtectedRoute>}>
             <Route path=":scheduleId" element={<TrainingschemaBeheerPage />} />
             <Route path="instellingen" element={<AdminPage />} />
