@@ -1,21 +1,24 @@
-// Alle SportLink-calls lopen via de Cloudflare Worker proxy.
-// De worker voegt de client_id server-side toe zodat die niet zichtbaar is in de browser.
+// Alle SportLink-calls lopen via een proxy (de Quarkus REST-laag op Render,
+// pad /api/sportlink; eerder een Cloudflare Worker). De proxy voegt de client_id
+// server-side toe zodat die niet zichtbaar is in de browser.
 const PROXY_URL = import.meta.env.VITE_SPORTLINK_PROXY_URL
 const COMMON_PARAMS = 'eigenwedstrijden=JA&thuis=JA&uit=JA&gebruiklokaleteamgegevens=NEE'
 
-const RETRIES = 2
-const RETRY_DELAY_MS = 500
+// Een slapende Render-service (free tier) kan bij de eerste call even traag zijn
+// of kort een 502/503 geven; daarom meer pogingen met oplopende wachttijd
+// (1 s, 2 s, 3 s tussen de pogingen).
+const RETRIES = 4
+const RETRY_DELAY_MS = 1000
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// data.sportlink.com (achter de Cloudflare Worker proxy) is soms even niet
-// bereikbaar — zelfde reden dat scripts/sync.py in het sportlink-teampagina
+// De proxy of data.sportlink.com is soms even niet bereikbaar — zelfde reden dat scripts/sync.py in het sportlink-teampagina
 // project met retries werkt. Eén blip mag niet meteen "Failed to fetch" tonen.
-async function apiFetch(path) {
+export async function apiFetch(path, { retries = RETRIES, delayMs = RETRY_DELAY_MS } = {}) {
   let lastError = null
-  for (let attempt = 1; attempt <= RETRIES; attempt++) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const res = await fetch(`${PROXY_URL}${path}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -23,7 +26,7 @@ async function apiFetch(path) {
       return { data, error: null }
     } catch (e) {
       lastError = e
-      if (attempt < RETRIES) await wait(RETRY_DELAY_MS * attempt)
+      if (attempt < retries) await wait(delayMs * attempt)
     }
   }
   return { data: null, error: lastError }

@@ -1,6 +1,6 @@
 import { fetchVerenigingsactiviteiten } from './sportlink'
 
-// Activiteiten komen uit de SportLink-verenigingsactiviteiten (via de Cloudflare Worker).
+// Activiteiten komen uit de SportLink-verenigingsactiviteiten (via de SportLink-proxy).
 // Deze module vertaalt de SportLink-records naar een eigen vorm, zodat de pagina's
 // niet van SportLink-veldnamen afhangen:
 // { id, title, description, startDate (YYYY-MM-DD), endDate|null, timeStart|null, timeEnd|null, url|null }

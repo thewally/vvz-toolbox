@@ -174,7 +174,7 @@ Deze functies moeten gedeployd worden naar je Supabase project. Ze worden aanger
 
 ### Activiteiten (SportLink, geen database)
 
-Activiteiten staan niet in Supabase maar komen uit SportLink: `GET /verenigingsactiviteiten?gebruiklokaleteamgegevens=NEE&aantaldagen=<n>` via de Cloudflare Worker (`fetchVerenigingsactiviteiten` in `src/services/sportlink.js`). Een record heeft onder meer `activiteit`, `datumvan`, `datumtm` (ISO met lokale offset), `heledag`, `opmerkingen`, `plaats` en `url`.
+Activiteiten staan niet in Supabase maar komen uit SportLink: `GET /verenigingsactiviteiten?gebruiklokaleteamgegevens=NEE&aantaldagen=<n>` via de SportLink-proxy (`fetchVerenigingsactiviteiten` in `src/services/sportlink.js`). Een record heeft onder meer `activiteit`, `datumvan`, `datumtm` (ISO met lokale offset), `heledag`, `opmerkingen`, `plaats` en `url`.
 
 `src/services/activities.js` vertaalt dit naar `{ id, title, description, startDate, endDate|null, timeStart|null, timeEnd|null, url|null }`, filtert op vandaag t/m het aantal dagen vooruit en sorteert op datum en begintijd. Het aantal dagen is standaard en minimaal 100 en instelbaar met de buildvariabele `VITE_ACTIVITEITEN_DAGEN_VOORUIT`. Alleen `http(s)`-links worden overgenomen.
 
