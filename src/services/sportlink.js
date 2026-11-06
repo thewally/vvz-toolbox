@@ -77,3 +77,9 @@ export function fetchClubGegevens() {
 export function fetchTeamGegevens(teamcode) {
   return apiFetch(`/team-gegevens?teamcode=${teamcode}&lokaleteamcode=-1`)
 }
+
+// URL van de miniatuur van de teamfoto (proxy-endpoint /team-foto; 404 als er geen foto is).
+// Pure string-opbouw, zodat hij zonder fetch te testen is. Niet via team-gegevens: die foto is MB's groot.
+export function teamFotoUrl(teamcode) {
+  return `${PROXY_URL}/team-foto?teamcode=${encodeURIComponent(teamcode)}`
+}

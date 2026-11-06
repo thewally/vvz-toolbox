@@ -67,3 +67,8 @@ test('volgnummer sorteert numeriek', () => {
   const gesorteerd = [...namen].sort((a, b) => teamVolgnummer(a) - teamVolgnummer(b))
   assert.deepEqual(gesorteerd, ["VVZ '49 O14-2", "VVZ '49 O14-9", "VVZ '49 O14-10"])
 })
+
+test('zaalteams VVZ 49 1 t/m 3', () => {
+  assert.equal(formatTeamnaam("VVZ '49 1"), 'VVZ 1')
+  assert.equal(formatTeamnaam("VVZ '49 3"), 'VVZ 3')
+})
