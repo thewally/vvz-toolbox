@@ -4,6 +4,8 @@ import { fetchTeams, createTeam, updateTeam, deleteTeam } from '../services/team
 import { fetchFields, createField, updateField, deleteField } from '../services/fields'
 import { fetchSchedules, createSchedule, updateSchedule, deleteSchedule, toggleScheduleActive, copySchedule } from '../services/schedules'
 import { supabase } from '../lib/supabaseClient'
+import { fetchTeams as fetchSportlinkTeams } from '../services/sportlink'
+import { ontbrekendeTeams } from '../services/teamImport'
 
 export default function AdminPage() {
   const [teams, setTeams] = useState([])
@@ -340,6 +342,57 @@ function TeamsManager({ teams, usedTeamIds, onReload }) {
   const [addForm, setAddForm] = useState({ name: '', category: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+  // Import uit SportLink: null = niet actief, anders { laden, fout, voorstellen, melding }
+  const [imp, setImp] = useState(null)
+
+  async function startImport() {
+    setAdding(false)
+    setEditId(null)
+    setDeleteConfirmId(null)
+    setError(null)
+    setImp({ laden: true, fout: null, voorstellen: [], melding: null })
+    const { data, error: fout } = await fetchSportlinkTeams()
+    if (fout || !Array.isArray(data)) {
+      setImp({ laden: false, fout: fout?.message || 'SportLink gaf geen teams terug', voorstellen: [], melding: null })
+      return
+    }
+    const voorstellen = ontbrekendeTeams(data, teams).map(v => ({ ...v, aan: true }))
+    setImp({
+      laden: false, fout: null, voorstellen,
+      melding: voorstellen.length === 0 ? 'Alle SportLink-teams staan al in de lijst.' : null,
+    })
+  }
+
+  function updateVoorstel(teamcode, wijziging) {
+    setImp(i => ({ ...i, voorstellen: i.voorstellen.map(v => v.teamcode === teamcode ? { ...v, ...wijziging } : v) }))
+  }
+
+  async function handleImportToevoegen() {
+    const gekozen = imp.voorstellen.filter(v => v.aan && v.name.trim())
+    if (gekozen.length === 0) return
+    setSaving(true)
+    const fouten = []
+    const mislukt = new Set()
+    for (const v of gekozen) {
+      const { error: fout } = await createTeam({ name: v.name.trim(), category: v.category || null })
+      if (fout) {
+        fouten.push(`${v.name.trim()}: ${fout.message}`)
+        mislukt.add(v.teamcode)
+      }
+    }
+    setSaving(false)
+    onReload()
+    if (fouten.length === 0) {
+      setImp(null)
+    } else {
+      // Alleen de mislukte teams blijven staan, zodat de beheerder ze kan aanpassen.
+      setImp(i => ({
+        ...i,
+        voorstellen: i.voorstellen.filter(v => mislukt.has(v.teamcode)),
+        fout: `${gekozen.length - fouten.length} van ${gekozen.length} teams toegevoegd. Niet gelukt: ${fouten.join('; ')}`,
+      }))
+    }
+  }
 
   function startEdit(team) {
     setAdding(false)
@@ -416,7 +469,15 @@ function TeamsManager({ teams, usedTeamIds, onReload }) {
 
   return (
     <div>
-      <div className="flex items-center justify-end mb-3">
+      <div className="flex items-center justify-end gap-2 mb-3">
+        {!imp && (
+          <button
+            onClick={startImport}
+            className="text-sm bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+          >
+            Teams uit SportLink ophalen
+          </button>
+        )}
         {!adding && (
           <button
             onClick={startAdd}
@@ -436,6 +497,73 @@ function TeamsManager({ teams, usedTeamIds, onReload }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           {error}
+        </div>
+      )}
+
+      {imp && (
+        <div className="bg-white rounded-xl shadow p-4 mb-4">
+          {imp.laden && <p className="text-sm text-gray-500">SportLink-teams ophalen…</p>}
+          {imp.fout && (
+            <div role="alert" className="bg-red-50 text-red-700 text-sm p-3 rounded-lg mb-3 flex items-center justify-between gap-3">
+              <span>{imp.fout}</span>
+              {imp.voorstellen.length === 0 && (
+                <button onClick={startImport} className="shrink-0 underline font-medium">Opnieuw proberen</button>
+              )}
+            </div>
+          )}
+          {imp.melding && <p className="text-sm text-gray-600 mb-3">{imp.melding}</p>}
+          {imp.voorstellen.length > 0 && (
+            <>
+              <p className="text-sm text-gray-600 mb-3">
+                Deze SportLink-teams staan nog niet in de lijst. Pas naam of categorie aan en kies welke je toevoegt.
+              </p>
+              <ul className="space-y-2 mb-3">
+                {imp.voorstellen.map(v => (
+                  <li key={v.teamcode} className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={v.aan}
+                      onChange={e => updateVoorstel(v.teamcode, { aan: e.target.checked })}
+                      aria-label={`${v.bronNaam} toevoegen`}
+                    />
+                    <input
+                      type="text"
+                      value={v.name}
+                      onChange={e => updateVoorstel(v.teamcode, { name: e.target.value })}
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
+                      aria-label={`Teamnaam voor ${v.bronNaam}`}
+                    />
+                    <select
+                      value={v.category}
+                      onChange={e => updateVoorstel(v.teamcode, { category: e.target.value })}
+                      className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
+                      aria-label={`Categorie voor ${v.bronNaam}`}
+                    >
+                      <option value="">Geen categorie</option>
+                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          <div className="flex gap-2">
+            {imp.voorstellen.length > 0 && (
+              <button
+                onClick={handleImportToevoegen}
+                disabled={saving || !imp.voorstellen.some(v => v.aan && v.name.trim())}
+                className="bg-vvz-green text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors disabled:opacity-50"
+              >
+                Toevoegen
+              </button>
+            )}
+            <button
+              onClick={() => setImp(null)}
+              className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors"
+            >
+              {imp.voorstellen.length > 0 ? 'Annuleer' : 'Sluiten'}
+            </button>
+          </div>
         </div>
       )}
 
