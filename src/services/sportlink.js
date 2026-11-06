@@ -9,6 +9,8 @@ const COMMON_PARAMS = 'eigenwedstrijden=JA&thuis=JA&uit=JA&gebruiklokaleteamgege
 // (1 s, 2 s, 3 s tussen de pogingen).
 const RETRIES = 4
 const RETRY_DELAY_MS = 1000
+// Maximale duur van een poging; daarna wordt de fetch afgebroken en volgt de volgende poging.
+const TIMEOUT_MS = 12000
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -16,17 +18,21 @@ function wait(ms) {
 
 // De proxy of data.sportlink.com is soms even niet bereikbaar — zelfde reden dat scripts/sync.py in het sportlink-teampagina
 // project met retries werkt. Eén blip mag niet meteen "Failed to fetch" tonen.
-export async function apiFetch(path, { retries = RETRIES, delayMs = RETRY_DELAY_MS } = {}) {
+export async function apiFetch(path, { retries = RETRIES, delayMs = RETRY_DELAY_MS, timeoutMs = TIMEOUT_MS } = {}) {
   let lastError = null
   for (let attempt = 1; attempt <= retries; attempt++) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), timeoutMs)
     try {
-      const res = await fetch(`${PROXY_URL}${path}`)
+      const res = await fetch(`${PROXY_URL}${path}`, { signal: controller.signal })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       return { data, error: null }
     } catch (e) {
-      lastError = e
+      lastError = controller.signal.aborted ? new Error(`Time-out na ${timeoutMs} ms`) : e
       if (attempt < retries) await wait(delayMs * attempt)
+    } finally {
+      clearTimeout(timer)
     }
   }
   return { data: null, error: lastError }

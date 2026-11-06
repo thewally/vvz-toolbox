@@ -90,17 +90,13 @@ export default function HomePage() {
   useEffect(() => {
     async function loadHomeCards() {
       try {
-        const [qlResult, pagesResult, newsResult, activitiesResult] = await Promise.all([
+        const [qlResult, pagesResult, newsResult] = await Promise.all([
           fetchQuickLinks(),
           fetchAllPages(),
           fetchPublicNewsItems(3),
-          fetchActivities(),
         ])
 
         if (newsResult.data) setNewsItems(newsResult.data)
-        if (activitiesResult.data) {
-          setActivities(activitiesResult.data.slice(0, 5))
-        }
 
         if (qlResult.error || !qlResult.data) {
           setCards(undefined)
@@ -156,6 +152,18 @@ export default function HomePage() {
     }
 
     loadHomeCards().finally(() => setLoading(false))
+  }, [])
+
+  // Activiteiten komen van SportLink (via een mogelijk slapende proxy) en laden los,
+  // zodat de rest van de pagina er niet op wacht.
+  useEffect(() => {
+    let actief = true
+    fetchActivities()
+      .then(result => {
+        if (actief && result?.data) setActivities(result.data.slice(0, 5))
+      })
+      .catch(() => {})
+    return () => { actief = false }
   }, [])
 
   // undefined = laden/fout -> fallback, null = DB leeg -> geen kaartjes, array = data

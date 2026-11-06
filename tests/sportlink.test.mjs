@@ -49,3 +49,28 @@ test('standaard 4 pogingen; daarna een foutmelding, geen exception', async () =>
   assert.match(r.error.message, /HTTP 502/)
   assert.equal(calls, 4)
 })
+
+// Een fetch die nooit antwoordt maar wel op het abort-signaal reageert, zoals een echte fetch.
+const hangend = (_url, opts) => new Promise((_, reject) => {
+  opts.signal.addEventListener('abort', () => reject(new Error('aborted')))
+})
+
+test('time-out: hangende poging wordt afgebroken en de volgende poging slaagt', async () => {
+  let calls = 0
+  globalThis.fetch = (url, opts) => {
+    calls++
+    return calls === 1 ? hangend(url, opts) : Promise.resolve(ok({ b: 2 }))
+  }
+  const r = await m.apiFetch('/teams', { delayMs: 1, timeoutMs: 20 })
+  assert.deepEqual(r, { data: { b: 2 }, error: null })
+  assert.equal(calls, 2)
+})
+
+test('time-out: alle pogingen hangen, dan data null en een time-outmelding', async () => {
+  let calls = 0
+  globalThis.fetch = (url, opts) => { calls++; return hangend(url, opts) }
+  const r = await m.apiFetch('/teams', { retries: 2, delayMs: 1, timeoutMs: 20 })
+  assert.equal(r.data, null)
+  assert.match(r.error.message, /Time-out/)
+  assert.equal(calls, 2)
+})
