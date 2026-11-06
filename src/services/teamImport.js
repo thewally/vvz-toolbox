@@ -93,6 +93,67 @@ export function uniekeTeams(sportlinkTeams) {
 }
 
 /**
+ * Bepaalt wat er met de tabel `teams` moet gebeuren om die gelijk te laten lopen met SportLink
+ * (kaart thewally/ontwikkelstraat#37).
+ * - `toevoegen`: `{ teamcode, name, category }` voor SportLink-teams die nog niet bestaan.
+ * - `koppelen`: `{ id, teamcode }` voor bestaande teams zonder teamcode met dezelfde genormaliseerde naam.
+ * - `verdwenen`: ids van teams met bron 'sportlink' waarvan de teamcode niet meer voorkomt.
+ * Bestaande namen en categorieen worden nooit aangepast en teams worden nooit verwijderd.
+ * Een leeg of ongeldig SportLink-antwoord levert overal een lege lijst op.
+ */
+export function bepaalSync(sportlinkTeams, bestaandeTeams) {
+  const leeg = { toevoegen: [], koppelen: [], verdwenen: [] }
+  if (!Array.isArray(sportlinkTeams) || sportlinkTeams.length === 0) return leeg
+
+  const bestaand = Array.isArray(bestaandeTeams) ? bestaandeTeams : []
+  const codes = new Set(
+    sportlinkTeams.filter(t => t && t.teamcode != null).map(t => String(t.teamcode)),
+  )
+  if (codes.size === 0) return leeg
+
+  const gekoppeldeCodes = new Set(
+    bestaand.filter(t => t.sportlink_teamcode != null).map(t => String(t.sportlink_teamcode)),
+  )
+  // Naam -> team zonder teamcode dat nog gekoppeld kan worden.
+  const losPerNaam = new Map()
+  for (const t of bestaand) {
+    if (t.sportlink_teamcode != null) continue
+    const sleutel = normaliseerNaam(t.name)
+    if (sleutel && !losPerNaam.has(sleutel)) losPerNaam.set(sleutel, t)
+  }
+  const bezetteNamen = new Set(bestaand.map(t => normaliseerNaam(t.name)))
+
+  const toevoegen = []
+  const koppelen = []
+  const verwerkt = new Set()
+  for (const t of uniekeTeams(sportlinkTeams)) {
+    if (t.teamcode == null) continue
+    const code = String(t.teamcode)
+    if (gekoppeldeCodes.has(code) || verwerkt.has(code)) continue
+    verwerkt.add(code)
+
+    const name = voorstelNaam(t.teamnaam, t.geslacht)
+    const sleutel = normaliseerNaam(name)
+    if (!sleutel) continue
+
+    const los = losPerNaam.get(sleutel)
+    if (los) {
+      koppelen.push({ id: los.id, teamcode: code })
+      losPerNaam.delete(sleutel)
+    } else if (!bezetteNamen.has(sleutel)) {
+      bezetteNamen.add(sleutel)
+      toevoegen.push({ teamcode: code, name, category: voorstelCategorie(t) })
+    }
+  }
+
+  const verdwenen = bestaand
+    .filter(t => t.bron === 'sportlink' && t.sportlink_teamcode != null && !codes.has(String(t.sportlink_teamcode)))
+    .map(t => t.id)
+
+  return { toevoegen, koppelen, verdwenen }
+}
+
+/**
  * SportLink-teams die nog niet in `bestaandeTeams` (rijen uit tabel `teams`) staan,
  * als lijst `{ teamcode, bronNaam, name, category }`.
  */

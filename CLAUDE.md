@@ -154,6 +154,8 @@ Fields available:
 
 Time slots run from **13:45 to 22:45** in 15-minute increments.
 
+Teams in de tabel `teams` hebben `bron` (`handmatig` = "Extra", `sportlink`) en `sportlink_teamcode` (uniek; migratie `supabase/migration_teams_bron.sql`). `syncSportlinkTeams` in `src/services/teams.js` voegt SportLink-teams automatisch toe en koppelt bestaande teams op genormaliseerde naam; dit draait eenmaal per sessie voor ingelogde beheerders bij het openen van Beheer > Teams en het trainingsschema. De pure logica staat in `bepaalSync` (`src/services/teamImport.js`). Namen en categorieen worden nooit overschreven, teams nooit verwijderd; teams die uit SportLink verdwijnen krijgen alleen het label "Niet meer in SportLink".
+
 Teams use Dutch naming (JO9, JO10, JO11, JO12, JO13, JO14, JO15, JO17, JO19 = youth; Selectie, Veteranen, Zesde, Derde, 30+ vrouwen, 35+ mannen, 45+ mannen).
 
 ## Deployment

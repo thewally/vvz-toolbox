@@ -4,7 +4,7 @@ import { jsPDF } from 'jspdf'
 import { useAuth } from '../context/AuthContext'
 import { fetchTrainingSlots, createTrainingSlot, updateTrainingSlot, deleteTrainingSlot } from '../services/trainingSlots'
 import { fetchActiveFields } from '../services/fields'
-import { fetchTeams } from '../services/teams'
+import { fetchTeams, syncSportlinkTeams } from '../services/teams'
 import { fetchActiveSchedules, fetchSchedules } from '../services/schedules'
 import { DAYS, TIME_SLOTS, timeToMinutes } from '../lib/constants'
 
@@ -273,6 +273,16 @@ export default function SchedulePage({ isAdmin: isAdminProp, scheduleId: schedul
       if (!results[2].error) setTeams(results[2].data || [])
     }
     setLoading(false)
+
+    // Teams automatisch laten meelopen met SportLink (eenmaal per sessie, alleen ingelogde beheerders);
+    // een fout blokkeert het schema niet.
+    if (isAdmin && results[2] && !results[2].error) {
+      const sync = await syncSportlinkTeams(results[2].data || [])
+      if (sync.toegevoegd > 0 || sync.gekoppeld > 0) {
+        const opnieuw = await fetchTeams()
+        if (!opnieuw.error) setTeams(opnieuw.data || [])
+      }
+    }
   }, [isAdmin, selectedScheduleId])
 
   useEffect(() => {
