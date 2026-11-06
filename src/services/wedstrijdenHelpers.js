@@ -207,3 +207,53 @@ export function getAfgelastingenNiveau(afgelastingen, programma) {
   if (allesThuisAfgelast) return 'oranje'
   return 'geel'
 }
+
+/**
+ * Nette weergavenaam van een team. Accepteert (naam, geslacht) of een team-object
+ * met `teamnaam` en `geslacht`.
+ *   "VVZ '49 O13-1"             -> "JO13-1" (geslacht vrouw: "MO13-1")
+ *   "ST SO Soest/VVZ'49 O14-1"  -> "JO14-1"
+ *   "VVZ '49 3"                 -> "VVZ 3"
+ *   "VVZ '49 35+1"              -> "35+ 1"
+ *   "VVZ '49 O23-1"             -> "O23-1"
+ * Onbekende patronen: de naam zonder clubprefix; nooit leeg of undefined.
+ */
+export function formatTeamnaam(naamOfTeam, geslacht) {
+  let naam = naamOfTeam
+  if (naamOfTeam && typeof naamOfTeam === 'object') {
+    naam = naamOfTeam.teamnaam
+    geslacht = geslacht ?? naamOfTeam.geslacht
+  }
+  const ruw = String(naam ?? '').trim()
+  if (!ruw) return ''
+
+  const zonderPrefix = ruw.replace(/^.*?VVZ\s*['’`]?\s*49\s*/i, '').trim()
+  if (!zonderPrefix) return ruw
+
+  const jeugd = zonderPrefix.match(/^([JM]?)O\s*(\d+)\s*-\s*(\d+)$/i)
+  if (jeugd) {
+    const leeftijd = parseInt(jeugd[2], 10)
+    const nr = parseInt(jeugd[3], 10)
+    if (leeftijd >= 8 && leeftijd <= 19) {
+      const vrouw = String(geslacht || '').toLowerCase() === 'vrouw'
+      const voorvoegsel = jeugd[1] ? jeugd[1].toUpperCase() : (vrouw ? 'M' : 'J')
+      return `${voorvoegsel}O${leeftijd}-${nr}`
+    }
+    return `O${leeftijd}-${nr}`
+  }
+
+  const senior = zonderPrefix.match(/^(\d+)$/)
+  if (senior) return `VVZ ${senior[1]}`
+
+  const vet = zonderPrefix.match(/^(\d+\+)\s*(\d+)$/)
+  if (vet) return `${vet[1]} ${vet[2]}`
+
+  return zonderPrefix
+}
+
+/** Volgnummer achter het team ("JO14-10" -> 10), 0 als het ontbreekt. */
+export function teamVolgnummer(naamOfTeam) {
+  const naam = formatTeamnaam(naamOfTeam)
+  const m = naam.match(/(\d+)\s*$/)
+  return m ? parseInt(m[1], 10) : 0
+}
