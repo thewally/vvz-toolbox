@@ -242,3 +242,46 @@ export function getAfgelastingenNiveau(afgelastingen, programma) {
   if (allesThuisAfgelast) return 'oranje'
   return 'geel'
 }
+
+/**
+ * Bepaal de categorie van een team: 'veteranen', 'junioren', 'pupillen', 'zaal' of 'senioren'.
+ * SportLink levert leeftijdscategorie als "Onder N" (bv. "Onder 13"); O23 blijft senioren.
+ * Volgorde: veteranen, "Onder N", terugval op teamnaam, zaal (geen zaterdag/zondag), senioren.
+ */
+export function getTeamCategorie(team) {
+  const naam = (team?.teamnaam || '').toLowerCase()
+  const cat = (team?.leeftijdscategorie || '').toLowerCase()
+
+  if (/veteran|vet\.|35\+|45\+|30\+/.test(naam) || cat.includes('veteran')) return 'veteranen'
+
+  const isO23 = naam.includes('o23')
+  const jeugd = (leeftijd) => (leeftijd <= 12 ? 'pupillen' : 'junioren')
+
+  const onderMatch = cat.match(/onder\s*(\d+)/)
+  if (onderMatch && parseInt(onderMatch[1], 10) < 23) return jeugd(parseInt(onderMatch[1], 10))
+  if (cat.includes('pupil')) return 'pupillen'
+  if (cat.includes('junior')) return 'junioren'
+
+  if (!onderMatch && !isO23) {
+    const joMatch = naam.match(/[jm]?o\s*(\d+)/)
+    if (joMatch) return jeugd(parseInt(joMatch[1], 10))
+  }
+
+  const isRegulier = ['Zondag', 'Zaterdag'].includes(team?.speeldag || '')
+  if (!isO23 && !isRegulier) return 'zaal'
+  return 'senioren'
+}
+
+/**
+ * Kies de poulecode om te tonen voor een team. Heeft de gekozen poule een lege stand
+ * (zonder fout), val dan terug op de eerste andere poule met rijen. Geeft anders de
+ * gekozen poulecode terug. standen[poulecode] = { data, error }.
+ */
+export function kiesPouleMetStand(poules, gekozenCode, standen) {
+  const gekozen = standen[gekozenCode]
+  if (!gekozen || gekozen.error || (gekozen.data || []).length > 0) return gekozenCode
+  const alternatief = poules.find(p =>
+    String(p.poulecode) !== String(gekozenCode) && (standen[p.poulecode]?.data || []).length > 0
+  )
+  return alternatief ? alternatief.poulecode : gekozenCode
+}
