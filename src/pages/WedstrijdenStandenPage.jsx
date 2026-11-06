@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getTeams, getPoulestand, getTeamProgramma } from '../services/wedstrijden'
-import { kiesPouleViaWedstrijd } from '../services/wedstrijdenHelpers'
+import { kiesPouleViaWedstrijd, getTeamCategorie, kiesPouleMetStand } from '../services/wedstrijdenHelpers'
 
 const CATEGORIE_VOLGORDE = ['senioren', 'veteranen', 'zaal', 'junioren', 'pupillen']
 const CATEGORIE_LABELS = {
@@ -10,28 +10,6 @@ const CATEGORIE_LABELS = {
   zaal: 'Zaal',
   junioren: 'Junioren',
   pupillen: 'Pupillen',
-}
-
-function getCategorie(teamnaam) {
-  const naam = (teamnaam || '').toLowerCase()
-  if (/35\+|45\+|30\+|veteran|vet\./.test(naam)) return 'veteranen'
-  const joMatch = naam.match(/[jm]o\s*(\d+)/)
-  if (joMatch) return parseInt(joMatch[1], 10) <= 12 ? 'pupillen' : 'junioren'
-  return 'senioren'
-}
-
-function getTeamCategorie(team) {
-  const naam = (team.teamnaam || '').toLowerCase()
-  const cat = (team.leeftijdscategorie || '').toLowerCase()
-  if (naam.includes('veteran') || naam.includes('vet.') || naam.includes('35+') || naam.includes('45+') || naam.includes('30+') || cat.includes('veteran')) return 'veteranen'
-  const joMatch = naam.match(/[jm]o\s*(\d+)/)
-  if (joMatch) return parseInt(joMatch[1], 10) <= 12 ? 'pupillen' : 'junioren'
-  if (cat.includes('pupil')) return 'pupillen'
-  if (cat.includes('junior')) return 'junioren'
-  const isO23 = naam.includes('o23')
-  const isRegulier = ['Zondag', 'Zaterdag'].includes(team.speeldag || '')
-  if (!isO23 && !isRegulier) return 'zaal'
-  return 'senioren'
 }
 
 // Kies meest recente reguliere poule voor een team (zelfde logica als TeamPage)
@@ -102,11 +80,27 @@ export default function WedstrijdenStandenPage() {
     }
     const uniekePoulecodes = [...new Set(pouleVerzoeken)]
 
-    const results = await Promise.all(
-      uniekePoulecodes.map(pc => getPoulestand(pc).then(r => ({ pc, data: r.data ?? [] })))
-    )
+    const haalStand = (pc) => getPoulestand(pc).then(r => ({ pc, data: r.data ?? [], error: r.error ? (r.error.message || 'fout') : null }))
     const standenMap = {}
-    for (const { pc, data } of results) standenMap[pc] = data
+    for (const { pc, data, error } of await Promise.all(uniekePoulecodes.map(haalStand))) {
+      standenMap[pc] = { data, error }
+    }
+
+    // Terugval: teams met een lege (niet mislukte) standaardpoule en meerdere poules:
+    // haal de overige poules op en kies er een met stand.
+    const extra = new Set()
+    for (const [teamcode, poules] of perTeamcode) {
+      const st = standenMap[selectieMap[teamcode]]
+      if (st && !st.error && st.data.length === 0) {
+        for (const p of poules) if (p.poulecode && !standenMap[p.poulecode]) extra.add(p.poulecode)
+      }
+    }
+    for (const { pc, data, error } of await Promise.all([...extra].map(haalStand))) {
+      standenMap[pc] = { data, error }
+    }
+    for (const [teamcode, poules] of perTeamcode) {
+      if (selectieMap[teamcode]) selectieMap[teamcode] = String(kiesPouleMetStand(poules, selectieMap[teamcode], standenMap))
+    }
     setStanden(standenMap)
     setGeselecteerd(selectieMap)
     setLoading(false)
@@ -129,10 +123,13 @@ export default function WedstrijdenStandenPage() {
 
   async function wisselPoule(teamcode, poulecode) {
     setGeselecteerd(prev => ({ ...prev, [teamcode]: poulecode }))
-    if (!standen[poulecode]) {
-      const { data } = await getPoulestand(poulecode)
-      setStanden(prev => ({ ...prev, [poulecode]: data ?? [] }))
-    }
+    if (!standen[poulecode]) await laadStand(poulecode)
+  }
+
+  async function laadStand(poulecode) {
+    setStanden(prev => ({ ...prev, [poulecode]: { data: [], error: null, laden: true } }))
+    const { data, error: err } = await getPoulestand(poulecode)
+    setStanden(prev => ({ ...prev, [poulecode]: { data: data ?? [], error: err ? (err.message || 'fout') : null } }))
   }
 
   // Groepeer per teamcode
@@ -149,10 +146,10 @@ export default function WedstrijdenStandenPage() {
     if (!poulecode) continue
     const gekozen = poules.find(p => String(p.poulecode) === String(poulecode)) || kiesPoule(poules)
     if (!gekozen) continue
-    const stand = standen[poulecode] ?? []
-    if (stand.length === 0 && Object.keys(geselecteerd).length > 0) continue
+    const standInfo = standen[poulecode] ?? { data: [], error: null }
+    const stand = standInfo.data
     const categorie = getTeamCategorie(gekozen)
-    teamBlokken.push({ teamcode, gekozen, poules, poulecode, stand, categorie })
+    teamBlokken.push({ teamcode, gekozen, poules, poulecode, stand, standInfo, categorie })
   }
 
   // Sorteer: volgorde categorie, dan teamnaam
@@ -216,7 +213,7 @@ export default function WedstrijdenStandenPage() {
             <div className="flex-1 h-px bg-gray-200" />
           </div>
           <div className="flex flex-col gap-6">
-            {blokken.map(({ teamcode, gekozen, poules, poulecode, stand }) => (
+            {blokken.map(({ teamcode, gekozen, poules, poulecode, stand, standInfo }) => (
               <div key={teamcode} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100">
                   <Link to={`/teams/${teamcode}`} className="group flex-1 min-w-0 mr-2">
@@ -247,6 +244,16 @@ export default function WedstrijdenStandenPage() {
                     </svg>
                   </Link>
                 </div>
+                {standInfo.laden ? (
+                  <p className="px-4 py-4 text-sm text-gray-400">Stand laden…</p>
+                ) : standInfo.error ? (
+                  <p className="px-4 py-4 text-sm text-red-600">
+                    Stand kon niet worden geladen
+                    <button onClick={() => laadStand(poulecode)} className="ml-3 underline font-medium">Opnieuw proberen</button>
+                  </p>
+                ) : stand.length === 0 ? (
+                  <p className="px-4 py-4 text-sm text-gray-500">Voor dit team is geen stand beschikbaar</p>
+                ) : (
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-100 text-gray-500">
@@ -275,6 +282,7 @@ export default function WedstrijdenStandenPage() {
                     ))}
                   </tbody>
                 </table>
+                )}
               </div>
             ))}
           </div>
