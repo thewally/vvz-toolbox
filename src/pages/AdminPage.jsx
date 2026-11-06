@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchTeams, createTeam, updateTeam, deleteTeam } from '../services/teams'
+import { fetchTeams, createTeam, updateTeam, deleteTeam, syncSportlinkTeams } from '../services/teams'
 import { fetchFields, createField, updateField, deleteField } from '../services/fields'
 import { fetchSchedules, createSchedule, updateSchedule, deleteSchedule, toggleScheduleActive, copySchedule } from '../services/schedules'
 import { supabase } from '../lib/supabaseClient'
-import { fetchTeams as fetchSportlinkTeams } from '../services/sportlink'
-import { ontbrekendeTeams } from '../services/teamImport'
 
 export default function AdminPage() {
   const [teams, setTeams] = useState([])
@@ -13,6 +11,8 @@ export default function AdminPage() {
   const [schedules, setSchedules] = useState([])
   const [usedTeamIds, setUsedTeamIds] = useState(new Set())
   const [loading, setLoading] = useState(true)
+  const [syncFout, setSyncFout] = useState(null)
+  const [verdwenenIds, setVerdwenenIds] = useState(new Set())
   const [activeTab, setActiveTab] = useState('schedules')
 
   useEffect(() => {
@@ -32,6 +32,25 @@ export default function AdminPage() {
     if (u.data) setUsedTeamIds(new Set(u.data.map(r => r.team_id)))
     if (s.data) setSchedules(s.data)
     setLoading(false)
+
+    // Automatische synchronisatie met SportLink (eenmaal per sessie); mislukt die, dan laadt Beheer gewoon door.
+    const sync = await syncSportlinkTeams(t.data || [])
+    setSyncFout(sync.fout)
+    setVerdwenenIds(new Set(sync.verdwenen))
+    if (sync.toegevoegd > 0 || sync.gekoppeld > 0) {
+      const opnieuw = await fetchTeams()
+      if (opnieuw.data) setTeams(opnieuw.data)
+    }
+  }
+
+  // Forceert een synchronisatie en laadt de teams opnieuw; geeft het resultaat terug voor een melding.
+  async function syncNu() {
+    const sync = await syncSportlinkTeams(teams, { force: true })
+    setSyncFout(sync.fout)
+    if (!sync.fout) setVerdwenenIds(new Set(sync.verdwenen))
+    const opnieuw = await fetchTeams()
+    if (opnieuw.data) setTeams(opnieuw.data)
+    return sync
   }
 
   if (loading) {
@@ -79,7 +98,7 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {activeTab === 'teams' && <TeamsManager teams={teams} usedTeamIds={usedTeamIds} onReload={loadAll} />}
+      {activeTab === 'teams' && <TeamsManager teams={teams} usedTeamIds={usedTeamIds} onReload={loadAll} verdwenenIds={verdwenenIds} syncFout={syncFout} onSyncNu={syncNu} />}
       {activeTab === 'fields' && <FieldsManager fields={fields} onReload={loadAll} />}
       {activeTab === 'schedules' && <SchedulesManager schedules={schedules} onReload={async () => { const s = await fetchSchedules(); if (s.data) setSchedules(s.data) }} />}
     </div>
@@ -332,7 +351,7 @@ function FieldsManager({ fields, onReload }) {
 
 /* ─── TeamsManager ─────────────────────────────────────────────────── */
 
-function TeamsManager({ teams, usedTeamIds, onReload }) {
+function TeamsManager({ teams, usedTeamIds, onReload, verdwenenIds, syncFout, onSyncNu }) {
   const CATEGORIES = ['Pupillen', 'Junioren', 'Senioren', 'Veteranen']
 
   const [editId, setEditId] = useState(null)
@@ -342,56 +361,19 @@ function TeamsManager({ teams, usedTeamIds, onReload }) {
   const [addForm, setAddForm] = useState({ name: '', category: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
-  // Import uit SportLink: null = niet actief, anders { laden, fout, voorstellen, melding }
-  const [imp, setImp] = useState(null)
+  const [syncBezig, setSyncBezig] = useState(false)
+  const [syncMelding, setSyncMelding] = useState(null)
 
-  async function startImport() {
-    setAdding(false)
-    setEditId(null)
-    setDeleteConfirmId(null)
-    setError(null)
-    setImp({ laden: true, fout: null, voorstellen: [], melding: null })
-    const { data, error: fout } = await fetchSportlinkTeams()
-    if (fout || !Array.isArray(data)) {
-      setImp({ laden: false, fout: fout?.message || 'SportLink gaf geen teams terug', voorstellen: [], melding: null })
-      return
-    }
-    const voorstellen = ontbrekendeTeams(data, teams).map(v => ({ ...v, aan: true }))
-    setImp({
-      laden: false, fout: null, voorstellen,
-      melding: voorstellen.length === 0 ? 'Alle SportLink-teams staan al in de lijst.' : null,
-    })
-  }
-
-  function updateVoorstel(teamcode, wijziging) {
-    setImp(i => ({ ...i, voorstellen: i.voorstellen.map(v => v.teamcode === teamcode ? { ...v, ...wijziging } : v) }))
-  }
-
-  async function handleImportToevoegen() {
-    const gekozen = imp.voorstellen.filter(v => v.aan && v.name.trim())
-    if (gekozen.length === 0) return
-    setSaving(true)
-    const fouten = []
-    const mislukt = new Set()
-    for (const v of gekozen) {
-      const { error: fout } = await createTeam({ name: v.name.trim(), category: v.category || null })
-      if (fout) {
-        fouten.push(`${v.name.trim()}: ${fout.message}`)
-        mislukt.add(v.teamcode)
-      }
-    }
-    setSaving(false)
-    onReload()
-    if (fouten.length === 0) {
-      setImp(null)
-    } else {
-      // Alleen de mislukte teams blijven staan, zodat de beheerder ze kan aanpassen.
-      setImp(i => ({
-        ...i,
-        voorstellen: i.voorstellen.filter(v => mislukt.has(v.teamcode)),
-        fout: `${gekozen.length - fouten.length} van ${gekozen.length} teams toegevoegd. Niet gelukt: ${fouten.join('; ')}`,
-      }))
-    }
+  async function handleSyncNu() {
+    setSyncBezig(true)
+    setSyncMelding(null)
+    const r = await onSyncNu()
+    setSyncBezig(false)
+    if (r.fout) return
+    const delen = []
+    if (r.toegevoegd > 0) delen.push(`${r.toegevoegd} ${r.toegevoegd === 1 ? 'team' : 'teams'} toegevoegd`)
+    if (r.gekoppeld > 0) delen.push(`${r.gekoppeld} ${r.gekoppeld === 1 ? 'team' : 'teams'} gekoppeld`)
+    setSyncMelding(delen.length > 0 ? delen.join(', ') : 'Alles is up-to-date')
   }
 
   function startEdit(team) {
@@ -470,14 +452,15 @@ function TeamsManager({ teams, usedTeamIds, onReload }) {
   return (
     <div>
       <div className="flex items-center justify-end gap-2 mb-3">
-        {!imp && (
-          <button
-            onClick={startImport}
-            className="text-sm bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-          >
-            Teams uit SportLink ophalen
-          </button>
-        )}
+        {syncMelding && <span className="text-sm text-gray-600 mr-auto">{syncMelding}</span>}
+        <button
+          onClick={handleSyncNu}
+          disabled={syncBezig}
+          className="text-sm bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+        >
+          {syncBezig ? 'Synchroniseren…' : 'Nu synchroniseren'}
+        </button>
+
         {!adding && (
           <button
             onClick={startAdd}
@@ -500,70 +483,9 @@ function TeamsManager({ teams, usedTeamIds, onReload }) {
         </div>
       )}
 
-      {imp && (
-        <div className="bg-white rounded-xl shadow p-4 mb-4">
-          {imp.laden && <p className="text-sm text-gray-500">SportLink-teams ophalen…</p>}
-          {imp.fout && (
-            <div role="alert" className="bg-red-50 text-red-700 text-sm p-3 rounded-lg mb-3 flex items-center justify-between gap-3">
-              <span>{imp.fout}</span>
-              {imp.voorstellen.length === 0 && (
-                <button onClick={startImport} className="shrink-0 underline font-medium">Opnieuw proberen</button>
-              )}
-            </div>
-          )}
-          {imp.melding && <p className="text-sm text-gray-600 mb-3">{imp.melding}</p>}
-          {imp.voorstellen.length > 0 && (
-            <>
-              <p className="text-sm text-gray-600 mb-3">
-                Deze SportLink-teams staan nog niet in de lijst. Pas naam of categorie aan en kies welke je toevoegt.
-              </p>
-              <ul className="space-y-2 mb-3">
-                {imp.voorstellen.map(v => (
-                  <li key={v.teamcode} className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={v.aan}
-                      onChange={e => updateVoorstel(v.teamcode, { aan: e.target.checked })}
-                      aria-label={`${v.bronNaam} toevoegen`}
-                    />
-                    <input
-                      type="text"
-                      value={v.name}
-                      onChange={e => updateVoorstel(v.teamcode, { name: e.target.value })}
-                      className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
-                      aria-label={`Teamnaam voor ${v.bronNaam}`}
-                    />
-                    <select
-                      value={v.category}
-                      onChange={e => updateVoorstel(v.teamcode, { category: e.target.value })}
-                      className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-vvz-green focus:border-vvz-green outline-none"
-                      aria-label={`Categorie voor ${v.bronNaam}`}
-                    >
-                      <option value="">Geen categorie</option>
-                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-          <div className="flex gap-2">
-            {imp.voorstellen.length > 0 && (
-              <button
-                onClick={handleImportToevoegen}
-                disabled={saving || !imp.voorstellen.some(v => v.aan && v.name.trim())}
-                className="bg-vvz-green text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-vvz-green-dark transition-colors disabled:opacity-50"
-              >
-                Toevoegen
-              </button>
-            )}
-            <button
-              onClick={() => setImp(null)}
-              className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-300 transition-colors"
-            >
-              {imp.voorstellen.length > 0 ? 'Annuleer' : 'Sluiten'}
-            </button>
-          </div>
+      {syncFout && (
+        <div role="alert" className="bg-orange-50 text-orange-800 text-sm p-3 rounded-lg mb-4">
+          Synchroniseren met SportLink is niet gelukt ({syncFout}). De teamlijst is ongewijzigd.
         </div>
       )}
 
@@ -709,6 +631,12 @@ function TeamsManager({ teams, usedTeamIds, onReload }) {
                     <td className="px-4 py-2.5 font-medium text-gray-800">
                       <span className="flex items-center gap-2">
                         {team.name}
+                        <span className={`text-xs font-normal px-1.5 py-0.5 rounded ${team.bron === 'sportlink' ? 'bg-blue-100 text-blue-700' : 'bg-gray-200 text-gray-700'}`}>
+                          {team.bron === 'sportlink' ? 'SportLink' : 'Extra'}
+                        </span>
+                        {verdwenenIds.has(team.id) && (
+                          <span className="text-xs font-normal px-1.5 py-0.5 rounded bg-red-100 text-red-700">Niet meer in SportLink</span>
+                        )}
                         {!usedTeamIds.has(team.id) && (
                           <span className="text-xs font-normal text-orange-400">Niet ingepland in een training</span>
                         )}
