@@ -1,15 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getAfgelastingen } from '../services/wedstrijden'
-import { groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
-
-const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
+import { groepeerPerDag, formatDagLabel, eigenKant, eigenTeamid } from '../services/wedstrijdenHelpers'
 
 function getVvzTeamid(w) {
-  const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
-  if (isThuis && w.thuisteamid) return String(w.thuisteamid)
-  if (!isThuis && w.uitteamclubrelatiecode === CLUB_RC && w.uitteamid) return String(w.uitteamid)
-  return null
+  const id = eigenTeamid(w)
+  return id ? String(id) : null
 }
 
 function getSportBadge(w) {
@@ -38,9 +34,7 @@ export default function WedstrijdenAfgelastingenPage() {
       return
     }
     const data = afgelastRes.data ?? []
-    const eigenClub = data.filter(w =>
-      w.thuisteamclubrelatiecode === CLUB_RC || w.uitteamclubrelatiecode === CLUB_RC
-    )
+    const eigenClub = data.filter(w => eigenKant(w) !== null)
     setAfgelast(eigenClub)
     setLoading(false)
   }
@@ -98,7 +92,8 @@ export default function WedstrijdenAfgelastingenPage() {
           </div>
           <div className="flex flex-col gap-3">
             {items.map((w, i) => {
-              const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
+              const isThuis = eigenKant(w) === 'thuis'
+              const isUit = eigenKant(w) === 'uit'
               const teamcode = getVvzTeamid(w)
               const sportBadge = getSportBadge(w)
               const Wrapper = teamcode
@@ -126,7 +121,7 @@ export default function WedstrijdenAfgelastingenPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className={`font-semibold text-sm truncate block ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                        <span className={`font-semibold text-sm truncate block ${isUit ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
                       </div>
                       {teamcode && (
                         <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

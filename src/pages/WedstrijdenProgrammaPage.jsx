@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getProgramma } from '../services/wedstrijden'
-import { groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
-
-const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
+import { groepeerPerDag, formatDagLabel, eigenKant, eigenTeamnaam, eigenTeamid } from '../services/wedstrijdenHelpers'
 
 export default function WedstrijdenProgrammaPage() {
   const [wedstrijden, setWedstrijden] = useState([])
@@ -69,14 +67,11 @@ export default function WedstrijdenProgrammaPage() {
     .filter(w => w.thuisteam && w.uitteam && w.uitteam !== 'N.N.B.' && w.thuisteam !== 'N.N.B.')
     .filter(w => {
       if (filterLocatie === 'alles') return true
-      const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
-      return filterLocatie === 'thuis' ? isThuis : !isThuis
+      return eigenKant(w) === filterLocatie
     })
     .filter(w => {
       if (filterCategorie === 'alles') return true
-      const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
-      const vvzTeam = isThuis ? w.thuisteam : w.uitteam
-      return getCategorie(vvzTeam) === filterCategorie
+      return getCategorie(eigenTeamnaam(w)) === filterCategorie
     })
     .filter(w => {
       if (filterSport === 'alles') return true
@@ -143,7 +138,8 @@ export default function WedstrijdenProgrammaPage() {
           </div>
           <div className="flex flex-col gap-3">
             {items.map((w, i) => {
-              const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
+              const isThuis = eigenKant(w) === 'thuis'
+              const isUit = eigenKant(w) === 'uit'
               const _loc = (w.locatie || '').toLowerCase()
               const isOefen = (w.competitiesoort || '').toLowerCase() === 'oefenwedstrijd'
               const locatieLabel = isOefen
@@ -152,10 +148,9 @@ export default function WedstrijdenProgrammaPage() {
                   ? 'ZAAL'
                   : 'VELD'
               const veldnummer = w.veldnummer || w.veld_nr || w.veld || null
-              const teamcodeRaw = isThuis ? w.thuisteamid : w.uitteamid
-              const teamcode = teamcodeRaw && String(teamcodeRaw) !== '-1' ? teamcodeRaw : null
+              const teamcode = eigenTeamid(w)
               const cardClasses = `bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 transition-shadow ${teamcode ? 'group cursor-pointer hover:shadow-md hover:border-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vvz-green focus-visible:ring-offset-2' : 'cursor-default'}`
-              const vvzTeam = isThuis ? w.thuisteam : w.uitteam
+              const vvzTeam = eigenTeamnaam(w)
               const Wrapper = teamcode
                 ? ({ children, className }) => <Link to={`/teams/${teamcode}`} className={`block ${className}`} aria-label={`Bekijk teampagina van ${vvzTeam}`}>{children}</Link>
                 : ({ children, className }) => <div className={className}>{children}</div>
@@ -172,7 +167,7 @@ export default function WedstrijdenProgrammaPage() {
                     <div className="flex-1 flex flex-col items-center justify-center text-center gap-0.5">
                       <span className={`font-semibold text-sm ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
                       <span className="text-gray-400 text-xs">vs</span>
-                      <span className={`font-semibold text-sm ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                      <span className={`font-semibold text-sm ${isUit ?'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
                       {(w.accommodatie || veldnummer) && (
                         <p className="text-xs text-gray-400">
                           {w.accommodatie}{veldnummer ? ` · ${veldnummer}` : ''}
@@ -198,7 +193,7 @@ export default function WedstrijdenProgrammaPage() {
                     </div>
                     <span className={`self-center text-right font-semibold text-sm truncate ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
                     <span className="self-center text-center text-gray-400 text-xs">vs</span>
-                    <span className={`self-center font-semibold text-sm truncate ${!isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                    <span className={`self-center font-semibold text-sm truncate ${isUit ?'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
                     <div className="self-center flex items-center">
                       {locatieLabel ? (
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${locatieLabel === 'OEFEN' ? 'bg-blue-50 text-blue-600' : locatieLabel.includes('ZAAL') || locatieLabel.includes('FUTSAL') ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>{locatieLabel}</span>

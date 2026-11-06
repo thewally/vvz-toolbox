@@ -1,3 +1,43 @@
+const CLUB_CODE = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
+
+// Herkent een eigen team op naam, ook samenwerkingsteams zoals "ST SO Soest/VVZ'49 JO14-6"
+export function isEigenNaam(naam) {
+  return /vvz\s*['’]?\s*49/i.test(naam || '')
+}
+
+/**
+ * Welke kant van de wedstrijd is van ons? 'thuis', 'uit' of null.
+ * Volgorde: (1) veld `teamnaam`, (2) club-relatiecode (thuis wint), (3) VVZ'49 in de naam (thuis wint).
+ */
+export function eigenKant(w, clubCode = CLUB_CODE) {
+  if (!w) return null
+  if (w.teamnaam) {
+    if (w.teamnaam === w.thuisteam) return 'thuis'
+    if (w.teamnaam === w.uitteam) return 'uit'
+  }
+  if (clubCode) {
+    if (w.thuisteamclubrelatiecode === clubCode) return 'thuis'
+    if (w.uitteamclubrelatiecode === clubCode) return 'uit'
+  }
+  if (isEigenNaam(w.thuisteam)) return 'thuis'
+  if (isEigenNaam(w.uitteam)) return 'uit'
+  return null
+}
+
+export function eigenTeamnaam(w, clubCode) {
+  const kant = eigenKant(w, clubCode)
+  if (kant === 'thuis') return w.thuisteam
+  if (kant === 'uit') return w.uitteam
+  return null
+}
+
+// Teamid van de eigen kant; negeert -1/leeg (team bestaat niet in SportLink)
+export function eigenTeamid(w, clubCode) {
+  const kant = eigenKant(w, clubCode)
+  const id = kant === 'thuis' ? w.thuisteamid : kant === 'uit' ? w.uitteamid : null
+  return id && String(id) !== '-1' ? id : null
+}
+
 // wedstrijddatum is ISO 8601: "2026-03-29T14:00:00+0200"
 export function parseWedstrijdDatum(wedstrijddatum) {
   return new Date(wedstrijddatum)
@@ -70,8 +110,8 @@ export function groepeerPerDag(wedstrijden) {
       const tijdB = b.aanvangstijd || '99:99'
       if (tijdA !== tijdB) return tijdA.localeCompare(tijdB)
       // 2. Teamcategorie: gebruik VVZ-team (thuis of uit)
-      const vvzA = a.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE ? a.thuisteam : a.uitteam
-      const vvzB = b.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE ? b.thuisteam : b.uitteam
+      const vvzA = eigenTeamnaam(a) ?? a.uitteam
+      const vvzB = eigenTeamnaam(b) ?? b.uitteam
       return teamSorteerGetal(vvzA) - teamSorteerGetal(vvzB)
     })
   }
@@ -149,13 +189,8 @@ export function buildTeamcodeLookup(teams) {
  * Bij twee VVZ-teams: thuisteam wint.
  */
 export function getVvzTeamcode(wedstrijd, teamcodeLookup) {
-  const CLUB = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
-  const isThuis = wedstrijd.thuisteamclubrelatiecode === CLUB
-  const isUit = wedstrijd.uitteamclubrelatiecode === CLUB
-
-  if (isThuis) return teamcodeLookup.get(wedstrijd.thuisteam) ?? null
-  if (isUit) return teamcodeLookup.get(wedstrijd.uitteam) ?? null
-  return null
+  const naam = eigenTeamnaam(wedstrijd)
+  return naam ? (teamcodeLookup.get(naam) ?? null) : null
 }
 
 /**
@@ -197,8 +232,8 @@ export function getAfgelastingenNiveau(afgelastingen, programma) {
   if (!afgelastingen || afgelastingen.length === 0) return 'groen'
 
   const afgelastCodes = new Set(afgelastingen.map(a => a.wedstrijdcode))
-  const thuiswedstrijden = programma.filter(w => w.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE)
-  const uitwedstrijden = programma.filter(w => w.uitteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE)
+  const thuiswedstrijden = programma.filter(w => eigenKant(w) === 'thuis')
+  const uitwedstrijden = programma.filter(w => eigenKant(w) === 'uit')
 
   const allesThuisAfgelast = thuiswedstrijden.length > 0 && thuiswedstrijden.every(w => afgelastCodes.has(w.wedstrijdcode))
   const allesUitAfgelast = uitwedstrijden.length > 0 && uitwedstrijden.every(w => afgelastCodes.has(w.wedstrijdcode))
