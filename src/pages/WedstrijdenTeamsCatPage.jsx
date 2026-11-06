@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { getTeams } from '../services/wedstrijden'
+import { formatTeamnaam, teamVolgnummer } from '../services/wedstrijdenHelpers'
 
 const CAT_LABELS = {
   senioren: 'Senioren',
@@ -128,7 +129,7 @@ export default function WedstrijdenTeamsCatPage() {
     const gesorteerd = [...teams].sort((a, b) => {
       const aO23 = isO23(a), bO23 = isO23(b)
       if (aO23 !== bO23) return aO23 ? 1 : -1
-      return getSorteerSleutel(a) - getSorteerSleutel(b)
+      return getSorteerSleutel(a) - getSorteerSleutel(b) || teamVolgnummer(a) - teamVolgnummer(b)
     })
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -136,9 +137,15 @@ export default function WedstrijdenTeamsCatPage() {
           <Link
             key={team.teamcode}
             to={`/teams/${team.teamcode}`}
-            className="flex items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md hover:border-vvz-green/30 transition-all text-center"
+            className="group flex flex-col bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden min-w-0 hover:shadow-md hover:border-vvz-green/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-vvz-green transition-all"
           >
-            <span className="font-semibold text-gray-800">{team.teamnaam}</span>
+            <div className="aspect-[4/3] bg-gray-100 flex items-end justify-center overflow-hidden" aria-hidden="true">
+              <svg viewBox="0 0 24 24" className="w-1/2 h-auto text-gray-300 group-hover:text-vvz-green/40 transition-colors" fill="currentColor">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 22c0-4.4 3.6-8 8-8s8 3.6 8 8z" />
+              </svg>
+            </div>
+            <h4 className="px-3 py-3 text-center font-semibold text-gray-800 break-words">{formatTeamnaam(team) || team.teamnaam}</h4>
           </Link>
         ))}
       </div>

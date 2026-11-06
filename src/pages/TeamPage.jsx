@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getTeamProgramma, getTeamUitslagen, getTeams, getPoulestand, getTeamGegevens, getAfgelastingen } from '../services/wedstrijden'
-import { formatDagLabel, datumSleutel, parseWedstrijdDatum, kiesPouleViaWedstrijd, eigenKant, eigenTeamnaam } from '../services/wedstrijdenHelpers'
+import { formatDagLabel, datumSleutel, parseWedstrijdDatum, kiesPouleViaWedstrijd, eigenKant, eigenTeamnaam, formatTeamnaam } from '../services/wedstrijdenHelpers'
 import { fetchMatchReportsByTeam } from '../services/matchReports'
 import AgendaAbonneerKnop from '../components/AgendaAbonneerKnop'
 
@@ -400,9 +400,10 @@ export default function TeamPage() {
   )
 
   // Teamnaam bepalen
-  const teamnaam = teamInfo?.teamnaam
+  const ruweTeamnaam = teamInfo?.teamnaam
     || [...programma, ...uitslagen].map(w => eigenTeamnaam(w)).find(Boolean)
     || `Team ${teamcode}`
+  const teamnaam = formatTeamnaam(ruweTeamnaam, teamInfo?.geslacht) || ruweTeamnaam
 
   // VELD/FUTSAL badge eenmalig bepalen op basis van eerste beschikbare wedstrijd
   const eersteWedstrijd = [...programma, ...uitslagen][0]
