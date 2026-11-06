@@ -85,6 +85,7 @@ export default function HomePage() {
   const [cards, setCards] = useState(undefined)
   const [newsItems, setNewsItems] = useState([])
   const [activities, setActivities] = useState([])
+  const [activitiesLoading, setActivitiesLoading] = useState(true)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -163,6 +164,7 @@ export default function HomePage() {
         if (actief && result?.data) setActivities(result.data.slice(0, 5))
       })
       .catch(() => {})
+      .finally(() => { if (actief) setActivitiesLoading(false) })
     return () => { actief = false }
   }, [])
 
@@ -264,6 +266,8 @@ export default function HomePage() {
                 Alle activiteiten &rarr;
               </Link>
             </div>
+          ) : activitiesLoading ? (
+            <p className="text-sm text-gray-400">Activiteiten laden...</p>
           ) : (
             <p className="text-sm text-gray-400">Geen aankomende activiteiten.</p>
           )}
