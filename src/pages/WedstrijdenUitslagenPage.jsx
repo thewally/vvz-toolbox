@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getUitslagen } from '../services/wedstrijden'
-import { groepeerPerDag, formatDagLabel } from '../services/wedstrijdenHelpers'
-
-const CLUB_RC = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
+import { groepeerPerDag, formatDagLabel, eigenKant, eigenTeamnaam, eigenTeamid } from '../services/wedstrijdenHelpers'
 
 function getCategorie(teamnaam) {
   const naam = (teamnaam || '').toLowerCase()
@@ -62,14 +60,11 @@ export default function WedstrijdenUitslagenPage() {
     .filter(w => w.wedstrijddatum && w.wedstrijddatum.slice(0, 10) <= vandaag && w.uitslag && w.thuisteam && w.uitteam)
     .filter(w => {
       if (filterLocatie === 'alles') return true
-      const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
-      return filterLocatie === 'thuis' ? isThuis : !isThuis
+      return eigenKant(w) === filterLocatie
     })
     .filter(w => {
       if (filterCategorie === 'alles') return true
-      const isThuis = w.thuisteamclubrelatiecode === CLUB_RC
-      const vvzTeam = isThuis ? w.thuisteam : w.uitteam
-      return getCategorie(vvzTeam) === filterCategorie
+      return getCategorie(eigenTeamnaam(w)) === filterCategorie
     })
     .filter(w => {
       if (filterSport === 'alles') return true
@@ -137,19 +132,20 @@ export default function WedstrijdenUitslagenPage() {
           </div>
           <div className="flex flex-col gap-3">
             {items.map((w, i) => {
-              const isEigenTeam = w.eigenteam === 'true'
+              const kant = eigenKant(w)
+              const isThuis = kant === 'thuis'
+              const isUit = kant === 'uit'
               const scores = w.uitslag ? w.uitslag.split('-').map(s => s.trim()) : null
               const thuisScore = scores?.[0] ?? '-'
               const uitScore = scores?.[1] ?? '-'
-              const isThuis = w.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
               const sportOmschrijving = (w.sportomschrijving || '').toLowerCase()
               const isZaal = sportOmschrijving.includes('zaal') || sportOmschrijving.includes('futsal')
               const locatieLabel = w.sportomschrijving ? (isZaal ? 'ZAAL' : 'VELD') : null
 
-              const teamcode = isThuis ? w.thuisteamid : w.uitteamid
+              const teamcode = eigenTeamid(w)
               const cardClasses = `bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 transition-shadow ${teamcode ? 'group cursor-pointer hover:shadow-md hover:border-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vvz-green focus-visible:ring-offset-2' : 'cursor-default'}`
-              const vvzTeam = isThuis ? w.thuisteam : w.uitteam
+              const vvzTeam = eigenTeamnaam(w)
               const Wrapper = teamcode
                 ? ({ children, className }) => <Link to={`/teams/${teamcode}`} className={`block ${className}`} aria-label={`Bekijk teampagina van ${vvzTeam}`}>{children}</Link>
                 : ({ children, className }) => <div className={className}>{children}</div>
@@ -164,9 +160,9 @@ export default function WedstrijdenUitslagenPage() {
                       </span>
                     </div>
                     <div className="flex-1 flex flex-col items-center justify-center text-center gap-0.5">
-                      <span className={`font-semibold text-sm ${isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                      <span className={`font-semibold text-sm ${isThuis ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
                       <span className="text-lg font-bold text-gray-800 tabular-nums">{thuisScore} – {uitScore}</span>
-                      <span className={`font-semibold text-sm ${!isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                      <span className={`font-semibold text-sm ${isUit ?'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
                       {w.accommodatie && <p className="text-xs text-gray-400">{w.accommodatie}</p>}
                     </div>
                     <div className="flex flex-col justify-center items-end shrink-0 gap-1">
@@ -188,9 +184,9 @@ export default function WedstrijdenUitslagenPage() {
                         {isThuis ? 'THUIS' : 'UIT'}
                       </span>
                     </div>
-                    <span className={`self-center text-right font-semibold text-sm truncate ${isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
+                    <span className={`self-center text-right font-semibold text-sm truncate ${isThuis ?'text-vvz-green' : 'text-gray-800'}`}>{w.thuisteam}</span>
                     <span className="self-center text-center text-lg font-bold text-gray-800 tabular-nums">{thuisScore} – {uitScore}</span>
-                    <span className={`self-center font-semibold text-sm truncate ${!isThuis && isEigenTeam ? 'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
+                    <span className={`self-center font-semibold text-sm truncate ${isUit ?'text-vvz-green' : 'text-gray-800'}`}>{w.uitteam}</span>
                     <div className="self-center flex items-center">
                       {locatieLabel ? (
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isZaal ? 'bg-gray-100 text-gray-500' : 'bg-emerald-50 text-emerald-600'}`}>

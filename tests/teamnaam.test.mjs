@@ -1,6 +1,23 @@
-import test from 'node:test'
+import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
-import { formatTeamnaam, teamVolgnummer } from '../src/services/wedstrijdenHelpers.js'
+import { createServer } from 'vite'
+
+let server
+let formatTeamnaam
+let teamVolgnummer
+
+before(async () => {
+  server = await createServer({
+    root: new URL('..', import.meta.url).pathname,
+    logLevel: 'silent',
+    server: { middlewareMode: true, hmr: false, ws: false },
+    appType: 'custom',
+  })
+  const m = await server.ssrLoadModule('/src/services/wedstrijdenHelpers.js')
+  formatTeamnaam = m.formatTeamnaam
+  teamVolgnummer = m.teamVolgnummer
+})
+after(async () => { await server.close() })
 
 test('jeugdteams worden JO', () => {
   assert.equal(formatTeamnaam("VVZ '49 O13-1", 'man'), 'JO13-1')

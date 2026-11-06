@@ -1,3 +1,43 @@
+const CLUB_CODE = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
+
+// Herkent een eigen team op naam, ook samenwerkingsteams zoals "ST SO Soest/VVZ'49 JO14-6"
+export function isEigenNaam(naam) {
+  return /vvz\s*['’]?\s*49/i.test(naam || '')
+}
+
+/**
+ * Welke kant van de wedstrijd is van ons? 'thuis', 'uit' of null.
+ * Volgorde: (1) veld `teamnaam`, (2) club-relatiecode (thuis wint), (3) VVZ'49 in de naam (thuis wint).
+ */
+export function eigenKant(w, clubCode = CLUB_CODE) {
+  if (!w) return null
+  if (w.teamnaam) {
+    if (w.teamnaam === w.thuisteam) return 'thuis'
+    if (w.teamnaam === w.uitteam) return 'uit'
+  }
+  if (clubCode) {
+    if (w.thuisteamclubrelatiecode === clubCode) return 'thuis'
+    if (w.uitteamclubrelatiecode === clubCode) return 'uit'
+  }
+  if (isEigenNaam(w.thuisteam)) return 'thuis'
+  if (isEigenNaam(w.uitteam)) return 'uit'
+  return null
+}
+
+export function eigenTeamnaam(w, clubCode) {
+  const kant = eigenKant(w, clubCode)
+  if (kant === 'thuis') return w.thuisteam
+  if (kant === 'uit') return w.uitteam
+  return null
+}
+
+// Teamid van de eigen kant; negeert -1/leeg (team bestaat niet in SportLink)
+export function eigenTeamid(w, clubCode) {
+  const kant = eigenKant(w, clubCode)
+  const id = kant === 'thuis' ? w.thuisteamid : kant === 'uit' ? w.uitteamid : null
+  return id && String(id) !== '-1' ? id : null
+}
+
 // wedstrijddatum is ISO 8601: "2026-03-29T14:00:00+0200"
 export function parseWedstrijdDatum(wedstrijddatum) {
   return new Date(wedstrijddatum)
@@ -70,8 +110,8 @@ export function groepeerPerDag(wedstrijden) {
       const tijdB = b.aanvangstijd || '99:99'
       if (tijdA !== tijdB) return tijdA.localeCompare(tijdB)
       // 2. Teamcategorie: gebruik VVZ-team (thuis of uit)
-      const vvzA = a.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE ? a.thuisteam : a.uitteam
-      const vvzB = b.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE ? b.thuisteam : b.uitteam
+      const vvzA = eigenTeamnaam(a) ?? a.uitteam
+      const vvzB = eigenTeamnaam(b) ?? b.uitteam
       return teamSorteerGetal(vvzA) - teamSorteerGetal(vvzB)
     })
   }
@@ -149,13 +189,8 @@ export function buildTeamcodeLookup(teams) {
  * Bij twee VVZ-teams: thuisteam wint.
  */
 export function getVvzTeamcode(wedstrijd, teamcodeLookup) {
-  const CLUB = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
-  const isThuis = wedstrijd.thuisteamclubrelatiecode === CLUB
-  const isUit = wedstrijd.uitteamclubrelatiecode === CLUB
-
-  if (isThuis) return teamcodeLookup.get(wedstrijd.thuisteam) ?? null
-  if (isUit) return teamcodeLookup.get(wedstrijd.uitteam) ?? null
-  return null
+  const naam = eigenTeamnaam(wedstrijd)
+  return naam ? (teamcodeLookup.get(naam) ?? null) : null
 }
 
 /**
@@ -197,8 +232,8 @@ export function getAfgelastingenNiveau(afgelastingen, programma) {
   if (!afgelastingen || afgelastingen.length === 0) return 'groen'
 
   const afgelastCodes = new Set(afgelastingen.map(a => a.wedstrijdcode))
-  const thuiswedstrijden = programma.filter(w => w.thuisteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE)
-  const uitwedstrijden = programma.filter(w => w.uitteamclubrelatiecode === import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE)
+  const thuiswedstrijden = programma.filter(w => eigenKant(w) === 'thuis')
+  const uitwedstrijden = programma.filter(w => eigenKant(w) === 'uit')
 
   const allesThuisAfgelast = thuiswedstrijden.length > 0 && thuiswedstrijden.every(w => afgelastCodes.has(w.wedstrijdcode))
   const allesUitAfgelast = uitwedstrijden.length > 0 && uitwedstrijden.every(w => afgelastCodes.has(w.wedstrijdcode))
@@ -256,4 +291,47 @@ export function teamVolgnummer(naamOfTeam) {
   const naam = formatTeamnaam(naamOfTeam)
   const m = naam.match(/(\d+)\s*$/)
   return m ? parseInt(m[1], 10) : 0
+}
+
+/**
+ * Bepaal de categorie van een team: 'veteranen', 'junioren', 'pupillen', 'zaal' of 'senioren'.
+ * SportLink levert leeftijdscategorie als "Onder N" (bv. "Onder 13"); O23 blijft senioren.
+ * Volgorde: veteranen, "Onder N", terugval op teamnaam, zaal (geen zaterdag/zondag), senioren.
+ */
+export function getTeamCategorie(team) {
+  const naam = (team?.teamnaam || '').toLowerCase()
+  const cat = (team?.leeftijdscategorie || '').toLowerCase()
+
+  if (/veteran|vet\.|35\+|45\+|30\+/.test(naam) || cat.includes('veteran')) return 'veteranen'
+
+  const isO23 = naam.includes('o23')
+  const jeugd = (leeftijd) => (leeftijd <= 12 ? 'pupillen' : 'junioren')
+
+  const onderMatch = cat.match(/onder\s*(\d+)/)
+  if (onderMatch && parseInt(onderMatch[1], 10) < 23) return jeugd(parseInt(onderMatch[1], 10))
+  if (cat.includes('pupil')) return 'pupillen'
+  if (cat.includes('junior')) return 'junioren'
+
+  if (!onderMatch && !isO23) {
+    const joMatch = naam.match(/[jm]?o\s*(\d+)/)
+    if (joMatch) return jeugd(parseInt(joMatch[1], 10))
+  }
+
+  const isRegulier = ['Zondag', 'Zaterdag'].includes(team?.speeldag || '')
+  if (!isO23 && !isRegulier) return 'zaal'
+  return 'senioren'
+}
+
+/**
+ * Kies de poulecode om te tonen voor een team. Heeft de gekozen poule een lege stand
+ * (zonder fout), val dan terug op de eerste andere poule met rijen. Geeft anders de
+ * gekozen poulecode terug. standen[poulecode] = { data, error }.
+ */
+export function kiesPouleMetStand(poules, gekozenCode, standen) {
+  const gekozen = standen[gekozenCode]
+  if (!gekozen || gekozen.error || (gekozen.data || []).length > 0) return gekozenCode
+  const alternatief = poules.find(p =>
+    String(p.poulecode) !== String(gekozenCode) && (standen[p.poulecode]?.data || []).length > 0
+  )
+  return alternatief ? alternatief.poulecode : gekozenCode
 }

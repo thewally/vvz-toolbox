@@ -3,12 +3,11 @@ import { useSearchParams } from 'react-router-dom'
 import { fetchPublicNewsItems } from '../services/news'
 import { fetchActivities } from '../services/activities'
 import { getProgramma, getUitslagen, getTeams, getPoulestand, getTeamProgramma, getAfgelastingen } from '../services/wedstrijden'
-import { kiesPouleViaWedstrijd } from '../services/wedstrijdenHelpers'
+import { kiesPouleViaWedstrijd, eigenKant, eigenTeamnaam } from '../services/wedstrijdenHelpers'
 import { fetchTvInstellingen, DEFAULT_INSTELLINGEN } from '../services/tvInstellingen'
 import { fetchKnvbNieuws } from '../services/knvbNieuws'
 import { getSponsors } from '../services/sponsors'
 
-const CLUB = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 const ITEMS_PER_PAGE = 10
 const PROGRAMMA_PER_PAGE = 16
 const DUTCH_DAYS_SHORT = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za']
@@ -28,21 +27,21 @@ function isWeekendDag() {
 }
 
 function isVvzWedstrijd(w) {
-  return (w.thuisteamclubrelatiecode === CLUB || w.uitteamclubrelatiecode === CLUB)
+  return eigenKant(w) !== null
     && !!w.thuisteam && !!w.uitteam
     && w.uitteam !== 'N.N.B.' && w.thuisteam !== 'N.N.B.'
 }
 
 function getVvzNaam(w) {
-  return w.thuisteamclubrelatiecode === CLUB ? w.thuisteam : w.uitteam
+  return eigenKant(w) === 'uit' ? w.uitteam : w.thuisteam
 }
 
 function getTegenstander(w) {
-  return w.thuisteamclubrelatiecode === CLUB ? w.uitteam : w.thuisteam
+  return eigenKant(w) === 'uit' ? w.thuisteam : w.uitteam
 }
 
 function isThuiswedstrijd(w) {
-  return w.thuisteamclubrelatiecode === CLUB
+  return eigenKant(w) === 'thuis'
 }
 
 function getSpeeltype(w) {
@@ -567,8 +566,8 @@ export default function TvSchermPage() {
 
   const laadStanden = useCallback(async (vandaagProgramma, teams) => {
     const vvzTeamsVandaag = vandaagProgramma
-      .filter(w => w.thuisteamclubrelatiecode === CLUB || w.uitteamclubrelatiecode === CLUB)
-      .map(w => w.thuisteamclubrelatiecode === CLUB ? w.thuisteam : w.uitteam)
+      .filter(w => eigenKant(w) !== null)
+      .map(w => eigenTeamnaam(w))
 
     const uniekTeams = [...new Set(vvzTeamsVandaag)]
     const perTeamcode = new Map()
@@ -640,7 +639,7 @@ export default function TvSchermPage() {
     setNieuws(nieuwsRes.data ?? [])
     setKnvbNieuws(knvbRes)
     const afgelastData = (afgelastRes.data ?? []).filter(w =>
-      (w.thuisteamclubrelatiecode === CLUB || w.uitteamclubrelatiecode === CLUB) && w.thuisteam && w.uitteam
+      eigenKant(w) !== null && w.thuisteam && w.uitteam
     )
     setAfgelastingen(afgelastData)
     // fetchActivities levert al gesorteerd op datum en begintijd; bij een fout is data null (geen dia)
