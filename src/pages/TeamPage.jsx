@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getTeamProgramma, getTeamUitslagen, getTeams, getPoulestand, getTeamGegevens, getAfgelastingen } from '../services/wedstrijden'
-import { formatDagLabel, datumSleutel, parseWedstrijdDatum, kiesPouleViaWedstrijd } from '../services/wedstrijdenHelpers'
+import { formatDagLabel, datumSleutel, parseWedstrijdDatum, kiesPouleViaWedstrijd, eigenKant, eigenTeamnaam } from '../services/wedstrijdenHelpers'
 import { fetchMatchReportsByTeam } from '../services/matchReports'
 import AgendaAbonneerKnop from '../components/AgendaAbonneerKnop'
 
@@ -13,8 +13,6 @@ function stripHtmlPreview(html, maxLen = 120) {
   if (text.length <= maxLen) return text
   return text.slice(0, maxLen).replace(/\s+\S*$/, '') + '…'
 }
-
-const CLUB_RELATIECODE = import.meta.env.VITE_SPORTLINK_CLUB_RELATIECODE
 
 const SPEELDAG_REGULIER = ['Zondag', 'Zaterdag']
 
@@ -69,7 +67,7 @@ const CAT_LABELS = {
   zaalvoetbal: 'Zaalvoetbal',
 }
 function isThuis(w) {
-  return w.thuisteamclubrelatiecode === CLUB_RELATIECODE
+  return eigenKant(w) === 'thuis'
 }
 
 function ThuisUitBadge({ wedstrijd }) {
@@ -342,9 +340,7 @@ export default function TeamPage() {
 
     // Filter afgelastingen op dit team via teamcode of teamnaam
     const progCodes = new Set(progData.map(w => w.wedstrijdcode).filter(Boolean))
-    const alleAfgelast = (afgelastRes.data ?? []).filter(w =>
-      w.thuisteamclubrelatiecode === CLUB_RELATIECODE || w.uitteamclubrelatiecode === CLUB_RELATIECODE
-    )
+    const alleAfgelast = (afgelastRes.data ?? []).filter(w => eigenKant(w) !== null)
     // Haal wedstrijden op die voor dit team zijn maar al verwijderd zijn uit het programma
     const teamNamen = new Set(progData.flatMap(w => [w.thuisteam, w.uitteam]).filter(Boolean))
     const teamAfgelast = alleAfgelast.filter(w =>
@@ -404,10 +400,8 @@ export default function TeamPage() {
   )
 
   // Teamnaam bepalen
-  const eigenWedstrijd = [...programma, ...uitslagen].find(w => isThuis(w))
   const teamnaam = teamInfo?.teamnaam
-    || eigenWedstrijd?.thuisteam
-    || [...programma, ...uitslagen].find(w => !isThuis(w))?.uitteam
+    || [...programma, ...uitslagen].map(w => eigenTeamnaam(w)).find(Boolean)
     || `Team ${teamcode}`
 
   // VELD/FUTSAL badge eenmalig bepalen op basis van eerste beschikbare wedstrijd
