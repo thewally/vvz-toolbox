@@ -69,6 +69,26 @@ VITE_SUPABASE_URL=https://jouw-project.supabase.co
 VITE_SUPABASE_ANON_KEY=jouw-anon-key
 ```
 
+#### Inloggen via Auth0 (optioneel, achter een vlag)
+
+Standaard (`VITE_AUTH_PROVIDER` leeg of `supabase`) gebruikt de site de Supabase-login en is er geen Auth0-code actief. Met `VITE_AUTH_PROVIDER=auth0` loggen gebruikers in via Auth0 Universal Login. Alle variabelen zijn publiek (een SPA heeft geen client secret).
+
+| Variabele | Betekenis |
+|---|---|
+| `VITE_AUTH_PROVIDER` | `auth0` of leeg/`supabase` (standaard) |
+| `VITE_AUTH0_DOMAIN` | Auth0-tenantdomein, bijv. `vvz.eu.auth0.com` (verplicht in Auth0-modus) |
+| `VITE_AUTH0_CLIENT_ID` | Client-id van de Auth0 SPA-applicatie (verplicht in Auth0-modus) |
+| `VITE_AUTH0_AUDIENCE` | API-identifier van de Quarkus-API (`OIDC_AUDIENCE`); nodig voor `getAccessToken()` en de rolclaim in het access token |
+| `VITE_AUTH0_CONNECTION` | Database-connectie voor wachtwoord vergeten (standaard `Username-Password-Authentication`) |
+
+Auth0 SPA-applicatie: Allowed Callback URLs `https://thewally.github.io/vvz-toolbox/` en `http://localhost:5173/vvz-toolbox/`; Allowed Logout URLs en Allowed Web Origins idem (zonder pad); Refresh Token Rotation aan.
+
+Rollen komen uit de claim `https://vvz49.nl/roles` (lijst met slugs zoals `paginas`, `nieuws`, `admin`). De site leest eerst het access token (voor de audience) en valt terug op dezelfde claim in het ID-token. De Post-Login Action moet de claim dus in het access token of het ID-token zetten, met exact de slugs uit de toolbox.
+
+Voor latere kaarten (#60, #62): `getAccessToken()` uit `src/services/auth0Token.js` geeft een accesstoken voor `VITE_AUTH0_AUDIENCE` (of `null` als niet ingelogd) voor `Authorization: Bearer`.
+
+Beperkingen zolang beheerschrijfacties nog via supabase-js lopen: in Auth0-modus is er geen Supabase-sessie, dus die schrijfacties falen door RLS. Verslagen krijgen in Auth0-modus geen `author_id`. Zet de vlag pas om als #55, #42 en #60/#62 klaar zijn. Terugdraaien: vlag leegmaken en opnieuw deployen. De GitHub Actions-variabelen voor de build staan in `.github/workflows/deploy.yml` (voor ops/Arjen om aan te maken).
+
 ---
 
 ## Ontwikkeling
