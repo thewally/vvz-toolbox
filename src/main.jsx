@@ -1,10 +1,13 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter, useNavigate } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './context/AuthContext'
+import { Auth0AuthProvider } from './context/Auth0AuthContext'
 import ErrorBoundary from './components/ErrorBoundary'
+import AuthFoutMelding from './components/AuthFoutMelding'
 import { supabaseConfigError } from './lib/supabaseClient'
+import { isAuth0Mode, auth0ConfigError } from './lib/auth0Config'
 import './index.css'
 
 // Een ontbrekende build-configuratie wordt via de error boundary als duidelijke melding getoond.
@@ -14,16 +17,32 @@ function Configuratiefout({ message }) {
   throw error
 }
 
+function Auth0Wrapper() {
+  const navigate = useNavigate()
+  return (
+    <Auth0AuthProvider navigate={navigate}>
+      <AuthFoutMelding />
+      <App />
+    </Auth0AuthProvider>
+  )
+}
+
+const configError = supabaseConfigError || (isAuth0Mode ? auth0ConfigError : null)
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
-      {supabaseConfigError ? (
-        <Configuratiefout message={supabaseConfigError} />
+      {configError ? (
+        <Configuratiefout message={configError} />
       ) : (
         <BrowserRouter basename="/vvz-toolbox">
-          <AuthProvider>
-            <App />
-          </AuthProvider>
+          {isAuth0Mode ? (
+            <Auth0Wrapper />
+          ) : (
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          )}
         </BrowserRouter>
       )}
     </ErrorBoundary>

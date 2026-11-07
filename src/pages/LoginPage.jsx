@@ -1,8 +1,50 @@
 import { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { isAuth0Mode } from '../lib/auth0Config'
+import { safeReturnTo } from '../lib/auth0Helpers'
+
+// Auth0-modus: Universal Login via redirect, geen eigen formulier.
+function Auth0LoginPage() {
+  const { user, loading, signIn, authError } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const from = safeReturnTo(location.state?.from?.pathname)
+
+  useEffect(() => {
+    if (loading) return
+    if (user) {
+      navigate(from, { replace: true })
+    } else if (!authError) {
+      signIn(from)
+    }
+  }, [loading, user, authError]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <div className="max-w-sm mx-auto mt-20 p-6 bg-white rounded-xl shadow-lg text-center">
+      <h2 className="text-xl font-bold text-gray-800 mb-4">Inloggen</h2>
+      {authError ? (
+        <p className="text-sm text-red-700 mb-4">{authError}</p>
+      ) : (
+        <p className="text-sm text-gray-600 mb-4">Je wordt doorgestuurd naar de inlogpagina...</p>
+      )}
+      <button
+        type="button"
+        onClick={() => signIn(from)}
+        className="w-full bg-vvz-green text-white py-2 rounded-lg font-medium hover:bg-vvz-green-dark transition-colors"
+      >
+        Inloggen
+      </button>
+    </div>
+  )
+}
 
 export default function LoginPage() {
+  return isAuth0Mode ? <Auth0LoginPage /> : <SupabaseLoginPage />
+}
+
+function SupabaseLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)

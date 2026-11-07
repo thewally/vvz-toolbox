@@ -38,6 +38,12 @@ jobs:
           VITE_SPORTLINK_PROXY_URL: ${{ secrets.VITE_SPORTLINK_PROXY_URL }}
           VITE_SPORTLINK_CLUB_RELATIECODE: ${{ secrets.VITE_SPORTLINK_CLUB_RELATIECODE }}
           VITE_TURNSTILE_SITE_KEY: ${{ secrets.VITE_TURNSTILE_SITE_KEY }}
+          # Auth0-login (optioneel, publieke GitHub Actions-variabelen). Leeg of 'supabase' = Supabase-login.
+          VITE_AUTH_PROVIDER: ${{ vars.AUTH_PROVIDER }}
+          VITE_AUTH0_DOMAIN: ${{ vars.AUTH0_DOMAIN }}
+          VITE_AUTH0_CLIENT_ID: ${{ vars.AUTH0_CLIENT_ID }}
+          VITE_AUTH0_AUDIENCE: ${{ vars.AUTH0_AUDIENCE }}
+          VITE_AUTH0_CONNECTION: ${{ vars.AUTH0_CONNECTION }}
           # Optioneel: GitHub Actions-variabele (geen secret). Leeg of lager dan 100 = 100 dagen.
           VITE_ACTIVITEITEN_DAGEN_VOORUIT: ${{ vars.ACTIVITEITEN_DAGEN_VOORUIT }}
 
