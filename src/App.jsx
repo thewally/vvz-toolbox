@@ -89,7 +89,7 @@ export default function App() {
           <Route path="club">
             <Route path="ereleden" element={<ProtectedRoute requiredRole="ereleden"><EreledenBeheerPage /></ProtectedRoute>} />
           </Route>
-          <Route path="gebruikers" element={<ProtectedRoute requiredRole="gebruikers"><GebruikersBeheerPage /></ProtectedRoute>} />
+          <Route path="gebruikers" element={<ProtectedRoute {...(isAuth0Mode ? { strictAdmin: true } : { requiredRole: 'gebruikers' })}><GebruikersBeheerPage /></ProtectedRoute>} />
           <Route path="menu" element={<ProtectedRoute requiredRole="paginas"><MenuBeheerPage /></ProtectedRoute>} />
           <Route path="nieuws" element={<ProtectedRoute requiredRole="nieuws"><NieuwsBeheerPage /></ProtectedRoute>} />
           <Route path="nieuws/nieuw" element={<ProtectedRoute requiredRole="nieuws"><NieuwsEditPage /></ProtectedRoute>} />

@@ -1,8 +1,9 @@
 import { Navigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-export default function ProtectedRoute({ children, adminOnly = false, requiredRole }) {
-  const { user, profile, loading, pendingPasswordRecovery, hasRole, hasAnyRole } = useAuth()
+// strictAdmin: alleen de rol admin (niet "iedereen met een rol" zoals adminOnly).
+export default function ProtectedRoute({ children, adminOnly = false, strictAdmin = false, requiredRole }) {
+  const { user, profile, loading, pendingPasswordRecovery, isAdmin, hasRole, hasAnyRole } = useAuth()
   const location = useLocation()
 
   if (loading) {
@@ -28,7 +29,7 @@ export default function ProtectedRoute({ children, adminOnly = false, requiredRo
   }
 
   // Specifieke rol vereist: check via hasRole (beheerder passeert automatisch)
-  if (requiredRole && !hasRole(requiredRole)) {
+  if ((requiredRole && !hasRole(requiredRole)) || (strictAdmin && !isAdmin)) {
     return (
       <div className="max-w-md mx-auto p-4 pt-16 text-center">
         <h1 className="text-xl font-bold text-gray-800 mb-2">Geen toegang</h1>

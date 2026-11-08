@@ -155,27 +155,3 @@ export async function setUserRole(userId, role) {
     return { data: null, error: { message: err.message } }
   }
 }
-
-/**
- * Verwijder het account van de ingelogde gebruiker via de Supabase Edge Function.
- * @returns {{ data: { success: boolean } | null, error: Error | null }}
- */
-export async function deleteAccount() {
-  const { data: sessionData } = await supabase.auth.getSession()
-  const accessToken = sessionData?.session?.access_token
-  if (!accessToken) {
-    return { data: null, error: new Error('Geen actieve sessie gevonden.') }
-  }
-
-  try {
-    const { data, error } = await supabase.functions.invoke('delete-account', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-    if (error) return { data: null, error }
-    return { data, error: null }
-  } catch (err) {
-    return { data: null, error: err }
-  }
-}

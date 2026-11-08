@@ -87,6 +87,16 @@ Rollen komen uit de claim `https://vvz49.nl/roles` (lijst met slugs zoals `pagin
 
 Voor latere kaarten (#60, #62): `getAccessToken()` uit `src/services/auth0Token.js` geeft een accesstoken voor `VITE_AUTH0_AUDIENCE` (of `null` als niet ingelogd) voor `Authorization: Bearer`.
 
+#### Gebruikersbeheer (`/beheer/gebruikers`)
+
+De pagina volgt de vlag. In Auth0-modus gebruikt zij de Quarkus-API `/api/gebruikers` (lijst, uitnodigen, rollen wijzigen, uitnodiging opnieuw sturen, verwijderen) met het Bearer-token uit `getAccessToken()`; alleen de rol `admin` heeft toegang en de pagina raakt Supabase niet. Zonder vlag (of `supabase`) blijft de pagina met edge functions en `user_roles` werken en is er geen extra variabele nodig.
+
+| Variabele | Betekenis |
+|---|---|
+| `VITE_API_BASE_URL` | Optioneel. Basis-url van de Quarkus-API. Standaard afgeleid uit `VITE_SPORTLINK_PROXY_URL` door `/api/sportlink` te verwijderen (zelfde Render-service) |
+
+De pagina toont de rollen van de backend-whitelist (`src/lib/gebruikersHelpers.js`) als schakelaars; `admin` is een eigen schakelaar en `activiteiten` (geen beheerpagina) wordt niet getoond maar blijft behouden bij opslaan. De rol `gebruikers` bestaat alleen in Supabase-modus. Tests: `node --test tests/gebruikersApi.test.mjs`.
+
 Beperkingen zolang beheerschrijfacties nog via supabase-js lopen: in Auth0-modus is er geen Supabase-sessie, dus die schrijfacties falen door RLS. Verslagen krijgen in Auth0-modus geen `author_id`. Zet de vlag pas om als #55, #42 en #60/#62 klaar zijn. Terugdraaien: vlag leegmaken en opnieuw deployen. De GitHub Actions-variabelen voor de build staan in `.github/workflows/deploy.yml` (voor ops/Arjen om aan te maken).
 
 ---
