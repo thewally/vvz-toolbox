@@ -1,4 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
+import { isAuth0Mode, auth0Config } from '../lib/auth0Config'
+import { requestAuth0PasswordReset } from '../lib/auth0Helpers'
 
 /**
  * Stuur een wachtwoord-reset e-mail.
@@ -6,6 +8,7 @@ import { supabase } from '../lib/supabaseClient'
  * @returns {{ data, error }}
  */
 export async function sendPasswordReset(email) {
+  if (isAuth0Mode) return requestAuth0PasswordReset(email, auth0Config)
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: 'https://thewally.github.io/vvz-toolbox/auth/callback?type=recovery&next=/wachtwoord-resetten',
   })

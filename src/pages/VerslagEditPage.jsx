@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { fetchMatchReportById, createMatchReport, updateMatchReport } from '../services/matchReports'
 import { deletePageImage } from '../services/pages'
+import { uuidOrNull } from '../lib/auth0Helpers'
 import { getTeams } from '../services/wedstrijden'
 import { useAuth } from '../context/AuthContext'
 import TipTapEditor from '../components/TipTapEditor'
@@ -144,7 +145,7 @@ export default function VerslagEditPage() {
     // author_id wordt alleen meegestuurd bij aanmaken (niet overschrijven bij edit)
     let result
     if (isNew) {
-      result = await createMatchReport({ ...payload, author_id: user?.id ?? null })
+      result = await createMatchReport({ ...payload, author_id: uuidOrNull(user?.id) })
     } else {
       result = await updateMatchReport(id, payload)
     }

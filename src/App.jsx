@@ -1,5 +1,6 @@
 import { Navigate, Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
+import { isAuth0Mode } from './lib/auth0Config'
 import TrainingschemaLayout from './components/TrainingschemaLayout'
 import HomePage from './pages/HomePage'
 import SchedulePage from './pages/SchedulePage'
@@ -159,10 +160,10 @@ export default function App() {
         <Route path="plattegrond" element={<PlattegrondPage />} />
         <Route path="huistijl" element={<HuistijlPage />} />
         <Route path="login" element={<LoginPage />} />
-        <Route path="email-bevestigd" element={<EmailBevestigdPage />} />
+        <Route path="email-bevestigd" element={isAuth0Mode ? <Navigate to="/login" replace /> : <EmailBevestigdPage />} />
         <Route path="wachtwoord-vergeten" element={<WachtwoordVergetenPage />} />
-        <Route path="wachtwoord-resetten" element={<WachtwoordResettenPage />} />
-        <Route path="wachtwoord-instellen" element={<WachtwoordInstellenPage />} />
+        <Route path="wachtwoord-resetten" element={isAuth0Mode ? <Navigate to="/login" replace /> : <WachtwoordResettenPage />} />
+        <Route path="wachtwoord-instellen" element={isAuth0Mode ? <Navigate to="/login" replace /> : <WachtwoordInstellenPage />} />
       </Route>
     </Routes>
   )
