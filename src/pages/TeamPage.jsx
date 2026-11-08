@@ -4,6 +4,7 @@ import { getTeamProgramma, getTeamUitslagen, getTeams, getPoulestand, getTeamGeg
 import { formatDagLabel, datumSleutel, parseWedstrijdDatum, kiesPouleViaWedstrijd, eigenKant, eigenTeamnaam, formatTeamnaam } from '../services/wedstrijdenHelpers'
 import { fetchMatchReportsByTeam } from '../services/matchReports'
 import AgendaAbonneerKnop from '../components/AgendaAbonneerKnop'
+import { getApiBase, imageProxyUrl } from '../lib/apiBase'
 
 const VERSLAGEN_PREVIEW_LIMIT = 5
 
@@ -99,8 +100,7 @@ export default function TeamPage() {
   async function laadAfbeelding(url) {
     if (!url) return null
     // Laad via proxy zodat Sportlink CORS geen blokkade vormt
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-    const proxyUrl = `${supabaseUrl}/functions/v1/image-proxy?url=${encodeURIComponent(url)}`
+    const proxyUrl = imageProxyUrl(getApiBase(), url)
     return Promise.race([
       new Promise((resolve) => {
         const img = new Image()

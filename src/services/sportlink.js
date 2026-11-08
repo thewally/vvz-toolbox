@@ -18,13 +18,14 @@ function wait(ms) {
 
 // De proxy of data.sportlink.com is soms even niet bereikbaar — zelfde reden dat scripts/sync.py in het sportlink-teampagina
 // project met retries werkt. Eén blip mag niet meteen "Failed to fetch" tonen.
-export async function apiFetch(path, { retries = RETRIES, delayMs = RETRY_DELAY_MS, timeoutMs = TIMEOUT_MS } = {}) {
+// Optionele baseUrl: standaard de SportLink-proxy; knvbNieuws geeft de API-root mee.
+export async function apiFetch(path, { retries = RETRIES, delayMs = RETRY_DELAY_MS, timeoutMs = TIMEOUT_MS, baseUrl = PROXY_URL } = {}) {
   let lastError = null
   for (let attempt = 1; attempt <= retries; attempt++) {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), timeoutMs)
     try {
-      const res = await fetch(`${PROXY_URL}${path}`, { signal: controller.signal })
+      const res = await fetch(`${baseUrl}${path}`, { signal: controller.signal })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       return { data, error: null }

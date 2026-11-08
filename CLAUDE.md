@@ -117,7 +117,9 @@ supabase/
 
 De SportLink API-calls lopen via een proxy zodat de `client_id` niet zichtbaar is in de browser. De frontend gebruikt `VITE_SPORTLINK_PROXY_URL` als base URL: `https://<service>.onrender.com/api/sportlink` (Quarkus REST-laag, zie ontwikkelstraat#22) of de URL van de Cloudflare Worker (`cloudflare-worker/`, blijft bestaan; terugdraaien kan door het secret terug te zetten). De proxy voegt de `client_id` server-side toe.
 
-`apiFetch` in `src/services/sportlink.js` doet 4 pogingen met oplopende wachttijd (1 s, 2 s, 3 s), zodat een slapende Render-service niet meteen een fout geeft. Tests: `node --test tests/sportlink.test.mjs`.
+Voor `knvb-nieuws`, `image-proxy` en `team-ical` gebruikt de frontend de Quarkus-endpoints `/api/...` op dezelfde service (geen Supabase Edge Functions meer; die blijven in `supabase/functions/` staan tot kaart 6d). De base-url komt uit `src/lib/apiBase.js`: `VITE_API_URL` (GitHub Actions-variabele `API_URL`, root zonder `/api`) of, bij ontbreken, `VITE_SPORTLINK_PROXY_URL` zonder `/api/sportlink`. Bij een Cloudflare Worker als proxy is `VITE_API_URL` verplicht.
+
+`apiFetch` in `src/services/sportlink.js` (optionele `baseUrl`) doet 4 pogingen met oplopende wachttijd (1 s, 2 s, 3 s), zodat een slapende Render-service niet meteen een fout geeft. Tests: `node --test tests/sportlink.test.mjs`.
 
 Worker deployen:
 ```bash
