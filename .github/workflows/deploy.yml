@@ -36,6 +36,7 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SPORTLINK_PROXY_URL: ${{ secrets.VITE_SPORTLINK_PROXY_URL }}
+          VITE_API_URL: ${{ vars.API_URL }}
           VITE_SPORTLINK_CLUB_RELATIECODE: ${{ secrets.VITE_SPORTLINK_CLUB_RELATIECODE }}
           VITE_TURNSTILE_SITE_KEY: ${{ secrets.VITE_TURNSTILE_SITE_KEY }}
           # Optioneel: GitHub Actions-variabele (geen secret). Leeg of lager dan 100 = 100 dagen.

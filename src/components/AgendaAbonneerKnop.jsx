@@ -1,9 +1,9 @@
 import { useState } from 'react'
+import { getApiBase, teamIcalUrl, webcalUrl as naarWebcal } from '../lib/apiBase'
 
 export default function AgendaAbonneerKnop({ teamcode }) {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-  const httpsUrl = `${supabaseUrl}/functions/v1/team-ical?teamcode=${teamcode}`
-  const webcalUrl = httpsUrl.replace('https://', 'webcal://')
+  const httpsUrl = teamIcalUrl(getApiBase(), teamcode)
+  const webcalUrl = naarWebcal(httpsUrl)
 
   const [gekopieerd, setGekopieerd] = useState(false)
   const [toonInstructie, setToonInstructie] = useState(false)
