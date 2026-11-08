@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { isAuth0Mode } from '../lib/auth0Config'
 
 const TILES = [
   {
@@ -163,9 +164,12 @@ const TILES = [
 ]
 
 export default function BeheerDashboardPage() {
-  const { hasRole } = useAuth()
+  const { hasRole, isAdmin } = useAuth()
 
-  const visibleTiles = TILES.filter(tile => !tile.role || hasRole(tile.role))
+  // In Auth0-modus is gebruikersbeheer alleen voor beheerders (rol `gebruikers` bestaat daar niet).
+  const visibleTiles = TILES.filter(tile => (
+    tile.role === 'gebruikers' && isAuth0Mode ? isAdmin : (!tile.role || hasRole(tile.role))
+  ))
 
   return (
     <div className="max-w-5xl mx-auto p-4 pt-8">

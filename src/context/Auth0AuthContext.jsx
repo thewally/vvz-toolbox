@@ -60,6 +60,7 @@ function Inner({ children }) {
       refreshProfile: async () => {},
       pendingPasswordRecovery: false,
       userRoles,
+      isAdmin,
       hasRole: (slug) => isAdmin || userRoles.includes(slug),
       hasAnyRole: () => isAdmin || userRoles.length > 0,
     }

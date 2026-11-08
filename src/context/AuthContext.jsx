@@ -84,7 +84,7 @@ export function AuthProvider({ children }) {
   const hasAnyRole = () => isAdmin || userRoles.length > 0
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signOut, refreshProfile, pendingPasswordRecovery, userRoles, hasRole, hasAnyRole }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signOut, refreshProfile, pendingPasswordRecovery, userRoles, isAdmin, hasRole, hasAnyRole }}>
       {children}
     </AuthContext.Provider>
   )

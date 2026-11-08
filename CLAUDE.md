@@ -54,6 +54,8 @@ Two-level role system:
 
 DB functions: `user_has_role(slug)` (with admin bypass), `user_has_any_role()`, `get_user_roles_for_management()`.
 
+Gebruikersbeheer (`/beheer/gebruikers`) volgt `VITE_AUTH_PROVIDER`: in Auth0-modus `GebruikersBeheerAuth0` + `src/services/gebruikersApi.js` (Quarkus `/api/gebruikers`, alleen admin, pure logica in `src/lib/gebruikersHelpers.js`), anders `GebruikersBeheerSupabase` met onderstaande edge functions. Zie README.
+
 Edge Functions: `invite-user` (send invitation email), `set-user-role` (set/remove admin via app_metadata).
 
 ## Project Structure
