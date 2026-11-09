@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { getTeams } from '../services/wedstrijden'
-import TeamKaart from '../components/TeamKaart'
+import useTeamlijst from '../lib/useTeamlijst'
+import TeamGrid from '../components/TeamGrid'
+import { TeamsSkeleton } from '../components/TeamKaartSkeleton'
 import { teamVolgnummer } from '../services/wedstrijdenHelpers'
 
 const CAT_LABELS = {
@@ -55,38 +55,26 @@ function getSorteerSleutel(team) {
 
 const SPEELDAG_VOLGORDE = ['Zondag', 'Zaterdag']
 
+const isO23 = t => (t.teamnaam || '').toLowerCase().includes('o23')
+const isRegulier = t => SPEELDAG_VOLGORDE.includes(t.speeldag)
+
+function sorteerTeams(teams) {
+  return [...teams].sort((a, b) => {
+    const aO23 = isO23(a), bO23 = isO23(b)
+    if (aO23 !== bO23) return aO23 ? 1 : -1
+    return getSorteerSleutel(a) - getSorteerSleutel(b) || teamVolgnummer(a) - teamVolgnummer(b)
+  })
+}
+
 export default function WedstrijdenTeamsCatPage() {
   const { pathname } = useLocation()
   const categorie = pathname.split('/').at(-1)
-  const [teams, setTeams] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { teams, loading, error, opnieuw: loadTeams } = useTeamlijst()
+  const label = CAT_LABELS[categorie] ?? categorie
 
-  useEffect(() => {
-    loadTeams()
-  }, [categorie])
+  if (loading) return <TeamsSkeleton titel={label} />
 
-  async function loadTeams() {
-    setLoading(true)
-    setError(null)
-    const { data, error: err } = await getTeams()
-    if (err) {
-      setError(err.message)
-    } else {
-      setTeams(data ?? [])
-    }
-    setLoading(false)
-  }
-
-  if (loading) {
-    return (
-      <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-vvz-green" />
-      </div>
-    )
-  }
-
-  if (error) {
+  if (error && teams.length === 0) {
     return (
       <div className="max-w-3xl mx-auto p-4">
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-lg">
@@ -104,13 +92,10 @@ export default function WedstrijdenTeamsCatPage() {
   }
   const gefilterd = [...uniek.values()].filter(t => getCategorie(t) === categorie && !(t.teamnaam || '').toLowerCase().includes('champions league'))
 
-  const isO23 = t => (t.teamnaam || '').toLowerCase().includes('o23')
-  const isRegulier = t => SPEELDAG_VOLGORDE.includes(t.speeldag)
 
   // Groepeer per speeldag (alleen reguliere senioren; zaal heeft eigen pagina)
   const regulier = categorie === 'senioren' ? gefilterd.filter(t => isRegulier(t) && !isO23(t)) : gefilterd
   const o23Teams = categorie === 'senioren' ? gefilterd.filter(t => isO23(t)) : []
-  const zaalvoetbal = []
 
   const dagMap = new Map()
   for (const t of regulier) {
@@ -124,22 +109,17 @@ export default function WedstrijdenTeamsCatPage() {
     ...[...dagMap.entries()].filter(([d]) => !SPEELDAG_VOLGORDE.includes(d)),
   ]
 
-  const label = CAT_LABELS[categorie] ?? categorie
-
-  function TeamGrid({ teams }) {
-    const gesorteerd = [...teams].sort((a, b) => {
-      const aO23 = isO23(a), bO23 = isO23(b)
-      if (aO23 !== bO23) return aO23 ? 1 : -1
-      return getSorteerSleutel(a) - getSorteerSleutel(b) || teamVolgnummer(a) - teamVolgnummer(b)
-    })
-    return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {gesorteerd.map(team => (
-          <TeamKaart key={team.teamcode} team={team} />
-        ))}
-      </div>
-    )
-  }
+  // Per speeldag-blok de gesorteerde teams; de eerste kaarten van de pagina krijgen foto-prioriteit.
+  const blokken = speeldagen.map(([speeldag, teamLijst]) => [
+    speeldag,
+    sorteerTeams([...teamLijst, ...(speeldag === speeldagen.at(-1)?.[0] ? o23Teams : [])]),
+  ])
+  let teller = 0
+  const blokkenMetStart = blokken.map(([speeldag, lijst]) => {
+    const start = teller
+    teller += lijst.length
+    return [speeldag, lijst, start]
+  })
 
   return (
     <div className="max-w-3xl mx-auto p-4 pt-6 space-y-8">
@@ -147,18 +127,12 @@ export default function WedstrijdenTeamsCatPage() {
       {gefilterd.length === 0 && (
         <p className="text-gray-500 text-center py-8">Geen teams gevonden.</p>
       )}
-      {speeldagen.map(([speeldag, teamLijst]) => (
+      {blokkenMetStart.map(([speeldag, lijst, start]) => (
         <div key={speeldag}>
           <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{speeldag}</h3>
-          <TeamGrid teams={[...teamLijst, ...(speeldag === speeldagen.at(-1)?.[0] ? o23Teams : [])]} />
+          <TeamGrid teams={lijst} eersteIndex={start} />
         </div>
       ))}
-      {zaalvoetbal.length > 0 && (
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Zaalvoetbal</h3>
-          <TeamGrid teams={zaalvoetbal} />
-        </div>
-      )}
     </div>
   )
 }

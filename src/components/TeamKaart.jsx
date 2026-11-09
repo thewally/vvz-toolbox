@@ -12,8 +12,10 @@ const POPPETJES = [
 
 // Gedeelde teamkaart voor alle teamoverzichten. De groeps-placeholder staat er altijd onder,
 // de miniatuur van de teamfoto komt er (lazy) overheen. Bij een fout (404, netwerk) verdwijnt de img.
-export default function TeamKaart({ team }) {
+// prioriteit: 'hoog' (eager + fetchpriority high), 'normaal' (eager) of 'laag' (lazy, standaard).
+export default function TeamKaart({ team, prioriteit = 'laag' }) {
   const [fotoFout, setFotoFout] = useState(false)
+  const [fotoGeladen, setFotoGeladen] = useState(false)
 
   return (
     <Link
@@ -39,10 +41,13 @@ export default function TeamKaart({ team }) {
           <img
             src={teamFotoUrl(team.teamcode)}
             alt=""
-            loading="lazy"
+            loading={prioriteit === 'laag' ? 'lazy' : 'eager'}
+            fetchpriority={prioriteit === 'hoog' ? 'high' : undefined}
             decoding="async"
+            ref={(el) => { if (el && el.complete && el.naturalWidth > 0) setFotoGeladen(true) }}
+            onLoad={() => setFotoGeladen(true)}
             onError={() => setFotoFout(true)}
-            className="absolute inset-0 w-full h-full object-cover"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${fotoGeladen ? 'opacity-100' : 'opacity-0'}`}
           />
         )}
       </div>

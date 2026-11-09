@@ -17,7 +17,7 @@ before(async () => {
   const { MemoryRouter } = await import('react-router-dom')
   const kaart = await server.ssrLoadModule('/src/components/TeamKaart.jsx')
   const h = (React.default || React).createElement
-  render = (team) => renderToStaticMarkup(h(MemoryRouter, null, h(kaart.default, { team })))
+  render = (team, prioriteit) => renderToStaticMarkup(h(MemoryRouter, null, h(kaart.default, { team, prioriteit })))
 })
 after(async () => { await server.close() })
 
@@ -52,4 +52,43 @@ test('kaart: zaalteam krijgt nette naam VVZ 1', () => {
 test('kaart: onbekende naam valt terug op ruwe naam, nooit leeg', () => {
   const html = render({ teamcode: 1, teamnaam: 'Raar team' })
   assert.match(html, />Raar team</)
+})
+
+test('kaart: prioriteit hoog = eager + fetchpriority high, normaal = eager, laag = lazy; foto begint onzichtbaar (fade-in)', () => {
+  const team = { teamcode: 275713, teamnaam: "VVZ '49 O13-1" }
+  const hoog = render(team, 'hoog')
+  assert.match(hoog, /loading="eager"/)
+  assert.match(hoog, /fetchpriority="high"/)
+  const normaal = render(team, 'normaal')
+  assert.match(normaal, /loading="eager"/)
+  assert.doesNotMatch(normaal, /fetchpriority/)
+  const laag = render(team, 'laag')
+  assert.match(laag, /loading="lazy"/)
+  assert.match(laag, /opacity-0/)
+  assert.match(laag, /aspect-\[4\/3\]/)
+})
+
+test('raster: eerste 3 hoog, tot 6 eager, rest lazy', async () => {
+  const React = await import('react')
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  const { MemoryRouter } = await import('react-router-dom')
+  const grid = await server.ssrLoadModule('/src/components/TeamGrid.jsx')
+  const h = (React.default || React).createElement
+  const teams = Array.from({ length: 8 }, (_, i) => ({ teamcode: 100 + i, teamnaam: `Team ${i}` }))
+  const html = renderToStaticMarkup(h(MemoryRouter, null, h(grid.default, { teams })))
+  const imgs = html.match(/<img[^>]*>/g)
+  assert.equal(imgs.length, 8)
+  assert.equal(imgs.filter((i) => /fetchpriority="high"/.test(i)).length, 3)
+  assert.equal(imgs.filter((i) => /loading="eager"/.test(i)).length, 6)
+  assert.equal(imgs.filter((i) => /loading="lazy"/.test(i)).length, 2)
+})
+
+test('skeleton: 4:3-vlak en naamregel', async () => {
+  const React = await import('react')
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  const sk = await server.ssrLoadModule('/src/components/TeamKaartSkeleton.jsx')
+  const h = (React.default || React).createElement
+  const html = renderToStaticMarkup(h(sk.TeamsSkeleton, { titel: 'Senioren' }))
+  assert.match(html, />Senioren</)
+  assert.equal((html.match(/aspect-\[4\/3\]/g) || []).length, 6)
 })
