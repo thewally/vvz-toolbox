@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { getTeams } from '../services/wedstrijden'
-import TeamKaart from '../components/TeamKaart'
+import useTeamlijst from '../lib/useTeamlijst'
+import TeamGrid from '../components/TeamGrid'
+import { TeamsSkeleton } from '../components/TeamKaartSkeleton'
 import { teamVolgnummer } from '../services/wedstrijdenHelpers'
 
 const SPEELDAG_VOLGORDE = ['Zondag', 'Zaterdag']
@@ -17,33 +17,11 @@ function isZaalteam(team) {
 }
 
 export default function WedstrijdenTeamsZaalPage() {
-  const [teams, setTeams] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { teams, loading, error, opnieuw: loadTeams } = useTeamlijst()
 
-  useEffect(() => { loadTeams() }, [])
+  if (loading) return <TeamsSkeleton titel="Zaalvoetbal" />
 
-  async function loadTeams() {
-    setLoading(true)
-    setError(null)
-    const { data, error: err } = await getTeams()
-    if (err) {
-      setError(err.message)
-    } else {
-      setTeams(data ?? [])
-    }
-    setLoading(false)
-  }
-
-  if (loading) {
-    return (
-      <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-vvz-green" />
-      </div>
-    )
-  }
-
-  if (error) {
+  if (error && teams.length === 0) {
     return (
       <div className="max-w-3xl mx-auto p-4">
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-lg">
@@ -68,13 +46,7 @@ export default function WedstrijdenTeamsZaalPage() {
       {zaalteams.length === 0 && (
         <p className="text-gray-500 text-center py-8">Geen zaalteams gevonden.</p>
       )}
-      {zaalteams.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {zaalteams.map(team => (
-            <TeamKaart key={team.teamcode} team={team} />
-          ))}
-        </div>
-      )}
+      {zaalteams.length > 0 && <TeamGrid teams={zaalteams} />}
     </div>
   )
 }
